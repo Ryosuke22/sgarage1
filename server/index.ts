@@ -65,4 +65,18 @@ app.use((req, res, next) => {
   log(`serving on http://127.0.0.1:${port}`);
 });
 
+  // Add secondary listener on port 5000 for workflow compatibility when in development
+  const WF_PORT = 5000;
+  if (process.env.NODE_ENV === 'development' && port !== WF_PORT) {
+    try {
+      app.listen(WF_PORT, '127.0.0.1', () => {
+        log('[workflow] Secondary listener on port 5000 for workflow compatibility');
+      });
+    } catch (e) {
+      if ((e as any)?.code !== 'EADDRINUSE') {
+        console.warn('Secondary listen failed:', e);
+      }
+    }
+  }
+
 })();

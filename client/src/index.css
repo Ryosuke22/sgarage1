@@ -1,3 +1,147 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* BaT-inspired Dark Theme Colors */
+    --background: hsl(220, 13%, 9%);
+    --foreground: hsl(220, 10%, 95%);
+    --card: hsl(220, 13%, 11%);
+    --card-foreground: hsl(220, 10%, 92%);
+    --popover: hsl(220, 13%, 11%);
+    --popover-foreground: hsl(220, 10%, 95%);
+    --primary: hsl(142, 86%, 28%);
+    --primary-foreground: hsl(220, 10%, 98%);
+    --secondary: hsl(220, 13%, 16%);
+    --secondary-foreground: hsl(220, 10%, 90%);
+    --muted: hsl(220, 13%, 16%);
+    --muted-foreground: hsl(220, 10%, 65%);
+    --accent: hsl(220, 13%, 16%);
+    --accent-foreground: hsl(220, 10%, 90%);
+    --destructive: hsl(0, 62%, 48%);
+    --destructive-foreground: hsl(220, 10%, 98%);
+    --border: hsl(220, 13%, 18%);
+    --input: hsl(220, 13%, 18%);
+    --ring: hsl(142, 86%, 28%);
+    --radius: 0.5rem;
+    
+    /* Custom BaT colors */
+    --samurai-orange: hsl(16, 100%, 50%);
+    --samurai-red: hsl(0, 100%, 45%);
+    --auction-green: hsl(142, 86%, 28%);
+    --auction-yellow: hsl(45, 100%, 55%);
+    --bid-blue: hsl(217, 91%, 60%);
+    
+    /* Typography */
+    --font-sans: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+
+  .dark {
+    --background: hsl(220, 13%, 9%);
+    --foreground: hsl(220, 10%, 95%);
+    --card: hsl(220, 13%, 11%);
+    --card-foreground: hsl(220, 10%, 92%);
+    --popover: hsl(220, 13%, 11%);
+    --popover-foreground: hsl(220, 10%, 95%);
+    --primary: hsl(142, 86%, 28%);
+    --primary-foreground: hsl(220, 10%, 98%);
+    --secondary: hsl(220, 13%, 16%);
+    --secondary-foreground: hsl(220, 10%, 90%);
+    --muted: hsl(220, 13%, 16%);
+    --muted-foreground: hsl(220, 10%, 65%);
+    --accent: hsl(220, 13%, 16%);
+    --accent-foreground: hsl(220, 10%, 90%);
+    --destructive: hsl(0, 62%, 48%);
+    --destructive-foreground: hsl(220, 10%, 98%);
+    --border: hsl(220, 13%, 18%);
+    --input: hsl(220, 13%, 18%);
+    --ring: hsl(142, 86%, 28%);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: var(--font-sans);
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+  }
+
+  html {
+    @apply dark;
+  }
+}
+
+@layer components {
+  /* Japanese Typography Utilities */
+  .jp-title {
+    @apply text-2xl font-semibold tracking-wide;
+    line-height: 1.4;
+  }
+  
+  .jp-subtitle {
+    @apply text-lg font-medium tracking-wide;
+    line-height: 1.5;
+  }
+  
+  .jp-body {
+    @apply text-sm font-normal;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+  }
+  
+  .jp-caption {
+    @apply text-xs font-normal text-muted-foreground;
+    line-height: 1.6;
+  }
+
+  /* Vehicle Card Styles */
+  .vehicle-card {
+    @apply bg-card border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-all duration-300;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .vehicle-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Auction Status Badges */
+  .status-live {
+    @apply bg-auction-green/20 text-auction-green border border-auction-green/30;
+  }
+  
+  .status-ending-soon {
+    @apply bg-auction-yellow/20 text-auction-yellow border border-auction-yellow/30;
+  }
+  
+  .status-sold {
+    @apply bg-muted text-muted-foreground border border-border;
+  }
+
+  /* Price Display */
+  .price-display {
+    @apply font-semibold text-lg text-auction-green;
+  }
+  
+  .reserve-met {
+    @apply text-auction-green;
+  }
+  
+  .reserve-not-met {
+    @apply text-auction-yellow;
+  }
+
+  /* Navigation Styles */
+  .nav-link {
+    @apply text-foreground hover:text-primary transition-colors duration-200 font-medium;
+  }
+  
+  .nav-link.active {
+    @apply text-primary;
+  }
+}
