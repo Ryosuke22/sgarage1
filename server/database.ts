@@ -187,6 +187,30 @@ export class DatabaseService {
     return created;
   }
 
+  // Get or create a guest user for anonymous bidding
+  async getOrCreateGuestUser(): Promise<SelectUser> {
+    // Check if guest user already exists
+    const [existingGuest] = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, 'guest@anonymous.local'))
+      .limit(1);
+    
+    if (existingGuest) {
+      return existingGuest;
+    }
+
+    // Create a new guest user
+    const guestUser: InsertUser = {
+      email: 'guest@anonymous.local',
+      firstName: 'ゲスト',
+      lastName: 'ユーザー',
+      role: 'user',
+    };
+
+    return await this.createUser(guestUser);
+  }
+
   // Initialize sample data for development
   async initializeSampleData() {
     // Check if we already have data

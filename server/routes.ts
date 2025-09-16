@@ -82,12 +82,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Listing not found' });
       }
 
-      // Validate bid data
+      // Get or create guest user for anonymous bidding
+      const guestUser = await dbService.getOrCreateGuestUser();
+
+      // Validate bid data (exclude bidderId from client, use server-generated guest user)
+      const { bidderId, ...clientBidData } = req.body; // Remove any client-supplied bidderId
       const bidData = insertBidSchema.parse({
-        ...req.body,
+        ...clientBidData,
         listingId: listing.id,
+        bidderId: guestUser.id, // Use secure server-generated guest user ID
       });
 
+      // CRITICAL SERVER-SIDE BUSINESS RULE VALIDATION
+      const currentTime = new Date();
+      const bidAmount = parseFloat(bidData.amount);
+
+      // 1. Auction Status Check: Reject bids if auction has ended
+      if (listing.endDate && new Date(listing.endDate) <= currentTime) {
+        return res.status(400).json({
+          message: 'このオークションは既に終了しています',
+          code: 'AUCTION_ENDED'
+        });
+      }
+
+      // 2. Check if listing is in published status
+      if (listing.status !== 'published') {
+        return res.status(400).json({
+          message: 'このオークションはまだ開始されていません',
+          code: 'AUCTION_NOT_STARTED'
+        });
+      }
+
+      // 3. Get current highest bid to validate minimum bid amount
+      const currentBidPrice = listing.currentBid ? parseFloat(listing.currentBid) : parseFloat(listing.reservePrice || '0');
+      const minimumBidAmount = currentBidPrice + 10000;
+
+      // 4. Minimum Bid Enforcement: Reject bids if amount < currentBid + 10,000 yen
+      if (bidAmount < minimumBidAmount) {
+        return res.status(400).json({
+          message: `入札額は現在価格より10,000円以上高い金額にしてください（最低入札額: ¥${minimumBidAmount.toLocaleString()}）`,
+          code: 'BID_TOO_LOW',
+          minimumAmount: minimumBidAmount
+        });
+      }
+
+      // 5. Exact Increment Validation: Reject bids if not in exact 10,000 yen increments
+      const basePrice = parseFloat(listing.reservePrice || '0');
+      const incrementFromBase = bidAmount - basePrice;
+      if (incrementFromBase % 10000 !== 0) {
+        return res.status(400).json({
+          message: '入札額は10,000円単位で入力してください',
+          code: 'INVALID_INCREMENT'
+        });
+      }
+
+      // 6. Validate bid amount is positive and reasonable
+      if (bidAmount <= 0) {
+        return res.status(400).json({
+          message: '入札額は正の数値である必要があります',
+          code: 'INVALID_AMOUNT'
+        });
+      }
+
+      // Maximum reasonable bid check (optional safety measure)
+      if (bidAmount > 999999999) {
+        return res.status(400).json({
+          message: '入札額が上限を超えています',
+          code: 'AMOUNT_TOO_HIGH'
+        });
+      }
+
+      // All validations passed - create the bid
       const bid = await dbService.createBid(bidData);
       res.status(201).json(bid);
     } catch (error) {

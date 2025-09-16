@@ -181,3 +181,26 @@ export type InsertBid = z.infer<typeof insertBidSchema>;
 export type SelectBid = typeof bids.$inferSelect;
 export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type SelectComment = typeof comments.$inferSelect;
+
+// Extended types for UI components
+export type ListingWithBids = SelectListing & {
+  currentBid?: string | null;
+  bidCount?: number;
+  latestBid?: SelectBid | null;
+};
+
+export type BidWithUser = SelectBid & {
+  bidder: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+  };
+};
+
+export type CommentWithUser = SelectComment & {
+  user: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+  };
+};
