@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import Home from "@/pages/home";
 import VehicleDetail from "@/pages/vehicle-detail";
 import AuthPage from "@/pages/auth";
+import AdminDashboard from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/" component={Home} />
             <Route path="/vehicle/:slug" component={VehicleDetail} />
             <Route path="/auth" component={AuthPage} />
+            <Route path="/admin" component={AdminDashboard} />
             <Route><NotFound /></Route>
           </Switch>
           <Toaster />

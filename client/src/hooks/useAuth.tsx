@@ -23,7 +23,7 @@ type LoginData = z.infer<typeof loginUserSchema>;
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }): ReactElement {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const {
     data: user,

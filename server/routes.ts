@@ -14,6 +14,17 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+// Admin role middleware helper
+function requireAdmin(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'ログインが必要です' });
+  }
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ message: '管理者権限が必要です' });
+  }
+  next();
+}
+
 // index.ts は await registerRoutes(app) の戻り値を server として使う想定
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication system (includes /api/register, /api/login, /api/logout, /api/user)
@@ -241,6 +252,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(safeUser);
     } catch (error) {
       console.error('Error fetching user:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Admin API Routes - Protected by admin role
+  app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await dbService.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const { role, limit = '50', offset = '0' } = req.query;
+      
+      const filters: any = {};
+      if (role) filters.role = role as 'user' | 'admin';
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+
+      const users = await dbService.getAllUsers(filters);
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching users for admin:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.patch("/api/admin/users/:id/role", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { role } = req.body;
+
+      if (!role || !['user', 'admin'].includes(role)) {
+        return res.status(400).json({ message: '無効な役割が指定されました' });
+      }
+
+      const updatedUser = await dbService.updateUserRole(id, role);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'ユーザーが見つかりません' });
+      }
+
+      // Remove password from response
+      const { password: _, ...safeUser } = updatedUser;
+      res.json(safeUser);
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/admin/listings", requireAdmin, async (req, res) => {
+    try {
+      const { status, category, limit = '50', offset = '0' } = req.query;
+      
+      const filters: any = {};
+      if (status) filters.status = status;
+      if (category) filters.category = category;
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+
+      const listings = await dbService.getListingsForAdmin(filters);
+      res.json(listings);
+    } catch (error) {
+      console.error('Error fetching listings for admin:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.patch("/api/admin/listings/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, adminNotes } = req.body;
+
+      if (!status || !['draft', 'submitted', 'approved', 'published', 'ended'].includes(status)) {
+        return res.status(400).json({ message: '無効なステータスが指定されました' });
+      }
+
+      const updatedListing = await dbService.updateListingStatus(id, status, adminNotes);
+      
+      if (!updatedListing) {
+        return res.status(404).json({ message: '出品が見つかりません' });
+      }
+
+      res.json(updatedListing);
+    } catch (error) {
+      console.error('Error updating listing status:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });

@@ -217,6 +217,164 @@ export class DatabaseService {
     return created;
   }
 
+  // Admin methods for user management
+  async getAllUsers(filters?: {
+    role?: 'user' | 'admin';
+    limit?: number;
+    offset?: number;
+  }) {
+    const query = db
+      .select({
+        id: schema.users.id,
+        username: schema.users.username,
+        email: schema.users.email,
+        firstName: schema.users.firstName,
+        lastName: schema.users.lastName,
+        role: schema.users.role,
+        createdAt: schema.users.createdAt,
+      })
+      .from(schema.users);
+
+    if (filters?.role) {
+      query.where(eq(schema.users.role, filters.role));
+    }
+
+    query.orderBy(desc(schema.users.createdAt));
+    
+    if (filters?.limit) {
+      query.limit(filters.limit);
+    }
+    if (filters?.offset) {
+      query.offset(filters.offset);
+    }
+
+    return await query;
+  }
+
+  async updateUserRole(userId: string, role: 'user' | 'admin'): Promise<SelectUser | null> {
+    const [updated] = await db
+      .update(schema.users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(schema.users.id, userId))
+      .returning();
+    
+    return updated || null;
+  }
+
+  // Admin methods for listing management
+  async getListingsForAdmin(filters?: {
+    status?: 'draft' | 'submitted' | 'approved' | 'published' | 'ended';
+    category?: 'car' | 'motorcycle';
+    limit?: number;
+    offset?: number;
+  }) {
+    const query = db
+      .select({
+        id: schema.listings.id,
+        slug: schema.listings.slug,
+        title: schema.listings.title,
+        description: schema.listings.description,
+        category: schema.listings.category,
+        make: schema.listings.make,
+        model: schema.listings.model,
+        year: schema.listings.year,
+        mileage: schema.listings.mileage,
+        locationText: schema.listings.locationText,
+        featuredImageUrl: schema.listings.featuredImageUrl,
+        status: schema.listings.status,
+        endStatus: schema.listings.endStatus,
+        startDate: schema.listings.startDate,
+        endDate: schema.listings.endDate,
+        reservePrice: schema.listings.reservePrice,
+        sellPrice: schema.listings.sellPrice,
+        adminNotes: schema.listings.adminNotes,
+        createdAt: schema.listings.createdAt,
+        updatedAt: schema.listings.updatedAt,
+        seller: {
+          id: schema.users.id,
+          username: schema.users.username,
+          firstName: schema.users.firstName,
+          lastName: schema.users.lastName,
+        }
+      })
+      .from(schema.listings)
+      .leftJoin(schema.users, eq(schema.listings.sellerId, schema.users.id));
+
+    if (filters?.status) {
+      query.where(eq(schema.listings.status, filters.status));
+    }
+    if (filters?.category) {
+      query.where(eq(schema.listings.category, filters.category));
+    }
+
+    query.orderBy(desc(schema.listings.updatedAt));
+    
+    if (filters?.limit) {
+      query.limit(filters.limit);
+    }
+    if (filters?.offset) {
+      query.offset(filters.offset);
+    }
+
+    return await query;
+  }
+
+  async updateListingStatus(
+    listingId: string, 
+    status: 'draft' | 'submitted' | 'approved' | 'published' | 'ended',
+    adminNotes?: string
+  ): Promise<SelectListing | null> {
+    const updateData: any = { 
+      status, 
+      updatedAt: new Date() 
+    };
+    
+    if (adminNotes !== undefined) {
+      updateData.adminNotes = adminNotes;
+    }
+
+    const [updated] = await db
+      .update(schema.listings)
+      .set(updateData)
+      .where(eq(schema.listings.id, listingId))
+      .returning();
+    
+    return updated || null;
+  }
+
+  // Admin statistics methods
+  async getAdminStats() {
+    const [userCount] = await db
+      .select({ count: schema.users.id })
+      .from(schema.users);
+
+    const [listingCount] = await db
+      .select({ count: schema.listings.id })
+      .from(schema.listings);
+
+    const [activeListingCount] = await db
+      .select({ count: schema.listings.id })
+      .from(schema.listings)
+      .where(eq(schema.listings.status, 'published'));
+
+    const [pendingListingCount] = await db
+      .select({ count: schema.listings.id })
+      .from(schema.listings)
+      .where(eq(schema.listings.status, 'submitted'));
+
+    const [bidCount] = await db
+      .select({ count: schema.bids.id })
+      .from(schema.bids);
+
+    return {
+      totalUsers: userCount?.count || 0,
+      totalListings: listingCount?.count || 0,
+      activeListings: activeListingCount?.count || 0,
+      pendingListings: pendingListingCount?.count || 0,
+      totalBids: bidCount?.count || 0,
+    };
+  }
+
   // Get or create a guest user for anonymous bidding
   async getOrCreateGuestUser(): Promise<SelectUser> {
     // Check if guest user already exists
@@ -258,6 +416,14 @@ export class DatabaseService {
 
     // Create sample users with authentication data
     const sampleUsers: InsertUser[] = [
+      {
+        username: 'admin',
+        email: 'admin@samuraigarage.com',
+        password: await hashPassword('admin123'), // Test password: admin123
+        firstName: '管理者',
+        lastName: 'システム',
+        role: 'admin', // Admin user for testing
+      },
       {
         username: 'tanaka_taro',
         email: 'seller1@example.com',
