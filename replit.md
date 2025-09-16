@@ -1,0 +1,77 @@
+# Overview
+
+This is a real-time vehicle auction platform built with React and Express, allowing users to browse and bid on cars and motorcycles. The application features live bidding functionality with WebSocket connections, advanced filtering options, and a modern Japanese-language interface. Users can view detailed vehicle information, participate in timed auctions, and receive real-time updates on bid activities.
+
+# User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+# System Architecture
+
+## Frontend Architecture
+- **Framework**: React 18 with TypeScript using Vite as the build tool
+- **UI Library**: Shadcn/ui components built on Radix UI primitives with Tailwind CSS for styling
+- **State Management**: TanStack Query (React Query) for server state management and caching
+- **Routing**: Wouter for lightweight client-side routing
+- **Real-time Updates**: Custom WebSocket hook for live bid updates
+- **Form Handling**: React Hook Form with Zod validation through Hookform resolvers
+
+## Backend Architecture
+- **Runtime**: Node.js with Express.js framework using TypeScript
+- **API Design**: RESTful endpoints for vehicle and bid management
+- **Real-time Communication**: WebSocket server for live bid broadcasting
+- **Storage**: In-memory storage implementation with interface for easy database migration
+- **Error Handling**: Centralized error middleware with structured error responses
+
+## Data Storage
+- **ORM**: Drizzle ORM configured for PostgreSQL (Neon Database)
+- **Database Schema**: Structured tables for users, vehicles, bids, and favorites
+- **Current Implementation**: MemStorage class for development with sample data initialization
+- **Migration Strategy**: Database migrations managed through Drizzle Kit
+
+## Key Features
+- **Auction System**: Timed auctions with countdown timers and automatic bid validation
+- **Real-time Bidding**: WebSocket-based live updates for bid changes across all connected clients
+- **Advanced Filtering**: Multi-parameter search including category, price range, year, brand, and text search
+- **Responsive Design**: Mobile-first approach with Tailwind CSS utilities
+- **Internationalization**: Japanese language interface with proper typography and formatting
+
+## File Upload Integration
+- **Upload Library**: Uppy.js with AWS S3 integration for vehicle image handling
+- **Components**: File input, drag-drop, progress tracking, and dashboard interfaces
+
+# External Dependencies
+
+## Core Framework Dependencies
+- **@tanstack/react-query**: Server state management and caching
+- **wouter**: Lightweight routing solution
+- **drizzle-orm** & **drizzle-kit**: Database ORM and migration tools
+- **@neondatabase/serverless**: PostgreSQL database connection
+
+## UI and Styling
+- **@radix-ui/***: Comprehensive set of UI primitives for accessible components
+- **tailwindcss**: Utility-first CSS framework
+- **class-variance-authority**: Component variant management
+- **lucide-react**: Icon library
+
+## Form and Validation
+- **react-hook-form**: Form state management
+- **@hookform/resolvers**: Form validation integration
+- **zod**: Schema validation library
+
+## File Upload
+- **@uppy/core**, **@uppy/aws-s3**, **@uppy/dashboard**: File upload handling with cloud storage
+
+## Payment Processing
+- **@stripe/stripe-js** & **@stripe/react-stripe-js**: Payment processing integration
+
+## Development Tools
+- **vite**: Build tool and development server
+- **typescript**: Type safety and development experience
+- **tsx**: TypeScript execution for development
+- **esbuild**: Fast bundling for production builds
+
+## Replit-Specific Integrations
+- **@replit/vite-plugin-runtime-error-modal**: Development error overlay
+- **@replit/vite-plugin-cartographer**: Code mapping for debugging
+- **@replit/vite-plugin-dev-banner**: Development environment indicators
