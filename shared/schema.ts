@@ -25,10 +25,12 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
+// User storage table for authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: varchar("username").unique().notNull(),
   email: varchar("email").unique(),
+  password: varchar("password").notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -151,6 +153,18 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  username: z.string().min(3, 'ユーザー名は3文字以上である必要があります').max(20, 'ユーザー名は20文字以下である必要があります'),
+  password: z.string().min(8, 'パスワードは8文字以上である必要があります'),
+  email: z.string().email('有効なメールアドレスを入力してください').optional(),
+  firstName: z.string().min(1, '名前を入力してください'),
+  lastName: z.string().min(1, '名字を入力してください'),
+});
+
+// Login schema for authentication
+export const loginUserSchema = z.object({
+  username: z.string().min(1, 'ユーザー名を入力してください'),
+  password: z.string().min(1, 'パスワードを入力してください'),
 });
 
 export const insertListingSchema = createInsertSchema(listings).omit({
@@ -175,6 +189,7 @@ export const insertCommentSchema = createInsertSchema(comments).omit({
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type SelectUser = typeof users.$inferSelect;
+export type SessionUser = Omit<SelectUser, 'password'>; // User without password for sessions
 export type InsertListing = z.infer<typeof insertListingSchema>;
 export type SelectListing = typeof listings.$inferSelect;
 export type InsertBid = z.infer<typeof insertBidSchema>;

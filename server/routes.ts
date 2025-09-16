@@ -1,12 +1,24 @@
-// server/routes.ts
+// server/routes.ts - Updated to use blueprint:javascript_auth_all_persistance
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { dbService } from './database';
+import { setupAuth } from './auth';
 import { z } from 'zod';
 import { insertBidSchema, insertCommentSchema } from '@shared/schema';
 
+// Authentication middleware helper
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'ログインが必要です' });
+  }
+  next();
+}
+
 // index.ts は await registerRoutes(app) の戻り値を server として使う想定
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication system (includes /api/register, /api/login, /api/logout, /api/user)
+  setupAuth(app);
+
   // Initialize sample data on server start
   await dbService.initializeSampleData();
 
@@ -82,15 +94,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Listing not found' });
       }
 
-      // Get or create guest user for anonymous bidding
-      const guestUser = await dbService.getOrCreateGuestUser();
+      // Require authentication for bidding
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({
+          message: '入札するにはログインが必要です',
+          code: 'AUTHENTICATION_REQUIRED'
+        });
+      }
 
-      // Validate bid data (exclude bidderId from client, use server-generated guest user)
+      // Validate bid data using authenticated user
       const { bidderId, ...clientBidData } = req.body; // Remove any client-supplied bidderId
       const bidData = insertBidSchema.parse({
         ...clientBidData,
         listingId: listing.id,
-        bidderId: guestUser.id, // Use secure server-generated guest user ID
+        bidderId: req.user!.id, // Use authenticated user ID (guaranteed by requireAuth)
       });
 
       // CRITICAL SERVER-SIDE BUSINESS RULE VALIDATION
@@ -182,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/listings/:slug/comments", async (req, res) => {
+  app.post("/api/listings/:slug/comments", requireAuth, async (req, res) => {
     try {
       const { slug } = req.params;
       const listing = await dbService.getListingBySlug(slug);
@@ -191,10 +208,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Listing not found' });
       }
 
-      // Validate comment data
+      // Validate comment data using authenticated user
       const commentData = insertCommentSchema.parse({
         ...req.body,
         listingId: listing.id,
+        userId: req.user!.id, // Use authenticated user ID (guaranteed by requireAuth)
       });
 
       const comment = await dbService.createComment(commentData);

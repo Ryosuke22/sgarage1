@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Car, Bike, User } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Car, Bike, User, LogOut, Settings, Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -10,10 +12,15 @@ interface HeaderProps {
 
 export default function Header({ onSearch }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const { user, isLoading, logoutMutation } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(searchQuery);
+  };
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   return (
@@ -79,20 +86,77 @@ export default function Header({ onSearch }: HeaderProps) {
                 </button>
               </form>
             </div>
-            <Button 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 jp-body"
-              data-testid="login-button"
-            >
-              <User className="w-4 h-4 mr-2" />
-              ログイン
-            </Button>
-            <Button 
-              variant="secondary"
-              className="jp-body"
-              data-testid="register-button"
-            >
-              会員登録
-            </Button>
+            {isLoading ? (
+              <Button disabled>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                読み込み中
+              </Button>
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="jp-body h-8 w-8 rounded-full p-0"
+                    data-testid="user-menu"
+                  >
+                    <User className="w-4 h-4" />
+                    <span className="sr-only">アカウントメニュー</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-0.5 leading-none">
+                      <p className="font-medium text-sm" data-testid="user-name">
+                        {user.firstName ? `${user.firstName} ${user.lastName}` : user.username}
+                      </p>
+                      {user.email && (
+                        <p className="text-xs text-muted-foreground" data-testid="user-email">
+                          {user.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem data-testid="menu-settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>設定</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    data-testid="menu-logout"
+                    disabled={logoutMutation.isPending}
+                  >
+                    {logoutMutation.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <LogOut className="mr-2 h-4 w-4" />
+                    )}
+                    <span>ログアウト</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link href="/auth">
+                  <Button 
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 jp-body"
+                    data-testid="login-button"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    ログイン
+                  </Button>
+                </Link>
+                <Link href="/auth">
+                  <Button 
+                    variant="secondary"
+                    className="jp-body"
+                    data-testid="register-button"
+                  >
+                    会員登録
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

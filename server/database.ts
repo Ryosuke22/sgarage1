@@ -2,6 +2,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { eq, desc, and, like, gte, lte } from 'drizzle-orm';
 import * as schema from '@shared/schema';
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 import type { 
   SelectListing, 
   InsertListing, 
@@ -19,6 +21,14 @@ if (!process.env.DATABASE_URL) {
 
 const client = postgres(process.env.DATABASE_URL!);
 const db = drizzle(client, { schema });
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
 
 export class DatabaseService {
   // Listing methods
@@ -178,6 +188,26 @@ export class DatabaseService {
     return user || null;
   }
 
+  async getUserByUsername(username: string): Promise<SelectUser | null> {
+    const [user] = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.username, username))
+      .limit(1);
+    
+    return user || null;
+  }
+
+  async getUserByEmail(email: string): Promise<SelectUser | null> {
+    const [user] = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, email))
+      .limit(1);
+    
+    return user || null;
+  }
+
   async createUser(user: InsertUser): Promise<SelectUser> {
     const [created] = await db
       .insert(schema.users)
@@ -202,7 +232,9 @@ export class DatabaseService {
 
     // Create a new guest user
     const guestUser: InsertUser = {
+      username: 'guest_user',
       email: 'guest@anonymous.local',
+      password: 'hashed_guest_password_placeholder',
       firstName: 'ゲスト',
       lastName: 'ユーザー',
       role: 'user',
@@ -224,16 +256,20 @@ export class DatabaseService {
       return;
     }
 
-    // Create sample users
+    // Create sample users with authentication data
     const sampleUsers: InsertUser[] = [
       {
+        username: 'tanaka_taro',
         email: 'seller1@example.com',
+        password: await hashPassword('password123'), // Test password: password123
         firstName: '田中',
         lastName: '太郎',
         role: 'user',
       },
       {
-        email: 'seller2@example.com',
+        username: 'sato_hanako',
+        email: 'seller2@example.com', 
+        password: await hashPassword('password123'), // Test password: password123
         firstName: '佐藤',
         lastName: '花子',
         role: 'user',
