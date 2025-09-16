@@ -24,8 +24,21 @@ export default function Home() {
 
   const [activeTab, setActiveTab] = useState("all");
 
+  // Build query parameters from filters
+  const queryParams = new URLSearchParams();
+  if (filters.category && filters.category !== "all") queryParams.set('category', filters.category);
+  if (filters.minPrice) queryParams.set('minPrice', filters.minPrice.toString());
+  if (filters.maxPrice) queryParams.set('maxPrice', filters.maxPrice.toString());
+  if (filters.yearFrom) queryParams.set('yearFrom', filters.yearFrom.toString());
+  if (filters.yearTo) queryParams.set('yearTo', filters.yearTo.toString());
+  if (filters.brand && filters.brand !== "all") queryParams.set('brand', filters.brand);
+  if (filters.search) queryParams.set('search', filters.search);
+
+  const queryString = queryParams.toString();
+  const apiUrl = queryString ? `/api/vehicles?${queryString}` : '/api/vehicles';
+
   const { data: vehicles = [], isLoading } = useQuery<VehicleWithBids[]>({
-    queryKey: ["/api/vehicles", filters],
+    queryKey: [apiUrl],
     enabled: true,
   });
 

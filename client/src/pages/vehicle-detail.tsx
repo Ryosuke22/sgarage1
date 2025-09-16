@@ -15,7 +15,7 @@ export default function VehicleDetail() {
   const [showBidModal, setShowBidModal] = useState(false);
   
   const { data: vehicle, isLoading } = useQuery<VehicleWithBids>({
-    queryKey: ["/api/vehicles", params?.id],
+    queryKey: [`/api/vehicles/${params?.id}`],
     enabled: !!params?.id,
   });
 
