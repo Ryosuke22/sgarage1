@@ -1,0 +1,103 @@
+{
+  "bike_periods": {
+    "スズキ": [
+      { "model": "パワーフリー", "from": 1952, "to": 1954 },
+      { "model": "ダイヤモンドフリー", "from": 1953, "to": 1954 },
+      { "model": "コレダ", "from": 1954, "to": 1969 },
+
+      { "model": "T250", "from": 1969, "to": 1972 },
+      { "model": "T350", "from": 1969, "to": 1973 },
+      { "model": "T500", "from": 1968, "to": 1975 },
+
+      { "model": "GT125", "from": 1974, "to": 1978 },
+      { "model": "GT185", "from": 1973, "to": 1978 },
+      { "model": "GT250", "from": 1971, "to": 1976 },
+      { "model": "GT380", "from": 1972, "to": 1977 },
+      { "model": "GT550", "from": 1972, "to": 1977 },
+      { "model": "GT750", "from": 1971, "to": 1977 },
+      { "model": "RE5（ロータリー）", "from": 1974, "to": 1976 },
+
+      { "model": "GS400", "from": 1976, "to": 1981 },
+      { "model": "GS750", "from": 1976, "to": 1983 },
+      { "model": "GS1000", "from": 1978, "to": 1980 },
+
+      { "model": "GSX250E", "from": 1980, "to": 1986 },
+      { "model": "GSX400E", "from": 1980, "to": 1984 },
+      { "model": "GSX400F", "from": 1982, "to": 1983 },
+      { "model": "GSX750E", "from": 1980, "to": 1983 },
+
+      { "model": "GSX1100S 刀", "from": 1981, "to": 1995 },
+      { "model": "GSX750S 刀", "from": 1982, "to": 1987 },
+      { "model": "GSX250S 刀", "from": 1991, "to": 1995 },
+      { "model": "GSX400S 刀", "from": 1992, "to": 1995 },
+
+      { "model": "GSX-R250", "from": 1987, "to": 1995 },
+      { "model": "GSX-R400", "from": 1984, "to": 1995 },
+      { "model": "GSX-R750", "from": 1985, "to": 1995 },
+      { "model": "GSX-R1100", "from": 1986, "to": 1995 },
+      { "model": "GSX600F（カタナ）", "from": 1988, "to": 1995 },
+      { "model": "GSX750F（カタナ）", "from": 1989, "to": 1995 },
+      { "model": "GSX1100F", "from": 1988, "to": 1993 },
+      { "model": "GS500E", "from": 1989, "to": 1995 },
+      { "model": "GR650", "from": 1983, "to": 1985 },
+      { "model": "GN125", "from": 1982, "to": 1995 },
+      { "model": "GN250", "from": 1982, "to": 1995 },
+
+      { "model": "GSF250（バンディット250）", "from": 1989, "to": 1995 },
+      { "model": "GSF400（バンディット400）", "from": 1989, "to": 1995 },
+      { "model": "インパルス（GSX400X/GSX400）", "from": 1986, "to": 1995 },
+      { "model": "ウルフ250", "from": 1992, "to": 1995 },
+      { "model": "グース350", "from": 1992, "to": 1995 },
+      { "model": "アクロス", "from": 1990, "to": 1995 },
+      { "model": "RF400R", "from": 1993, "to": 1995 },
+      { "model": "RF600R", "from": 1993, "to": 1995 },
+      { "model": "RF900R", "from": 1994, "to": 1995 },
+      { "model": "SW-1", "from": 1989, "to": 1992 },
+
+      { "model": "RG50ガンマ", "from": 1982, "to": 1995 },
+      { "model": "RG80ガンマ", "from": 1986, "to": 1990 },
+      { "model": "RG125ガンマ", "from": 1985, "to": 1992 },
+      { "model": "RG250ガンマ", "from": 1983, "to": 1987 },
+      { "model": "RG400ガンマ", "from": 1985, "to": 1987 },
+      { "model": "RG500ガンマ", "from": 1985, "to": 1986 },
+      { "model": "RGV250ガンマ", "from": 1988, "to": 1995 },
+
+      { "model": "TS50（ハスラー）", "from": 1971, "to": 1995 },
+      { "model": "TS125（ハスラー）", "from": 1971, "to": 1995 },
+      { "model": "TS185（ハスラー）", "from": 1971, "to": 1995 },
+      { "model": "TS200R", "from": 1989, "to": 1995 },
+      { "model": "TS250", "from": 1969, "to": 1981 },
+      { "model": "RL250（トライアル）", "from": 1974, "to": 1975 },
+
+      { "model": "DR125S", "from": 1982, "to": 1995 },
+      { "model": "DR200", "from": 1986, "to": 1995 },
+      { "model": "DR250S", "from": 1982, "to": 1995 },
+      { "model": "DR350", "from": 1990, "to": 1995 },
+      { "model": "DR650", "from": 1990, "to": 1995 },
+      { "model": "SP125", "from": 1982, "to": 1987 },
+      { "model": "SP370", "from": 1978, "to": 1980 },
+      { "model": "SP400", "from": 1978, "to": 1982 },
+      { "model": "RM80", "from": 1977, "to": 1995 },
+      { "model": "RM125", "from": 1975, "to": 1995 },
+      { "model": "RM250", "from": 1976, "to": 1995 },
+      { "model": "RMX250", "from": 1989, "to": 1995 },
+
+      { "model": "バンバン90", "from": 1973, "to": 1981 },
+      { "model": "RV50（バンバン50）", "from": 1974, "to": 1981 },
+      { "model": "K50", "from": 1972, "to": 1983 },
+      { "model": "マメタン（FR50）", "from": 1972, "to": 1977 },
+
+      { "model": "バーディー", "from": 1980, "to": 1995 },
+      { "model": "ジェンマ50/80", "from": 1981, "to": 1987 },
+      { "model": "アドレス50", "from": 1987, "to": 1995 },
+      { "model": "アドレスV100", "from": 1991, "to": 1995 },
+      { "model": "セピア", "from": 1990, "to": 1995 },
+      { "model": "ヴェクスター125/150", "from": 1994, "to": 1995 },
+
+      { "model": "イントルーダー400", "from": 1994, "to": 1995 },
+      { "model": "イントルーダー800", "from": 1987, "to": 1995 },
+      { "model": "イントルーダー1400", "from": 1987, "to": 1995 },
+      { "model": "サベージ650", "from": 1986, "to": 1995 }
+    ]
+  }
+}

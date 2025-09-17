@@ -1,0 +1,78 @@
+{
+  "car": {
+    "Toyota": {
+      "それ以前": [
+        "Prototype AA (1936-1943)",
+        "Light Truck (1947-)"
+      ],
+      "1950–1959": [
+        "Toyopet Crown RS (1955)",
+        "Toyopet Coronaline (Corona ST, 1957)",
+        "Land Cruiser BJ (1951)",
+        "Land Cruiser FJ (1953)",
+        "Model SA (1952)"
+      ],
+      "1960–1969": [
+        "Crown S40/S50 Series (1962-1967)",
+        "Corona T40/T50 Series (1960-1964)",
+        "Corolla E10 (1966)",
+        "Sprinter E10 (1968)",
+        "Publica UP20 (1959-1961)",
+        "Sports 800 (1965-1969)",
+        "2000GT (1967-1970)",
+        "Hilux N10 (1968)",
+        "HiAce H10 (1967)",
+        "Century G20 (1967-1977)",
+        "Mark II X10 (1968)"
+      ],
+      "1970–1979": [
+        "Crown S60/S80 Series (1967-1971)",
+        "Corona T80/T100 (1969-1973)",
+        "Corolla E20/E30 (1970-1977)",
+        "Sprinter E20/E40 (1970-1978)",
+        "Celica A20/A40 (1970-1977)",
+        "Carina A10/A40 (1970-1977)",
+        "Mark II X20/X30 (1972-1976)",
+        "Chaser X30 (1977)",
+        "Cresta X50 (1976)",
+        "Starlet P40/P60 (1973-1978)",
+        "Publica/Corona Van/Van variants"
+      ],
+      "1980–1989": [
+        "Crown S110/S120 (1979-1983)",
+        "Corona T130/T140 (1978-1983)",
+        "Corolla E70/E80 (1979-1987)",
+        "Sprinter E70/E80 (1979-1987)",
+        "Celica A60 (1979-1986)",
+        "Carina A60 (1977-1981)",
+        "Mark II X60 (1976-1980)",
+        "Chaser X60 (1977-1980)",
+        "Cresta X60 (1976-1980)",
+        "Soarer Z10 (1981-1985)",
+        "MR2 AW10 (1984-1989)",
+        "Supra A60 (1978-1986)",
+        "Celsior UCF10 (1989-1990)",  // Project Toyota luxury
+        "Land Cruiser 60/70 Series (1980-1989)",
+        "HiAce H50/H100 (1982-1989)"
+      ],
+      "1990–1994": [
+        "Crown S130 (1987-1999)",
+        "Corona CT190 (1992-1996)",
+        "Corolla E90/E100 (1987-1994)",
+        "Sprinter E90/E100 (1987-1994)",
+        "Celica T150 (1986-1993)",
+        "Carina E (1987-1992)",
+        "Mark II X80 (1984-1992)",
+        "Chaser X80 (1984-1992)",
+        "Cresta X80 (1984-1992)",
+        "Soarer Z30 (1986-1991)",
+        "Supra A80 (1993-2002)",
+        "Aristo JZS147/JZS141 (1991-1997)",
+        "Lexus LS400 (1989-1994)",
+        "Lexus ES300 (1989-1992)",
+        "Land Cruiser 80 Series (1990-1997)",
+        "HiAce H100 fifth generation (1989-1995)"
+      ]
+    }
+  }
+}

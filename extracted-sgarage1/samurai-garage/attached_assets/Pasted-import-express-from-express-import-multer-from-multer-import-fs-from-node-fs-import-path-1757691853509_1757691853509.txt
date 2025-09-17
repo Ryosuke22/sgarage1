@@ -1,0 +1,65 @@
+import express from "express";
+import multer from "multer";
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
+import { Storage } from "@google-cloud/storage";
+
+const tmpDir = path.join(process.cwd(), "tmp_uploads");
+fs.mkdirSync(tmpDir, { recursive: true });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _f, cb) => cb(null, tmpDir),
+    filename: (_req, f, cb) => cb(null, Date.now() + "-" + f.originalname),
+  }),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 必要なら増減
+  fileFilter: (_req, f, cb) => {
+    const okMime = f.mimetype === "application/pdf";
+    const okExt = /\.pdf$/i.test(f.originalname);
+    cb(okMime || okExt ? null : new Error("only PDF"));
+  },
+});
+
+const storage = new Storage({
+  projectId: process.env.GCP_PROJECT_ID,
+  credentials: process.env.GCP_SERVICE_ACCOUNT_JSON
+    ? JSON.parse(process.env.GCP_SERVICE_ACCOUNT_JSON.replace(/\\n/g, "\n"))
+    : undefined,
+});
+const bucket = storage.bucket(process.env.GCS_BUCKET!);
+
+export const pdfUploadRouter = express.Router();
+
+/** 車検証PDF: FormData(field="file") を受け取ってGCSへ保存 */
+pdfUploadRouter.post("/upload-doc", upload.single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ ok: false, message: "file required" });
+
+  const objectName = `doc/${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.pdf`;
+  const gcsFile = bucket.file(objectName);
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      fs.createReadStream(req.file.path)
+        .pipe(gcsFile.createWriteStream({
+          resumable: true,
+          contentType: "application/pdf",
+          metadata: { contentDisposition: `inline; filename="${req.file.originalname.replace(/"/g, "")}"` },
+        }))
+        .on("error", reject)
+        .on("finish", resolve);
+    });
+    fs.unlink(req.file.path, () => {});
+
+    // 非公開バケットでも閲覧できる短期URL（保存用は objectName をDBへ）
+    const [readUrl] = await gcsFile.getSignedUrl({
+      version: "v4",
+      action: "read",
+      expires: Date.now() + 10 * 60 * 1000,
+    });
+    res.json({ ok: true, objectName, readUrl });
+  } catch (e: any) {
+    fs.unlink(req.file.path, () => {});
+    res.status(500).json({ ok: false, message: e?.message || "upload failed" });
+  }
+});

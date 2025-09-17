@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>No-Resize Image Uploader</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
+    .card { max-width: 720px; margin: 0 auto; padding: 16px; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 5px 18px rgba(0,0,0,0.06); }
+    h1 { font-size: 20px; margin: 0 0 12px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    input[type=file] { padding: 8px; border: 1px solid #ddd; border-radius: 8px; }
+    button { padding: 10px 14px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; background: #111827; color: white; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .progress-wrap { width: 100%; background: #f3f4f6; border-radius: 999px; height: 10px; overflow: hidden; margin: 12px 0; }
+    .progress { height: 100%; width: 0%; background: #111827; transition: width .15s linear; }
+    .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 16px; }
+    .thumb { border: 1px solid #e5e7eb; padding: 6px; border-radius: 10px; background: #fff; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 6px; }
+    .meta { font-size: 12px; color: #4b5563; margin-top: 6px; word-break: break-all;}
+    .note { font-size: 12px; color: #6b7280; margin-top: 6px; }
+    a { color: #2563eb; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>画像アップロード（縮小なし・そのまま保存）</h1>
+    <div class="row">
+      <input id="files" type="file" accept="image/*" multiple />
+      <button id="send">Upload</button>
+    </div>
+    <div class="note">※ このUIはリサイズや圧縮、Canvas処理を一切行いません。撮ったままのファイルを送ります。</div>
+    <div class="progress-wrap"><div id="bar" class="progress"></div></div>
+    <div id="result"></div>
+    <div class="thumbs" id="thumbs"></div>
+  </div>
+
+  <script>
+    const $files = document.getElementById("files");
+    const $send = document.getElementById("send");
+    const $bar  = document.getElementById("bar");
+    const $res  = document.getElementById("result");
+    const $thumbs = document.getElementById("thumbs");
+
+    function resetProgress(){ $bar.style.width = "0%"; }
+
+    function humanSize(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + " KB";
+      return (bytes/1024/1024).toFixed(1) + " MB";
+    }
+
+    $send.addEventListener("click", () => {
+      const files = $files.files;
+      if (!files || !files.length) {
+        alert("画像を選んでください。");
+        return;
+      }
+
+      // ▲注意：ここでCanvas変換やquality指定などを一切しない＝縮小・圧縮なし
+      const fd = new FormData();
+      [...files].forEach(f => fd.append("photos", f));
+
+      $send.disabled = true;
+      resetProgress();
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/upload", true);
+
+      // 進捗（アップロード方向）
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          $bar.style.width = pct + "%";
+        }
+      };
+
+      xhr.onload = () => {
+        $send.disabled = false;
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const data = JSON.parse(xhr.responseText);
+          if (data.ok) {
+            $res.innerHTML = `<p>アップロード成功（${data.files.length}件）</p>`;
+            $thumbs.innerHTML = "";
+            data.files.forEach(f => {
+              const canPreview = !/\.heic$|\.heif$/i.test(f.url); // 一部ブラウザはHEICを表示不可
+              const html = `
+                <div class="thumb">
+                  ${
+                    canPreview
+                    ? `<a href="${f.url}" target="_blank" rel="noopener">
+                         <img src="${f.url}" alt="${f.originalName}">
+                       </a>`
+                    : `<a href="${f.url}" target="_blank" rel="noopener">HEIC/HEIF（プレビュー非対応の場合あり）</a>`
+                  }
+                  <div class="meta">
+                    <div>名前: ${f.originalName}</div>
+                    <div>MIME: ${f.mimeType}</div>
+                    <div>サイズ: ${humanSize(f.size)}</div>
+                    <div>URL: <a href="${f.url}" target="_blank" rel="noopener">${f.url}</a></div>
+                  </div>
+                </div>`;
+              $thumbs.insertAdjacentHTML("beforeend", html);
+            });
+          } else {
+            $res.innerHTML = `<p style="color:#b91c1c">エラー: ${data.message || "unknown"}</p>`;
+          }
+        } else {
+          try {
+            const err = JSON.parse(xhr.responseText);
+            $res.innerHTML = `<p style="color:#b91c1c">エラー: ${err.message || "Upload failed"}</p>`;
+          } catch {
+            $res.innerHTML = `<p style="color:#b91c1c">アップロードに失敗しました（${xhr.status}）</p>`;
+          }
+        }
+        setTimeout(resetProgress, 800);
+      };
+
+      xhr.onerror = () => {
+        $send.disabled = false;
+        $res.innerHTML = `<p style="color:#b91c1c">ネットワークエラー</p>`;
+        resetProgress();
+      };
+
+      xhr.send(fd);
+    });
+  </script>
+</body>
+</html>

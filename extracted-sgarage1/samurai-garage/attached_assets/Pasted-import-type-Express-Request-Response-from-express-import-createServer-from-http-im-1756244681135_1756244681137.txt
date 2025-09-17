@@ -1,0 +1,107 @@
+import type { Express, Request, Response } from "express";
+import { createServer } from "http";
+import path from "path";
+import fs from "fs/promises";
+
+// Node 18+ はグローバル fetch 利用可（node-fetch不要）
+type Category = "car" | "motorcycle";
+
+const ASSETS_DIR = path.resolve(import.meta.dirname, "..", "attached_assets");
+const INDEX_FILE = path.join(ASSETS_DIR, "vehicle-index.json");
+
+type IndexShape = Partial<Record<Category, Record<string, Record<string, string[]>>>>;
+
+let indexCache: IndexShape | null = null;
+
+async function loadIndex(): Promise<IndexShape> {
+  if (indexCache) return indexCache;
+  try {
+    const txt = await fs.readFile(INDEX_FILE, "utf-8");
+    indexCache = JSON.parse(txt);
+  } catch {
+    indexCache = { car: {}, motorcycle: {} };
+  }
+  return indexCache!;
+}
+
+const makeMap: Record<string, string> = {
+  "トヨタ": "Toyota", "豊田": "Toyota", "toyota": "Toyota", "Toyota": "Toyota",
+  "日産": "Nissan", "nissan": "Nissan", "Nissan": "Nissan",
+  "ホンダ": "Honda", "本田": "Honda", "honda": "Honda", "Honda": "Honda",
+  "三菱": "Mitsubishi", "mitsubishi": "Mitsubishi",
+  "マツダ": "Mazda", "mazda": "Mazda",
+  "スズキ": "Suzuki", "suzuki": "Suzuki",
+  "スバル": "Subaru", "subaru": "Subaru",
+  "ダイハツ": "Daihatsu",
+  "いすゞ": "Isuzu", "isuzu": "Isuzu",
+  "ヤマハ": "Yamaha", "yamaha": "Yamaha",
+  "カワサキ": "Kawasaki", "kawasaki": "Kawasaki",
+  "ハーレー": "Harley-Davidson", "ビューエル": "Buell",
+};
+function normalizeMake(raw: string) {
+  return makeMap[raw] || raw.replace(/\s+/g, " ").trim();
+}
+
+function yearsRange(min=1900, max=2000) {
+  const arr:number[] = [];
+  for (let y=max; y>=min; y--) arr.push(y);
+  return arr;
+}
+
+async function fetchVPICModels(make: string, year: number, category: Category) {
+  // vPIC: 米運輸省 API（年式×メーカーでモデル一覧）
+  const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/${encodeURIComponent(make)}/modelyear/${year}?format=json`;
+  const r = await fetch(url);
+  const data:any = await r.json();
+  let models:string[] = (data?.Results || []).map((it:any)=> it.Model_Name).filter(Boolean);
+  if (category === "motorcycle") {
+    models = (data?.Results || [])
+      .filter((it:any)=> String(it.VehicleTypeName||"").toLowerCase().includes("motorcycle"))
+      .map((it:any)=> it.Model_Name);
+  }
+  return Array.from(new Set(models)).sort();
+}
+
+export async function registerRoutes(app: Express) {
+  const server = createServer(app);
+
+  // 年式：1900〜2000降順（UI仕様に合わせる）
+  app.get("/api/vehicle/years", (_req:Request, res:Response) => {
+    res.json({ years: yearsRange(1900, 2000) });
+  });
+
+  // メーカー一覧（インデックス + フォールバック）
+  app.get("/api/vehicle/makes", async (req:Request, res:Response) => {
+    const category = (String(req.query.category||"car").toLowerCase() as Category);
+    const idx = await loadIndex();
+    const fromIndex = Object.keys(idx[category] || {});
+    const fallback = category==="car"
+      ? ["Toyota","Nissan","Honda","Mazda","Mitsubishi","Subaru","Daihatsu","Isuzu","BMW","Mercedes-Benz","Volkswagen","Porsche","Ferrari","Lamborghini","Ford","Chevrolet","Peugeot","Citroën","Renault","Volvo","Saab","Alfa Romeo","Fiat","Audi"]
+      : ["Honda","Yamaha","Kawasaki","Suzuki","Ducati","Harley-Davidson","BMW","Triumph","KTM","Husqvarna","Aprilia","Moto Guzzi","Buell"];
+    const makes = Array.from(new Set([...fromIndex, ...fallback])).sort();
+    res.json({ makes });
+  });
+
+  // モデル一覧（インデックス → 無ければ vPIC フォールバック）
+  app.get("/api/vehicle/models", async (req:Request, res:Response) => {
+    const category = (String(req.query.category||"car").toLowerCase() as Category);
+    const year = parseInt(String(req.query.year||"0"),10);
+    const make = normalizeMake(String(req.query.make||""));
+    if (!make || !year) return res.status(400).json({ models: [], message: "make/year required" });
+
+    const idx = await loadIndex();
+    const fromIndex = idx?.[category]?.[make]?.[String(year)] || [];
+    let models = fromIndex;
+
+    if (!models.length) {
+      try { models = await fetchVPICModels(make, year, category); } catch {}
+    }
+
+    res.json({ models });
+  });
+
+  // health
+  app.get("/api/health", (_req, res)=> res.json({ ok: true }));
+
+  return server;
+}

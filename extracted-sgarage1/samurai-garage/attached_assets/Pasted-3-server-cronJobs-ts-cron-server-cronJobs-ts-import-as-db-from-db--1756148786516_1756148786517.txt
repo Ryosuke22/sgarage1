@@ -1,0 +1,73 @@
+3) 追記: server/cronJobs.ts
+
+既に cron がある場合は統合してください。
+
+// server/cronJobs.ts
+import * as db from "./db";
+import { auctionBus } from "./realtime";
+
+function minIncrement(current: number): number {
+  if (current < 1_000_000) return 10_000;
+  if (current < 5_000_000) return 25_000;
+  return 50_000;
+}
+
+// 終了5分前の AutoBid を発火
+export async function fireDueAutoBids() {
+  const now = Date.now();
+  const offsetMs = (Number(process.env.AUTOBID_FIRE_OFFSET_SEC) || 300) * 1000;
+
+  const due = await db.findDueAutoBids({ withinMs: offsetMs }); // ← あなたの実装名に合わせる
+  for (const ab of due) {
+    try {
+      const listing = await db.getListingForUpdate(ab.listingId);
+      if (!listing || listing.status !== "published") { await db.markAutoBidExpired(ab.id); continue; }
+
+      const last = await db.getLastBid(ab.listingId);
+      const current = last?.amount ?? listing.startingPrice;
+      const need = current + minIncrement(current);
+      if (need > ab.maxAmount) { await db.markAutoBidExpired(ab.id); continue; }
+
+      const bid = await db.createBid({ listingId: ab.listingId, userId: ab.userId, amount: need });
+
+      const windowMs  = (Number(process.env.SOFT_CLOSE_WINDOW_SEC)  || 600) * 1000;
+      const extendBy  = (Number(process.env.SOFT_CLOSE_EXTEND_BY_SEC)|| 600) * 1000;
+      const maxExt    =  Number(process.env.SOFT_CLOSE_MAX_EXTENSIONS) || 12;
+
+      let newEndsAt = listing.endsAt;
+      if (new Date(listing.endsAt).getTime() - now <= windowMs && (listing.extensionsUsed ?? 0) < maxExt) {
+        const nextEnds = new Date(now + extendBy).toISOString();
+        await db.extendListing(ab.listingId, nextEnds, (listing.extensionsUsed ?? 0) + 1);
+        newEndsAt = nextEnds;
+        auctionBus.emit("listing:extended", { listingId: ab.listingId, endsAt: newEndsAt });
+      }
+
+      await db.markAutoBidExecuted(ab.id);
+      auctionBus.emit("bid:created", { listingId: ab.listingId, bid: { id: bid.id, amount: need, userId: ab.userId }, endsAt: newEndsAt });
+    } catch (e) {
+      console.error("autobid fire failed", ab.id, e);
+      await db.markAutoBidExpired(ab.id);
+    }
+  }
+}
+
+// 終了確定（sold/unsold）
+export async function settleExpiredAuctions() {
+  const list = await db.findExpiredLiveListings(); // endsAt < now && status='published'
+  for (const l of list) {
+    try {
+      const top = await db.getLastBid(l.id);
+      const reached = top && (l.reservePrice == null || top.amount >= l.reservePrice);
+      const outcome = reached ? "sold" : "unsold";
+      await db.settleListing(l.id, "ended", outcome, top?.userId ?? null);
+    } catch (e) {
+      console.error("settle failed", l.id, e);
+    }
+  }
+}
+
+// まとめて呼ぶ
+export async function runCronTick() {
+  await fireDueAutoBids();
+  await settleExpiredAuctions();
+}

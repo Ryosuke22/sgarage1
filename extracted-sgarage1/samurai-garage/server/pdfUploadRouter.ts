@@ -1,0 +1,100 @@
+// server/pdfUploadRouter.ts
+import express from "express";
+import multer from "multer";
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
+import { Storage } from "@google-cloud/storage";
+
+const tmpDir = path.join(process.cwd(), "tmp_uploads");
+fs.mkdirSync(tmpDir, { recursive: true });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _f, cb) => cb(null, tmpDir),
+    filename: (_req, f, cb) => cb(null, Date.now() + "-" + f.originalname),
+  }),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 必要に調整
+  fileFilter: (_req, f, cb) => {
+    console.log(`PDF upload filter: filename="${f.originalname}", mimetype="${f.mimetype}"`);
+    
+    // Accept common PDF MIME types + fallbacks
+    const pdfMimeTypes = [
+      "application/pdf",
+      "application/octet-stream", 
+      "application/x-pdf",
+      "text/pdf",
+      "application/download"
+    ];
+    
+    const okMime = pdfMimeTypes.includes(f.mimetype);
+    const okExt = /\.pdf$/i.test(f.originalname);
+    
+    console.log(`PDF filter check: okMime=${okMime}, okExt=${okExt}, mimetype=${f.mimetype}`);
+    
+    // Accept if it has .pdf extension (prioritize extension over MIME type)
+    if (okExt) {
+      cb(null, true);
+    } else {
+      cb(new Error(`only PDF files allowed - got mimetype: ${f.mimetype}, filename: ${f.originalname}`));
+    }
+  },
+});
+
+function getStorage() {
+  const { GCP_PROJECT_ID, GCS_BUCKET, GCP_SERVICE_ACCOUNT_JSON } = process.env;
+  if (!GCP_PROJECT_ID || !GCS_BUCKET) throw new Error("Missing env: GCP_PROJECT_ID or GCS_BUCKET");
+  let credentials: any | undefined = undefined;
+  if (GCP_SERVICE_ACCOUNT_JSON) {
+    credentials = JSON.parse(GCP_SERVICE_ACCOUNT_JSON);
+    if (credentials?.private_key?.includes("\\n")) {
+      credentials.private_key = credentials.private_key.replace(/\\n/g, "\n");
+    }
+  }
+  const storage = new Storage({ projectId: GCP_PROJECT_ID, credentials });
+  return { storage, bucket: storage.bucket(GCS_BUCKET) };
+}
+
+export const pdfUploadRouter = express.Router();
+
+pdfUploadRouter.get("/_upload-doc-ping", (_req, res) => res.json({ ok: true }));
+
+pdfUploadRouter.post("/upload-doc", (req, res, next) => {
+  upload.single("file")(req, res, (err: any) => {
+    if (err) {
+      console.error("multer error:", err?.message || err);
+      return res.status(400).json({ ok: false, message: err?.message || "upload parse failed" });
+    }
+    next();
+  });
+}, async (req, res) => {
+  if (!req.file) return res.status(400).json({ ok:false, message:"file required (field name must be 'file')" });
+  const original = req.file.originalname.replace(/"/g, "");
+  const objectName = `doc/${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.pdf`;
+
+  try {
+    const { bucket } = getStorage();
+    const gcsFile = bucket.file(objectName);
+
+    await new Promise<void>((resolve, reject) => {
+      fs.createReadStream(req.file!.path)
+        .pipe(gcsFile.createWriteStream({
+          resumable: true,
+          contentType: "application/pdf",
+          metadata: { contentDisposition: `inline; filename="${original}"` },
+        }))
+        .on("error", reject)
+        .on("finish", resolve);
+    });
+    fs.unlink(req.file.path, () => {});
+
+    const [readUrl] = await gcsFile.getSignedUrl({
+      version: "v4", action: "read", expires: Date.now() + 10 * 60 * 1000,
+    });
+    res.json({ ok: true, objectName, readUrl });
+  } catch (e: any) {
+    console.error("gcs save error:", e?.message || e);
+    fs.unlink(req.file.path, () => {});
+    res.status(500).json({ ok:false, message: e?.message || "upload failed" });
+  }
+});

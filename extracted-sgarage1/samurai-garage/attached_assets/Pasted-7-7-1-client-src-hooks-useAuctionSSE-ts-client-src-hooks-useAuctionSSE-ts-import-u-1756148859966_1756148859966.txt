@@ -1,0 +1,93 @@
+7) フロント差分
+7-1) 新規: client/src/hooks/useAuctionSSE.ts
+// client/src/hooks/useAuctionSSE.ts
+import { useEffect } from "react";
+
+export function useAuctionSSE(listingId: string, handlers: {
+  onBid?: (p:any)=>void;
+  onExtended?: (p:any)=>void;
+}) {
+  useEffect(() => {
+    if (!listingId) return;
+    const es = new EventSource(`/api/stream/auction/${listingId}`, { withCredentials: true } as any);
+    const onBid = (e: MessageEvent) => handlers.onBid?.(JSON.parse(e.data));
+    const onExt = (e: MessageEvent) => handlers.onExtended?.(JSON.parse(e.data));
+    es.addEventListener("bid", onBid as any);
+    es.addEventListener("extended", onExt as any);
+    return () => es.close();
+  }, [listingId]);
+}
+
+7-2) AuctionCard.tsx（上限予約ボタンを追加）
+
+shadcn のモーダル/Dialog を使っている場合はそのまま差し替えてください。
+
+// AuctionCard.tsx（入札ボタン付近に追記）
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export function AutoBidButton({ listingId }: { listingId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [max, setMax] = useState<number>(500000);
+
+  const createAutoBid = useMutation({
+    mutationFn: async () => {
+      const r = await fetch("/api/autobids", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ listingId, maxAmount: max })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    },
+    onSuccess: () => {
+      setOpen(false);
+      // 進行中一覧の軽い更新
+      qc.invalidateQueries({ queryKey: ["listings", "published"] });
+    }
+  });
+
+  return (
+    <>
+      <Button size="sm" onClick={() => setOpen(true)}>自動入札（上限予約）</Button>
+      {open && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-slate-800 p-4 rounded w-[360px]">
+            <h3 className="text-white font-semibold mb-2">終了5分前に自動入札</h3>
+            <p className="text-xs text-gray-400 mb-2">現在価格に応じて「勝てる最小額」で上限まで自動入札します。延長された場合も「終了5分前」に追従。</p>
+            <Input type="number" value={max} onChange={(e)=>setMax(parseInt(e.target.value||"0",10))} className="mb-3"/>
+            <div className="flex gap-2 justify-end">
+              <Button onClick={()=>createAutoBid.mutate()} disabled={createAutoBid.isPending}>予約する</Button>
+              <Button variant="outline" onClick={()=>setOpen(false)}>閉じる</Button>
+            </div>
+            {createAutoBid.isError && <div className="text-red-400 text-sm mt-2">{(createAutoBid.error as Error).message}</div>}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+
+AuctionCard の JSX 内で
+<AutoBidButton listingId={listing.id} /> を設置。
+
+7-3) 詳細ページで SSE を購読（例）
+// ListingDetail.tsx（概略）
+import { useAuctionSSE } from "@/hooks/useAuctionSSE";
+
+export default function ListingDetail({ listing }: { listing: any }) {
+  const [endsAt, setEndsAt] = useState(listing.endsAt);
+  const [bids, setBids] = useState(listing.bids ?? []);
+
+  useAuctionSSE(listing.id, {
+    onBid: (p) => { setBids((x:any)=>[p.bid, ...x]); setEndsAt(p.endsAt); },
+    onExtended: (p) => setEndsAt(p.endsAt),
+  });
+
+  // ... 価格/残り時間の表示・入札フォーム等
+}

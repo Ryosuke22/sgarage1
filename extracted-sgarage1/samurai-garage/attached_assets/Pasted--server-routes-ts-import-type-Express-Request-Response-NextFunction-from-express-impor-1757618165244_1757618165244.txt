@@ -1,0 +1,65 @@
+// server/routes.ts
+import type { Express, Request, Response, NextFunction } from "express";
+import { createServer } from "node:http";
+import { Storage } from "@google-cloud/storage";
+import crypto from "node:crypto";
+
+const storage = new Storage({
+  projectId: process.env.GCP_PROJECT_ID,
+  credentials: process.env.GCP_SERVICE_ACCOUNT_JSON
+    ? JSON.parse(process.env.GCP_SERVICE_ACCOUNT_JSON)
+    : undefined,
+});
+const bucketName = process.env.GCS_BUCKET!;
+const allowExt = new Set(["pdf", "jpg", "jpeg", "png", "webp"]);
+
+export async function registerRoutes(app: Express) {
+  // 既存のヘルスチェック
+  app.get("/health", (_req, res) =>
+    res.json({ ok: true, ts: Date.now() })
+  );
+
+  // 署名付きURLを発行（PUT 直アップロード）
+  app.post("/api/uploads/create-url", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { ext, contentType, kind = "doc" } = req.body ?? {};
+      if (!ext || !allowExt.has(String(ext).toLowerCase())) {
+        return res.status(400).json({ message: "ext must be: " + Array.from(allowExt).join(", ") });
+      }
+      if (!contentType) {
+        return res.status(400).json({ message: "contentType is required" });
+      }
+
+      const id = crypto.randomUUID();
+      const objectName = `${kind}/${new Date().toISOString().slice(0,10)}/${id}.${ext}`;
+      const file = storage.bucket(bucketName).file(objectName);
+
+      const [url] = await file.getSignedUrl({
+        version: "v4",
+        action: "write",
+        // 有効期限 5分
+        expires: Date.now() + 5 * 60 * 1000,
+        contentType,
+      });
+
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${objectName}`;
+      res.json({ url, objectName, publicUrl });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // アップロード後の存在確認（任意）
+  app.get("/api/uploads/exists", async (req, res, next) => {
+    try {
+      const name = String(req.query.name ?? "");
+      if (!name) return res.status(400).json({ message: "name query is required" });
+      const [exists] = await storage.bucket(bucketName).file(name).exists();
+      res.json({ exists });
+    } catch (e) { next(e); }
+  });
+
+  // 既存の戻り値に合わせて http.Server を返す
+  const server = createServer(app);
+  return server;
+}

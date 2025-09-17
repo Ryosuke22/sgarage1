@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Test</title>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    <button id="loginBtn">Login</button>
+    <button id="checkBtn">Check Auth Status</button>
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('loginBtn').onclick = function() {
+            window.location.href = '/api/auth/login';
+        }
+        
+        document.getElementById('checkBtn').onclick = async function() {
+            try {
+                const response = await fetch('/api/auth/user');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

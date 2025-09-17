@@ -1,0 +1,54 @@
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+// import { Search } from "lucide-react"  // アイコンを使うなら
+
+export function DashboardToolbar() {
+  return (
+    <div className="container mx-auto max-w-screen-2xl px-3 md:px-6">
+      {/* スマホ: 縦1列 / PC: 12カラムで左右に分割して右側も使う */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-12 md:items-center">
+
+        {/* 検索窓（左） */}
+        <div className="order-1 md:order-1 md:col-span-6">
+          <div className="flex items-center gap-2">
+            {/* <Search className="size-4 shrink-0" /> */}
+            <Input
+              placeholder="検索（車名・年式・出品番号など）"
+              className="w-full md:max-w-xl"
+            />
+          </div>
+        </div>
+
+        {/* ボタン群（右）。PCでは右寄せ＆折り返し対応 */}
+        <div className="order-3 md:order-2 md:col-span-6 md:justify-self-end">
+          <div className="flex flex-wrap gap-2 md:justify-end">
+            <Button variant="secondary">落札結果</Button>
+            <Button variant="ghost">出品予定</Button>
+            <Button>新規登録</Button>
+          </div>
+        </div>
+
+        {/* タブ（下段フル幅）。“左に固まる”を解消し、PCでは幅いっぱい使う */}
+        <div className="order-2 md:order-3 md:col-span-12">
+          <Tabs defaultValue="all">
+            {/* shadcn の TabsList はデフォで inline-flex なので上書きして w-full に */}
+            <TabsList
+              className="
+                flex w-full flex-wrap gap-2
+                md:flex-nowrap md:justify-between
+              "
+            >
+              {/* PCでは詰まり防止、モバイルでは適度に伸縮する */}
+              <TabsTrigger value="all"  className="flex-1 md:flex-none">すべて</TabsTrigger>
+              <TabsTrigger value="bid"  className="flex-1 md:flex-none">入札中</TabsTrigger>
+              <TabsTrigger value="won"  className="flex-1 md:flex-none">落札</TabsTrigger>
+              <TabsTrigger value="lost" className="flex-1 md:flex-none">未落札</TabsTrigger>
+              {/* 追加のタブがあるなら同様に */}
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
+    </div>
+  )
+}

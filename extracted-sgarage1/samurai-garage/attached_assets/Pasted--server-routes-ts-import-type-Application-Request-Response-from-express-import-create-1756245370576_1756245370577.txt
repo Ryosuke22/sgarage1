@@ -1,0 +1,94 @@
+// server/routes.ts
+import type { Application, Request, Response } from "express";
+import { createServer } from "node:http";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+type Category = "car" | "motorcycle";
+const cache = new Map<string, string[]>();
+
+async function readJsonIfExists(...segments: string[]) {
+  try {
+    const p = path.resolve(process.cwd(), ...segments);
+    const data = await fs.readFile(p, "utf-8");
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+const uniqSort = (arr: string[]) =>
+  Array.from(new Set(arr)).filter(Boolean).sort((a, b) => a.localeCompare(b));
+
+async function fetchModelsFromVPIC(make: string, year: number, category: Category) {
+  const base = "https://vpic.nhtsa.dot.gov/api/vehicles";
+  const url =
+    category === "motorcycle"
+      ? `${base}/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}/vehicletype/motorcycle?format=json`
+      : `${base}/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}?format=json`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`vPIC error ${res.status}`);
+  const j = await res.json();
+  return uniqSort(
+    (j?.Results ?? [])
+      .map((r: any) => (r.Model_Name || r.ModelName || r.Model || "").trim())
+  );
+}
+
+export async function registerRoutes(app: Application) {
+  // ヘルスチェック
+  app.get("/api/health", (_req, res) => res.json({ ok: true }));
+
+  // メーカー一覧（assets優先・無ければ最低限のフォールバック）
+  app.get("/api/vehicle/makes", async (req: Request, res: Response) => {
+    const category = String(req.query.category || "car").toLowerCase() as Category;
+
+    const asset = await readJsonIfExists("attached_assets", "makes.json");
+    if (asset && Array.isArray(asset[category])) {
+      return res.json({ makes: uniqSort(asset[category]) });
+    }
+
+    const fallback =
+      category === "motorcycle"
+        ? ["Honda", "Yamaha", "Kawasaki", "Suzuki", "Harley-Davidson", "Ducati", "BMW", "Triumph"]
+        : ["Toyota", "Nissan", "Honda", "Mazda", "Subaru", "Mitsubishi", "Suzuki", "Daihatsu",
+           "Lexus", "Isuzu", "BMW", "Mercedes-Benz", "Audi", "Volkswagen", "Porsche",
+           "Ford", "Chevrolet", "Jeep", "Peugeot", "Renault", "Fiat", "Alfa Romeo", "Volvo"];
+    res.json({ makes: uniqSort(fallback) });
+  });
+
+  // モデル一覧（assets→vPICフォールバック）
+  app.get("/api/vehicle/models", async (req: Request, res: Response) => {
+    const make = String(req.query.make || "").trim();
+    const year = Number(req.query.year);
+    const category = String(req.query.category || "car").toLowerCase() as Category;
+    if (!make || !year) return res.status(400).json({ message: "make と year は必須です" });
+
+    const key = `${category}:${make}:${year}`;
+    if (cache.has(key)) return res.json({ models: cache.get(key) });
+
+    // 1) assets に index があれば優先
+    const idx = await readJsonIfExists("attached_assets", "vehicle-index.json");
+    const fromIndex =
+      idx?.[category]?.[make]?.[year] && Array.isArray(idx[category][make][year])
+        ? uniqSort(idx[category][make][year])
+        : null;
+    if (fromIndex) {
+      cache.set(key, fromIndex);
+      return res.json({ models: fromIndex });
+    }
+
+    // 2) vPIC フォールバック
+    try {
+      const models = await fetchModelsFromVPIC(make, year, category);
+      cache.set(key, models);
+      return res.json({ models });
+    } catch (e: any) {
+      return res.status(502).json({ message: `外部参照に失敗: ${e?.message ?? e}` });
+    }
+  });
+
+  // index.ts が HTTP Server を受け取る想定なので返す
+  const server = createServer(app);
+  return server;
+}

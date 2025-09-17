@@ -1,0 +1,86 @@
+{
+  "car": {
+    "Mitsubishi": {
+      "0-1949": [
+        "PX33 (prototype 4WD, 1930s)",
+        "Mizushima (TM three-wheeler trucks)"
+      ],
+      "1950-1959": [
+        "Jeep (J3/J53, license-built CJ-3B)",
+        "Mizushima (TM series three-wheeler trucks)"
+      ],
+      "1960s": [
+        "500",
+        "360 (light van/pickup)",
+        "Minica",
+        "Colt 600",
+        "Colt 1000",
+        "Colt 1100",
+        "Colt 1500",
+        "Colt 1200",
+        "Debonair",
+        "Minicab",
+        "Delica (L100/L300)",
+        "Rosa (minibus)",
+        "Canter (light truck)",
+        "Colt Galant"
+      ],
+      "1970s": [
+        "Galant",
+        "Galant GTO",
+        "Galant FTO",
+        "Galant Λ (Lambda)/Sapporo",
+        "Lancer",
+        "Lancer Celeste",
+        "Mirage (Colt)",
+        "L200 (Forte/Triton)",
+        "Delica",
+        "Minica",
+        "Minicab",
+        "Debonair",
+        "Rosa",
+        "Canter"
+      ],
+      "1980s": [
+        "Tredia",
+        "Cordia",
+        "Starion",
+        "Chariot (Space Wagon/Nimbus/Expo)",
+        "Pajero (Montero/Shogun)",
+        "Lancer",
+        "Mirage",
+        "Galant",
+        "Eterna (Eterna Σ/Eterna Sava)",
+        "Sigma (Galant Σ)",
+        "Delica (Star Wagon)",
+        "L200 (2nd gen)",
+        "Minica",
+        "Minicab",
+        "Debonair V",
+        "Jeep (J3/J53)"
+      ],
+      "1990-1995": [
+        "Eclipse",
+        "GTO (3000GT/Dodge Stealth)",
+        "FTO (1994)",
+        "Lancer Evolution (I–III)",
+        "Pajero Mini (1994)",
+        "Pajero Junior (1995)",
+        "RVR (Space Runner)",
+        "Chariot (2nd gen)",
+        "Delica Space Gear (L400)",
+        "Galant (7th gen)",
+        "Eterna (late)",
+        "Diamante (including Sigma sedan/wagon)",
+        "Carisma (1995, Europe)",
+        "Libero (Mirage/Lancer wagon)",
+        "Minica Toppo",
+        "Bravo (Minicab Bravo)",
+        "Minicab (U40 series)",
+        "L200/Strada (2nd gen; 3rd gen 1995)",
+        "Rosa",
+        "Canter"
+      ]
+    }
+  }
+}

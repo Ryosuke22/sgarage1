@@ -1,0 +1,139 @@
+あなたはシニアフルスタックエンジニア兼プロダクトマネージャーです。Bring a Trailer（BaT）風のクラシック車/バイク向けオークションサイトの**MVP**を、ここReplit上に最短で実装・起動してください。要件は以下の通り。質問せずに実装→起動まで自走し、最後に実行手順を明示してください。
+
+# 目的
+日本語UIを既定とする、クラシック車・オートバイ向けの審査制オークションMVP。出品→審査→公開→入札→ソフトクローズ→落札まで一連を通せること。
+
+# 技術スタック（固定）
+- フロント/SSR: Next.js 14（App Router, TypeScript, React Server Components）
+- スタイル: Tailwind CSS + shadcn/ui（最低限のUIでOK）
+- DB/ORM: PostgreSQL + Prisma（開発は一時的にSQLiteでも可／本番はPostgres）
+- 認証: NextAuth（Email/PasswordのCredentials Provider。メール送信はダミー/コンソールで可）
+- リアルタイム: SSE（Server-Sent Events）で入札更新をプッシュ（外部Pusher等は使わない）
+- 画像アップロード: 開発はローカル保存、.envでS3互換（Cloudflare R2等）に切替可能な抽象化
+- ジョブ/スケジュール: node-cronで1分毎の落札処理チェック
+- パッケージ管理: pnpm
+- Lint/Format/Test: ESLint + Prettier + Vitest（最低限でOK）
+- Replit向け: Node 20系、pnpm、Prisma入るよう`replit.nix`を用意
+
+# 主要機能（MVP範囲）
+1) アカウント/認証
+   - サインアップ/ログイン/ログアウト
+   - Roles: user, admin（adminは審査・強制終了・削除が可能）
+
+2) 出品（Listing）
+   - 必須: タイトル、説明、カテゴリ（car/motorcycle）、メーカー、モデル、年式、走行距離、所在地（テキスト）、開始価格、リザーブ価格（NULL可）、開始/終了日時、画像複数
+   - ステータス: draft → submitted → approved → published → ended（sold/unsold）
+   - 一覧: / （公開中オークションのカード一覧、終了間近ソートも）
+   - 詳細: /listing/[slug]（ギャラリー、仕様、現在価格、入札履歴、残り時間、コメント、ウォッチ）
+
+3) 入札（Bid）
+   - ルール: 
+     - 現在価格 + 最低入札刻み 以上でのみ入札可
+     - 入札刻みはテーブル/設定で管理（例：〜¥50万: ¥1万、〜¥200万: ¥2万、超は¥5万 など）
+     - リザーブ未達なら「Reserve not met」表示
+   - 競合制御:
+     - Prismaトランザクション + Postgresアドバイザリロック or `SELECT ... FOR UPDATE`で原子的に検証・更新
+   - ソフトクローズ:
+     - 環境変数 `SOFT_CLOSE_WINDOW_SEC`（例:120）以内の入札で終了時刻をその分延長
+     - `SOFT_CLOSE_MAX_EXTENSIONS` 回数上限（例:10）
+
+4) コメント/ウォッチ
+   - ログインユーザーはコメント可能（禁止語簡易フィルタ）
+   - ウォッチリスト追加/解除
+
+5) 管理（/admin）
+   - 出品一覧（submittedの承認/却下、approvedの公開、公開中の強制終了、削除）
+   - ユーザー一覧、コメントのモデレーション
+   - 簡易ダッシュボード（公開数、入札数、成約率）
+
+6) 自動落札処理（ジョブ）
+   - 1分毎に終了時刻を越えた公開中オークションをチェック
+   - 最高入札者がいてリザーブ達成→ sold、未達→ unsold に遷移
+   - 状態遷移は冪等（同じものを何度処理しても結果が壊れない）
+
+7) SEO/公開情報
+   - OG/Twitter Card, JSON-LD（`Vehicle`/`Product` + `Offer`/`Auction`）
+   - /sitemap.xml /robots.txt
+   - i18nは日本語を既定、最低限の英語キーだけ用意
+
+8) 非機能
+   - 入力バリデーション（zod）
+   - Rate limit（入札・コメントに簡易レート制限）
+   - 監査: 重要イベント（承認/公開/終了/削除/入札）をAuditLogに保存
+   - .env.example を用意
+
+# データモデル（Prisma 概要）
+- User(id, name, email, role, createdAt)
+- Listing(id, slug, title, description, category, make, model, year, mileage, locationText, reservePrice, startingPrice, currentPrice, startAt, endAt, status, sellerId, createdAt, updatedAt)
+- Photo(id, listingId, url, sortOrder)
+- Bid(id, listingId, bidderId, amount, createdAt)
+- Comment(id, listingId, authorId, body, createdAt, isHidden)
+- Watch(id, listingId, userId, createdAt)
+- AuditLog(id, actorId, action, entity, entityId, metaJson, createdAt)
+- Setting(id, key, valueJson) // 入札刻み等
+- Session/Verification等（NextAuth必要分）
+
+# ページ/エンドポイント
+- `/` 公開中一覧（終了間近→新着のソートタブ）
+- `/listing/new` 出品フォーム（ドラフト保存→申請）
+- `/listing/[slug]` 詳細・入札UI・コメント・ウォッチ
+- `/admin` 管理（審査・公開・終了・削除）
+- API:
+  - `POST /api/bid`（入札）: body={listingId, amount}
+  - `GET /api/stream/auction/[id]`（SSE）: 入札/残時間の即時反映
+  - `POST /api/admin/listing/[id]/approve|publish|end|delete`
+  - `GET /api/cron/close-expired`（内部ジョブから呼ぶ、またはcron起動）
+
+# ソフトクローズ仕様（厳守）
+- 環境変数:
+  - `SOFT_CLOSE_WINDOW_SEC=120`
+  - `SOFT_CLOSE_MAX_EXTENSIONS=10`
+- 例: 残り90秒で入札→終了時刻を+120秒。以後制限回数まで同様。
+- トランザクション内で最新endAtを再読込して延長の競合に強くする。
+
+# UI要件（最低限）
+- shadcn/uiでカード/モーダル/フォーム/トースト
+- リスト/詳細ともスマホ幅で崩れない
+- テーブル表示の列は縮小時に折返し
+
+# Replit向けセットアップ
+- `replit.nix` で nodejs-20_x, pnpm, openssl, python, pkg-config を導入
+- `package.json` scripts:
+  - dev: next dev
+  - build: next build
+  - start: next start
+  - prisma:generate / prisma:migrate / prisma:seed
+- `.env.example`:
+  - DATABASE_URL=（開発はfile:./dev.dbでも可。本番はNeon等PostgresのURL）
+  - NEXTAUTH_SECRET=...
+  - NEXTAUTH_URL=http://localhost:3000
+  - STORAGE_DRIVER=local|s3
+  - S3_ACCESS_KEY=..., S3_SECRET_KEY=..., S3_ENDPOINT=..., S3_BUCKET=...
+  - SOFT_CLOSE_WINDOW_SEC=120
+  - SOFT_CLOSE_MAX_EXTENSIONS=10
+- Prisma: 初回はSQLiteでseed→動作確認後、`DATABASE_URL`をPostgresに差替え、`prisma migrate deploy`
+
+# 受け入れテスト（セルフチェック）
+- [ ] 新規ユーザー作成/ログインができる
+- [ ] 出品ドラフト→申請→管理画面で承認→公開できる
+- [ ] 画像を複数添付して保存/表示できる
+- [ ] 入札刻みを満たさない金額は弾かれる
+- [ ] リザーブ未達は「Reserve not met」表示のまま終了→unsold
+- [ ] 終了直前の入札で終了時刻が延長される（SSEで反映）
+- [ ] ジョブが終了時刻越えの公開中出品をsold/unsoldに確定させる
+- [ ] /sitemap.xml と JSON-LD が生成される
+- [ ] /admin から強制終了/削除が行える
+- [ ] Rate limitにより連打入札/スパムコメントが抑制される
+
+# 仕上げ
+1) 実装後、Replitのシェルで自動実行するコマンドを順に出力:
+   - pnpm i
+   - pnpm prisma:generate
+   - pnpm prisma:migrate dev --name init
+   - pnpm prisma:seed
+   - pnpm dev
+2) ログイン用のダミーアカウントを seed に含める（admin / user）
+3) 「起動URL」「ログインID/パス」「テスト手順」をREADMEに記載
+4) 完成物のディレクトリ構成（主要ファイル）をREADMEに掲載
+
+以上をこのReplit上で自動生成・起動してください。途中で詰まる場合は、仮実装やスタブで前進し、MVPが一通り動くことを最優先にしてください。

@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BRAND_NAME — クラシック車・バイクの輸入/輸出</title>
+  <meta name="description" content="クラシック車・バイクの輸入・輸出/販売。検査・通関・輸送までワンストップ。まずは無料相談。">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="BRAND_NAME">
+  <meta property="og:description" content="クラシック車・バイクの輸入・輸出/販売。まずは無料相談。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://example.com"><!-- TODO: 本番URL -->
+  <meta property="og:image" content="https://example.com/og.jpg"><!-- TODO: 画像用意できるまで放置OK -->
+
+  <!-- Favicon（絵文字ベースの軽量アイコン） -->
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><text y=".9em" font-size="96">🏁</text></svg>'>
+
+  <style>
+    /* ================= Design Tokens ================= */
+    :root{
+      --bg:#0b0c0e;           /* 背景（ダーク） */
+      --surface:#111317;      /* 面 */
+      --card:#151821;         /* カード */
+      --line:#242936;         /* 枠線 */
+      --text:#e6e9ef;         /* 文字 */
+      --muted:#9aa3b2;        /* 補助文字 */
+      --brand:#4f8cff;        /* ブランド色（TODO: 好きな色に変更） */
+      --brand-2:#22c55e;      /* アクセント */
+      --radius:16px;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --w:1100px;             /* コンテナ幅 */
+      --gap:clamp(16px,2vw,24px);
+      --space:clamp(24px,4vw,56px);
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f8fb;--surface:#ffffff;--card:#ffffff;--line:#e7ecf2;
+        --text:#0b0c0e;--muted:#61708a;--shadow:0 8px 24px rgba(15,23,42,.08);
+      }
+    }
+    /* ================ Reset / Base =================== */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      color:var(--text); background:var(--bg); line-height:1.6; letter-spacing:.01em;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    }
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    .container{max-width:var(--w);margin:0 auto;padding:0 20px}
+    .section{padding:calc(var(--space)*1.25) 0}
+    .muted{color:var(--muted)}
+    .eyebrow{font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+    .badge{display:inline-block;border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:.85rem;color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .grid{display:grid;gap:var(--gap)}
+    .btn{display:inline-flex;align-items:center;gap:.6em;padding:12px 18px;border-radius:12px;border:1px solid transparent;font-weight:600;cursor:pointer;transition:.2s}
+    .btn:focus-visible{outline:3px solid color-mix(in oklab,var(--brand),white 60%)}
+    .btn-primary{background:var(--brand);color:white}
+    .btn-primary:hover{filter:brightness(1.05)}
+    .btn-ghost{background:transparent;border-color:var(--line);color:var(--text)}
+    .btn-ghost:hover{background:rgba(255,255,255,.04)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    /* ================= Header ======================= */
+    header{position:sticky;top:0;z-index:40;background:color-mix(in oklab,var(--bg),transparent 6%);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid var(--line)}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:10px;height:64px}
+    .brand{display:flex;align-items:center;gap:.8rem;font-weight:800}
+    .brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+    .nav-list{display:flex;gap:18px;align-items:center}
+    .nav-list a{padding:8px 10px;border-radius:8px;color:var(--muted)}
+    .nav-list a:hover{background:rgba(255,255,255,.06);color:var(--text)}
+    .nav-actions{display:flex;gap:10px;align-items:center}
+    .nav-toggle{display:none}
+    @media (max-width:860px){
+      .nav-list{display:none}
+      .nav-toggle{display:inline-flex}
+      .drawer{display:none;position:fixed;inset:64px 0 0;background:var(--surface);border-top:1px solid var(--line);padding:16px}
+      .drawer.open{display:block}
+      .drawer a{display:block;padding:14px 10px;border-radius:10px;color:var(--muted)}
+      .drawer a:hover{background:rgba(255,255,255,.05);color:var(--text)}
+    }
+    /* ================= Hero ========================= */
+    .hero{position:relative;isolation:isolate;padding:clamp(56px,10vw,120px) 0}
+    .hero::before{
+      content:"";position:absolute;inset:-10% -5% auto -5%;height:70%;
+      background:
+        radial-gradient(1200px 600px at 20% -20%, color-mix(in oklab,var(--brand),transparent 70%), transparent 60%),
+        radial-gradient(800px 400px at 80% -10%, color-mix(in oklab,var(--brand-2),transparent 75%), transparent 60%);
+      z-index:-1;opacity:.7;filter:blur(10px);
+    }
+    .hero .wrap{display:grid;gap:var(--gap);align-items:center;grid-template-columns:1.15fr .85fr}
+    .hero h1{font-size:clamp(28px,4.5vw,52px);line-height:1.15;margin:10px 0 12px}
+    .hero p.lead{font-size:clamp(16px,2.1vw,20px);color:var(--muted);max-width:48ch}
+    .hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .hero .panel{padding:18px;border-radius:var(--radius);border:1px solid var(--line);background:linear-gradient(180deg, color-mix(in oklab,var(--card),white 3%), color-mix(in oklab,var(--card),black 6%))}
+    @media (max-width:900px){ .hero .wrap{grid-template-columns:1fr} }
+    /* ================= Features ===================== */
+    .feature{padding:20px}
+    .feature h3{margin:.2em 0}
+    .kpis{grid-template-columns:repeat(4,1fr)}
+    @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+    /* ================= Cards / Pricing ============== */
+    .cols-3{grid-template-columns:repeat(3,1fr)}
+    @media (max-width:980px){ .cols-3{grid-template-columns:1fr} }
+    .pricing .price{font-size:32px;font-weight:800}
+    .pricing ul{margin:0;padding-left:1.2em}
+    /* ================= Logos (Trust) ================ */
+    .logo-row{display:flex;gap:24px;flex-wrap:wrap;align-items:center;opacity:.85}
+    .logo{height:28px;width:auto;display:inline-block;filter:grayscale(1) contrast(1.05)}
+    /* ================= FAQ ========================== */
+    details{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface)}
+    details+details{margin-top:12px}
+    summary{cursor:pointer;font-weight:600}
+    /* ================= Footer ======================= */
+    footer{padding:40px 0;border-top:1px solid var(--line);background:color-mix(in oklab,var(--bg),black 6%)}
+    .foot{display:grid;grid-template-columns:2fr 1fr 1fr;gap:var(--gap)}
+    @media (max-width:900px){ .foot{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <!-- ================= Header ================= -->
+  <header>
+    <div class="container nav">
+      <a class="brand" href="#">
+        <span class="logo" aria-hidden="true"></span>
+        <span>BRAND_NAME</span> <!-- TODO: 会社名 -->
+      </a>
+      <nav class="nav-list" aria-label="主要">
+        <a href="#services">サービス</a>
+        <a href="#flow">流れ</a>
+        <a href="#pricing">料金</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">問い合わせ</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="tel:000-0000-0000">お電話</a> <!-- TODO: 電話番号 -->
+        <button class="btn btn-primary nav-toggle" aria-expanded="false" aria-controls="drawer"><span class="sr-only">メニュー</span>メニュー</button>
+      </div>
+    </div>
+    <div id="drawer" class="drawer" role="dialog" aria-label="モバイルメニュー">
+      <div class="container">
+        <a href="#services">サービス</a>
+        <a href="#flow">流れ</a>
+        <a href="#pricing">料金</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">問い合わせ</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= Hero =================== -->
+  <section class="hero">
+    <div class="container wrap">
+      <div>
+        <span class="badge">クラシック車・バイクの輸入/輸出に特化</span>
+        <h1>仕入れから通関・陸送まで、<br>ワンストップでお任せ。</h1>
+        <p class="lead">海外からの仕入れ・25年ルール・排ガス/保安基準・保険・船積み・通関・国内登録まで。<br>専門知識と実績で“売れる状態”に仕上げます。</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#contact">無料相談を予約</a>
+          <a class="btn btn-ghost" href="#services">できることを見る</a>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="grid kpis">
+            <div><div class="eyebrow">年間取り扱い</div><div class="h3" style="font-weight:800;font-size:22px">100台超</div></div>
+            <div><div class="eyebrow">平均通関日数</div><div class="h3" style="font-weight:800;font-size:22px">7–14日</div></div>
+            <div><div class="eyebrow">対応地域</div><div class="h3" style="font-weight:800;font-size:22px">日本・北米</div></div>
+            <div><div class="eyebrow">満足度</div><div class="h3" style="font-weight:800;font-size:22px">4.9/5</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:18px">
+        <div class="eyebrow">対応メーカー例</div>
+        <div class="logo-row" style="margin-top:10px">
+          <!-- ここはSVGロゴ等に差し替え可。いったんテキストの簡易ロゴ -->
+          <span class="logo">Kawasaki</span>
+          <span class="logo">Honda</span>
+          <span class="logo">Suzuki</span>
+          <span class="logo">Yamaha</span>
+          <span class="logo">BMW</span>
+          <span class="logo">Mercedes</span>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="eyebrow">最近の案件例</div>
+          <ul style="margin:8px 0 0 1.2em">
+            <li>’75 Kawasaki Z1：北米→日本／登録サポート込み</li>
+            <li>’94 Honda Civic Shuttle：日本→北米／25年ルール対応</li>
+            <li>BMW E30：レストア前提の仕入れ～通関～国内販売</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Services =================== -->
+  <section id="services" class="section">
+    <div class="container">
+      <h2>サービス</h2>
+      <div class="grid cols-3" style="margin-top:12px">
+        <div class="card feature">
+          <div class="eyebrow">01</div>
+          <h3>仕入れ・査定</h3>
+          <p class="muted">現地相場・走行距離・修復歴・タイトル状況を確認し、買っていい個体だけ選別。</p>
+        </div>
+        <div class="card feature">
+          <div class="eyebrow">02</div>
+          <h3>検査・整備</h3>
+          <p class="muted">動態確認・基本整備・VIN/エンジン番号の照合。必要に応じて現地工場手配。</p>
+        </div>
+        <div class="card feature">
+          <div class="eyebrow">03</div>
+          <h3>通関・輸送</h3>
+          <p class="muted">船積み/航空・保険・通関・国内輸送・登録まで。書類リスクもまとめて管理。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Flow =================== -->
+  <section id="flow" class="section">
+    <div class="container">
+      <h2>進め方</h2>
+      <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
+        <div class="card feature"><div class="eyebrow">Step 1</div><h3>要件ヒアリング</h3><p class="muted">予算・年式・希少度・納期を確認。</p></div>
+        <div class="card feature"><div class="eyebrow">Step 2</div><h3>候補提示</h3><p class="muted">相場・コスト内訳・リスク提示。</p></div>
+        <div class="card feature"><div class="eyebrow">Step 3</div><h3>手配・通関</h3><p class="muted">書類・物流・保険を一括管理。</p></div>
+        <div class="card feature"><div class="eyebrow">Step 4</div><h3>納車・販売</h3><p class="muted">登録/整備後の販売戦略まで支援。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Pricing =================== -->
+  <section id="pricing" class="section pricing">
+    <div class="container">
+      <h2>料金（目安）</h2>
+      <p class="muted">台数・体制・地域で変動。まずは無料相談でお見積りします。</p>
+      <div class="grid cols-3" style="margin-top:12px">
+        <div class="card feature">
+          <h3>ライト</h3>
+          <div class="price">¥49,000〜</div>
+          <p class="muted">書類確認のみ／アドバイス中心。</p>
+          <ul>
+            <li>輸入可否チェック</li>
+            <li>相場/コスト概算</li>
+            <li>書類テンプレ進呈</li>
+          </ul>
+          <a class="btn btn-ghost" href="#contact" style="margin-top:10px">相談する</a>
+        </div>
+        <div class="card feature" style="outline:2px solid color-mix(in oklab,var(--brand),white 30%);">
+          <h3>スタンダード</h3>
+          <div class="price">¥149,000〜</div>
+          <p class="muted">通関・物流の実務を代行。</p>
+          <ul>
+            <li>現地～国内の物流/保険</li>
+            <li>通関書類一式</li>
+            <li>登録サポート</li>
+          </ul>
+          <a class="btn btn-primary" href="#contact" style="margin-top:10px">これで進める</a>
+        </div>
+        <div class="card feature">
+          <h3>フルサポート</h3>
+          <div class="price">個別見積</div>
+          <p class="muted">仕入れ交渉から販売戦略まで。</p>
+          <ul>
+            <li>現地査定/交渉代行</li>
+            <li>整備/レストア調整</li>
+            <li>オークション出品支援</li>
+          </ul>
+          <a class="btn btn-ghost" href="#contact" style="margin-top:10px">相談する</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ =================== -->
+  <section id="faq" class="section">
+    <div class="container">
+      <h2>FAQ</h2>
+      <details>
+        <summary>25年ルールの対象か分かりません</summary>
+        <p class="muted">初度登録から25年を超える車両は緩和対象の可能性が高いです。年式・VINで無料確認します。</p>
+      </details>
+      <details>
+        <summary>費用はどこまで含まれますか？</summary>
+        <p class="muted">現地輸送・船積み・保険・通関・国内輸送・登録代行まで含む一括見積りが可能です。</p>
+      </details>
+      <details>
+        <summary>販売までサポートできますか？</summary>
+        <p class="muted">Bring a TrailerやMecum等の活用、国内販売戦略まで伴走可能です。</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================= Contact =================== -->
+  <section id="contact" class="section">
+    <div class="container">
+      <h2>お問い合わせ</h2>
+      <div class="grid" style="grid-template-columns:1.2fr .8fr;margin-top:12px">
+        <form class="card" style="padding:18px" action="mailto:info@example.com" method="post" enctype="text/plain">
+          <!-- TODO: 宛先メール変更 -->
+          <label>お名前<span class="sr-only">必須</span><br>
+            <input name="name" required style="width:100%;margin-top:6px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text)">
+          </label>
+          <div style="height:12px"></div>
+          <label>メールアドレス<br>
+            <input name="email" type="email" style="width:100%;margin-top:6px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text)">
+          </label>
+          <div style="height:12px"></div>
+          <label>ご相談内容<br>
+            <textarea name="message" rows="5" style="width:100%;margin-top:6px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text)"></textarea>
+          </label>
+          <div style="height:12px"></div>
+          <button class="btn btn-primary" type="submit">送信する</button>
+        </form>
+        <div class="card" style="padding:18px">
+          <div class="eyebrow">所在地・連絡先</div>
+          <p class="muted" style="margin:.4em 0 1em">
+            〒000-0000 東京都〇〇区〇〇 0-0-0<br><!-- TODO: 住所 -->
+            TEL: 000-0000-0000<br><!-- TODO: 電話 -->
+            営業時間: 平日 10:00–18:00
+          </p>
+          <div class="grid" style="grid-template-columns:1fr 1fr">
+            <a class="btn btn-ghost" href="https://line.me/R/"><span>LINEで相談</span></a><!-- TODO: LINEリンク -->
+            <a class="btn btn-ghost" href="https://www.instagram.com/"><span>Instagram</span></a><!-- TODO: IG -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Footer =================== -->
+  <footer>
+    <div class="container foot">
+      <div>
+        <div class="brand"><span class="logo" aria-hidden="true"></span><span>BRAND_NAME</span></div>
+        <p class="muted">クラシック車・バイクの輸入/輸出・販売をワンストップで支援。</p>
+      </div>
+      <div>
+        <div class="eyebrow">メニュー</div>
+        <div class="grid" style="grid-template-columns:1fr; margin-top:10px">
+          <a class="muted" href="#services">サービス</a>
+          <a class="muted" href="#pricing">料金</a>
+          <a class="muted" href="#faq">FAQ</a>
+          <a class="muted" href="#contact">問い合わせ</a>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow">ポリシー</div>
+        <div class="grid" style="grid-template-columns:1fr; margin-top:10px">
+          <a class="muted" href="#">特定商取引法に基づく表記</a>
+          <a class="muted" href="#">プライバシーポリシー</a>
+        </div>
+      </div>
+    </div>
+    <div class="container" style="margin-top:18px;color:var(--muted);font-size:.9rem">© <span id="y"></span> BRAND_NAME</div>
+  </footer>
+
+  <script>
+    // モバイルメニュー
+    const toggle = document.querySelector('.nav-toggle');
+    const drawer = document.getElementById('drawer');
+    if(toggle){
+      toggle.addEventListener('click', ()=>{
+        const open = drawer.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+    // 年号
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- Schema.org（SEO強化: 自動車関連ビジネス想定） -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"AutoDealer",
+    "name":"BRAND_NAME",
+    "url":"https://example.com",
+    "telephone":"+81-00-0000-0000",
+    "address":{"@type":"PostalAddress","addressCountry":"JP","addressLocality":"Tokyo","postalCode":"000-0000","streetAddress":"0-0-0"},
+    "areaServed":["JP","US"],
+    "openingHours":["Mo-Fr 10:00-18:00"]
+  }
+  </script>
+</body>
+</html>

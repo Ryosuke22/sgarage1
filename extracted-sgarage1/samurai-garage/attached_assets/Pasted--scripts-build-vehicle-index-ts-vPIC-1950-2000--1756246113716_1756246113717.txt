@@ -1,0 +1,199 @@
+// scripts/build-vehicle-index.ts
+// 目的: vPIC から全メーカー（車/バイク）を自動発見し、1950–2000の各年式ごとのモデル名を収集。
+//       足りない場合は Wikidata で補完。既存 attached_assets/vehicle-index.json にマージ追記。
+// 実行: npm run models:build
+// オプション: --category car|motorcycle （デフォ両方）
+//            --makes "BMW,Ford" （テスト用にメーカー絞り込み）
+//            --yearFrom 1970 --yearTo 2000
+// 注意: 大量アクセス防止のためレート制限あり。長時間実行になることがあります。
+
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+
+type Category = "car" | "motorcycle";
+type VehicleIndex = {
+  car: Record<string, Record<string, string[]>>;
+  motorcycle: Record<string, Record<string, string[]>>;
+};
+
+const ROOT = process.cwd();
+const OUT_DIR = path.resolve(ROOT, "attached_assets");
+const OUT_FILE = path.resolve(OUT_DIR, "vehicle-index.json");
+const VPIC = "https://vpic.nhtsa.dot.gov/api/vehicles";
+const WIKIDATA_SPARQL = "https://query.wikidata.org/sparql";
+
+// ===== 設定（必要に応じて変更） =====
+let YEAR_FROM = 1950;
+let YEAR_TO = 2000;
+const SLEEP_MS = 220;           // vPICへの優しめスロットリング
+const SLEEP_MS_WIKI = 350;
+// ===================================
+
+const args = new Map<string, string>();
+for (const a of process.argv.slice(2)) {
+  const m = a.match(/^--([^=]+)(=(.*))?$/);
+  if (m) args.set(m[1], m[3] ?? "true");
+}
+if (args.has("yearFrom")) YEAR_FROM = Number(args.get("yearFrom"));
+if (args.has("yearTo")) YEAR_TO = Number(args.get("yearTo"));
+
+const ONLY_CATEGORY = (args.get("category") as Category | undefined);
+const ONLY_MAKES = args.get("makes")
+  ? new Set(args.get("makes")!.split(",").map((s) => s.trim()).filter(Boolean))
+  : null;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const headersJson = { "user-agent": "garages/seed", "accept": "application/json" };
+const headersWiki = { "Accept": "application/sparql-results+json", "User-Agent": "garages/seed" };
+
+// vPIC: 車種タイプ別メーカー一覧
+async function getMakesForVehicleType(type: "car" | "motorcycle"): Promise<string[]> {
+  const url = `${VPIC}/GetMakesForVehicleType/${type}?format=json`;
+  const r = await fetch(url, { headers: headersJson as any });
+  if (!r.ok) throw new Error(`GetMakesForVehicleType ${type} ${r.status}`);
+  const j: any = await r.json();
+  const arr = (j.Results || []).map((x: any) => String(x.MakeName || x.Make || "").trim()).filter(Boolean);
+  return Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
+}
+
+// vPIC: メーカー×年式のモデル一覧（car）
+async function vpicModelsCar(make: string, year: number): Promise<string[]> {
+  const url = `${VPIC}/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}?format=json`;
+  const r = await fetch(url, { headers: headersJson as any });
+  if (!r.ok) return [];
+  const j: any = await r.json();
+  const arr = (j.Results || [])
+    .map((x: any) => String(x.Model_Name || x.ModelName || x.Model || "").trim())
+    .filter(Boolean);
+  return Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
+}
+
+// vPIC: メーカー×年式のモデル一覧（motorcycle 専用）
+async function vpicModelsMoto(make: string, year: number): Promise<string[]> {
+  const url = `${VPIC}/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}/vehicleType/motorcycle?format=json`;
+  const r = await fetch(url, { headers: headersJson as any });
+  if (!r.ok) return [];
+  const j: any = await r.json();
+  const arr = (j.Results || [])
+    .filter((x: any) => String(x.VehicleTypeName || "").toLowerCase().includes("motorcycle"))
+    .map((x: any) => String(x.Model_Name || x.ModelName || x.Model || "").trim());
+  return Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
+}
+
+// Wikidata 補完（自動車/二輪のモデル、メーカー名部分一致 & 年式フィルタ）
+async function wikidataModels(make: string, year: number, category: Category): Promise<string[]> {
+  const cls = category === "car" ? "Q3231690" : "Q3443235"; // automobile model / motorcycle model
+  const sparql = `
+SELECT ?model ?modelLabel ?start ?end WHERE {
+  ?model wdt:P31 wd:${cls}.
+  ?model wdt:P176 ?mfr.
+  ?mfr rdfs:label ?mLabel.
+  FILTER(LANG(?mLabel) = "en")
+  FILTER(CONTAINS(LCASE(?mLabel), LCASE("${make}")))
+  OPTIONAL { ?model wdt:P571 ?startTime. BIND(year(?startTime) AS ?start) }
+  OPTIONAL { ?model wdt:P576 ?endTime.   BIND(year(?endTime)   AS ?end) }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,ja". }
+}
+`;
+  const url = `${WIKIDATA_SPARQL}?query=${encodeURIComponent(sparql)}`;
+  const r = await fetch(url, { headers: headersWiki as any });
+  if (!r.ok) return [];
+  const j: any = await r.json();
+  const arr = (j.results?.bindings || [])
+    .filter((b: any) => {
+      const s = b.start ? Number(b.start.value) : undefined;
+      const e = b.end ? Number(b.end.value) : undefined;
+      const okS = s === undefined || s <= year;
+      const okE = e === undefined || e >= year;
+      return okS && okE;
+    })
+    .map((b: any) => String(b.modelLabel.value).trim())
+    .filter(Boolean);
+  return Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
+}
+
+// 表記ゆれ正規化（必要に応じて追加）
+function canonicalMake(raw: string): string {
+  const map: Record<string, string> = {
+    "Mercedes": "Mercedes-Benz",
+    "Mercedes Benz": "Mercedes-Benz",
+    "Rolls Royce": "Rolls-Royce",
+    "VW": "Volkswagen",
+    "Vauxhall Motors": "Vauxhall",
+    "Skoda": "Škoda",
+    "Lada Vaz": "Lada",
+    "B M W": "BMW",
+    "Harley": "Harley-Davidson",
+  };
+  const k = raw.trim();
+  return map[k] || k;
+}
+
+async function loadExisting(): Promise<VehicleIndex> {
+  try {
+    const s = await readFile(OUT_FILE, "utf-8");
+    return JSON.parse(s) as VehicleIndex;
+  } catch {
+    return { car: {}, motorcycle: {} };
+  }
+}
+
+function upsert(out: VehicleIndex, cat: Category, make: string, year: number, models: string[]) {
+  if (!models.length) return;
+  const m = canonicalMake(make);
+  out[cat][m] = out[cat][m] || {};
+  const key = String(year);
+  const set = new Set(out[cat][m][key] || []);
+  models.forEach((x) => set.add(x));
+  out[cat][m][key] = Array.from(set).sort((a, b) => a.localeCompare(b));
+}
+
+async function buildCategory(cat: Category, out: VehicleIndex, makes: string[]) {
+  console.log(`\n=== Building ${cat} (${makes.length} makes) ===`);
+  for (const makeRaw of makes) {
+    const make = canonicalMake(makeRaw);
+    if (ONLY_MAKES && !ONLY_MAKES.has(make) && !ONLY_MAKES.has(makeRaw)) continue;
+    for (let y = YEAR_FROM; y <= YEAR_TO; y++) {
+      let models: string[] = [];
+      try {
+        models = cat === "car" ? await vpicModelsCar(make, y) : await vpicModelsMoto(make, y);
+      } catch {}
+      if (!models.length) {
+        try {
+          models = await wikidataModels(make, y, cat);
+          if (models.length) console.log(`[WIKI] ${cat} ${make} ${y}: +${models.length}`);
+        } catch {}
+      }
+      if (models.length) {
+        upsert(out, cat, make, y, models);
+      }
+      await sleep(models.length ? SLEEP_MS : (cat === "car" ? SLEEP_MS : SLEEP_MS_WIKI));
+    }
+  }
+}
+
+async function main() {
+  const out = await loadExisting();
+
+  // 1) メーカー自動発見（vPIC）
+  const makesCar = ONLY_CATEGORY === "motorcycle" ? [] : await getMakesForVehicleType("car");
+  const makesMoto = ONLY_CATEGORY === "car" ? [] : await getMakesForVehicleType("motorcycle");
+
+  // 2) 収集
+  if (!ONLY_CATEGORY || ONLY_CATEGORY === "car") {
+    await buildCategory("car", out, makesCar);
+  }
+  if (!ONLY_CATEGORY || ONLY_CATEGORY === "motorcycle") {
+    await buildCategory("motorcycle", out, makesMoto);
+  }
+
+  // 3) 書き出し（マージ保存）
+  await mkdir(OUT_DIR, { recursive: true });
+  await writeFile(OUT_FILE, JSON.stringify(out, null, 2), "utf-8");
+  console.log(`\n✔ Wrote ${OUT_FILE}`);
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

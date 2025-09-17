@@ -1,0 +1,474 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(210 25% 7.8431%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(210 25% 7.8431%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(210 25% 7.8431%);
+  --primary: hsl(210 83% 53%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(210 25% 7.8431%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(210 40% 98%);
+  --muted-foreground: hsl(215 13% 65%);
+  --accent: hsl(210 40% 96%);
+  --accent-foreground: hsl(210 83% 53%);
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(214 32% 91%);
+  --input: hsl(214 32% 91%);
+  --ring: hsl(210 83% 53%);
+  --chart-1: hsl(210 83% 53%);
+  --chart-2: hsl(142 76% 36%);
+  --chart-3: hsl(38 92% 50%);
+  --chart-4: hsl(148 78% 42%);
+  --chart-5: hsl(339 82% 52%);
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(210 25% 7.8431%);
+  --sidebar-primary: hsl(210 83% 53%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(210 40% 96%);
+  --sidebar-accent-foreground: hsl(210 83% 53%);
+  --sidebar-border: hsl(214 32% 91%);
+  --sidebar-ring: hsl(210 83% 53%);
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", Menlo, Monaco, "Courier New", monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+  --shadow-xs: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+  --shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-2xl: 0px 50px 100px -20px rgba(0, 0, 0, 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(222 84% 4.9%);
+  --foreground: hsl(210 40% 98%);
+  --card: hsl(222 84% 4.9%);
+  --card-foreground: hsl(210 40% 98%);
+  --popover: hsl(222 84% 4.9%);
+  --popover-foreground: hsl(210 40% 98%);
+  --primary: hsl(210 83% 53%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(217 32% 17%);
+  --secondary-foreground: hsl(210 40% 98%);
+  --muted: hsl(217 32% 17%);
+  --muted-foreground: hsl(215 20% 65%);
+  --accent: hsl(217 32% 17%);
+  --accent-foreground: hsl(210 40% 98%);
+  --destructive: hsl(0 62% 30%);
+  --destructive-foreground: hsl(0 85% 97%);
+  --border: hsl(217 32% 17%);
+  --input: hsl(217 32% 17%);
+  --ring: hsl(210 83% 53%);
+  --chart-1: hsl(210 83% 53%);
+  --chart-2: hsl(142 76% 36%);
+  --chart-3: hsl(38 92% 50%);
+  --chart-4: hsl(148 78% 42%);
+  --chart-5: hsl(339 82% 52%);
+  --sidebar: hsl(222 84% 4.9%);
+  --sidebar-foreground: hsl(210 40% 98%);
+  --sidebar-primary: hsl(210 83% 53%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(217 32% 17%);
+  --sidebar-accent-foreground: hsl(210 40% 98%);
+  --sidebar-border: hsl(217 32% 17%);
+  --sidebar-ring: hsl(210 83% 53%);
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", Menlo, Monaco, "Courier New", monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+  --shadow-xs: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+  --shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-2xl: 0px 50px 100px -20px rgba(0, 0, 0, 0.25);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Ensure horizontal text display for Japanese */
+  .writing-mode-horizontal-tb {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    direction: ltr;
+  }
+  
+  /* Force all buttons to display text horizontally */
+  button {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    direction: ltr !important;
+  }
+  
+  /* Ensure all text elements display horizontally on mobile */
+  h1, h2, h3, h4, h5, h6, p, span, div {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    direction: ltr !important;
+  }
+  
+  /* Professional shadows */
+  .shadow-professional {
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+  
+  .shadow-professional-lg {
+    box-shadow: 
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Premium gradients - Dramatic Modern Style */
+  .gradient-premium {
+    background: linear-gradient(135deg, 
+      #667eea 0%, 
+      #764ba2 25%, 
+      #f093fb 50%, 
+      #f5576c 75%, 
+      #4facfe 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+  }
+  
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Samurai Garage Exclusive Colors */
+  .gradient-samurai {
+    background: linear-gradient(135deg, 
+      #1a1a2e 0%,
+      #c41e3a 45%,
+      #2a2a3e 100%);
+    background-size: 300% 300%;
+    animation: samuraiGradientShift 10s ease infinite;
+  }
+  
+  @keyframes samuraiGradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Samurai Font Classes */
+  .font-samurai {
+    font-family: "Cinzel", "Playfair Display", Georgia, serif;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  
+  .font-modern {
+    font-family: "Orbitron", "Inter", sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Samurai Garage Text Gradients */
+  .text-gradient-samurai {
+    background: linear-gradient(135deg, 
+      #f8fafc 0%, 
+      #c41e3a 25%, 
+      #ff6b6b 50%, 
+      #c41e3a 75%, 
+      #f8fafc 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 300% 300%;
+    animation: samuraiTextShift 8s ease infinite;
+  }
+  
+  @keyframes samuraiTextShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .gradient-neutral {
+    background: linear-gradient(135deg, 
+      hsl(240, 10%, 3.9%) 0%, 
+      hsl(240, 5.9%, 10%) 30%, 
+      hsl(240, 4.8%, 15%) 100%);
+  }
+
+  .gradient-dark {
+    background: linear-gradient(135deg, 
+      #0f0f23 0%, 
+      #1a1a2e 50%, 
+      #16213e 100%);
+  }
+
+  /* Glass effect - Enhanced Modern Style */
+  .glass {
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-dark {
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Premium buttons */
+  .btn-premium {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, hsl(210 83% 53%) 0%, hsl(217 91% 60%) 100%);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .btn-premium:hover::before {
+    left: 100%;
+  }
+  
+  .btn-premium:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+  }
+
+  /* Professional cards - Dramatic Modern Style */
+  .card-professional {
+    background: linear-gradient(145deg, 
+      rgba(255, 255, 255, 0.1) 0%, 
+      rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 32px;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-professional::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(255, 255, 255, 0.3) 50%, 
+      transparent 100%);
+  }
+  
+  .card-professional:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 
+      0 32px 64px rgba(0, 0, 0, 0.4),
+      0 0 80px rgba(102, 126, 234, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* Typography enhancements - Dramatic Gradient Text */
+  .text-gradient {
+    background: linear-gradient(135deg, 
+      #667eea 0%, 
+      #764ba2 25%, 
+      #f093fb 50%, 
+      #f5576c 75%, 
+      #4facfe 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Professional layouts */
+  .section-padding {
+    @apply py-16 px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-professional {
+    @apply max-w-7xl mx-auto;
+  }
+
+  /* Document upload areas - Override any pink dotted borders */
+  .uppy-Dashboard,
+  .uppy-DashboardTab,
+  .uppy-DashboardAddFiles,
+  .uppy-Dashboard-AddFiles,
+  .uppy-DashboardTab-btn,
+  .uppy-c-btn,
+  .uppy-Dashboard-browse {
+    border-color: rgb(209, 213, 219) !important; /* gray-300 */
+  }
+
+  /* Force consistent styling for document upload dropzones */
+  .document-upload-area {
+    border: 2px dashed rgb(209, 213, 219) !important;
+    background-color: transparent !important;
+    transition: border-color 0.2s ease !important;
+  }
+
+  .document-upload-area:hover {
+    border-color: rgb(156, 163, 175) !important; /* gray-400 */
+  }
+
+  /* Override any Uppy default pink/magenta borders - More comprehensive */
+  .uppy-Dashboard--modal,
+  .uppy-Dashboard,
+  .uppy-u-reset,
+  .uppy-DashboardAddFiles,
+  .uppy-DashboardAddFiles-area,
+  .uppy-Dashboard-AddFiles,
+  .uppy-Dashboard-AddFiles-area,
+  .uppy-DashboardTab,
+  .uppy-Dashboard-dropFilesHereHint,
+  [class*="uppy"],
+  [class*="Dashboard"],
+  [data-uppy],
+  .uppy-c-btn,
+  .uppy-c-btn:focus,
+  .uppy-c-btn:hover,
+  .uppy-Dashboard-browse,
+  .uppy-Dashboard-browse:focus,
+  .uppy-Dashboard-browse:hover {
+    border-color: rgb(209, 213, 219) !important;
+    outline-color: rgb(209, 213, 219) !important;
+  }
+
+  /* Force override all pink/magenta colors in Uppy */
+  .uppy-Dashboard *,
+  .uppy-Dashboard *:before,
+  .uppy-Dashboard *:after {
+    border-color: rgb(209, 213, 219) !important;
+  }
+
+  /* Specific override for any dotted borders */
+  .uppy-Dashboard [style*="border"],
+  .uppy-Dashboard [style*="dotted"],
+  .uppy-Dashboard [style*="dashed"] {
+    border-color: rgb(209, 213, 219) !important;
+  }
+
+  /* Override CSS variables that might be setting pink colors */
+  .uppy-Dashboard {
+    --uppy-c-pink: rgb(209, 213, 219) !important;
+    --uppy-c-green: rgb(209, 213, 219) !important;
+    --uppy-c-blue: rgb(209, 213, 219) !important;
+    --uppy-c-orange: rgb(209, 213, 219) !important;
+  }
+
+  /* Override any pink color values directly */
+  .uppy-Dashboard *[style*="rgb(218, 83, 148)"],
+  .uppy-Dashboard *[style*="#da5394"],
+  .uppy-Dashboard *[style*="pink"],
+  .uppy-Dashboard *[style*="magenta"] {
+    border-color: rgb(209, 213, 219) !important;
+    color: rgb(107, 114, 128) !important;
+  }
+
+  /* Target the actual button/div elements with pink borders directly */
+  button.document-upload-area,
+  div.document-upload-area,
+  .document-upload-area * {
+    border: 2px dashed rgb(209, 213, 219) !important;
+  }
+
+  /* Force override button styles that might be pink */
+  .w-full button,
+  .w-full .document-upload-area,
+  button[class*="w-full"] {
+    border-color: rgb(209, 213, 219) !important;
+  }
+
+  /* Last resort - override all possible pink/magenta variations */
+  *[style*="218, 83, 148"],
+  *[style*="218,83,148"],
+  *[style*="#da5394"],
+  *[style*="#DA5394"],
+  *[style*="magenta"],
+  *[style*="pink"] {
+    border-color: rgb(209, 213, 219) !important;
+  }
+
+  /* Nuclear option - override all elements in CreateListing page */
+  button[class*="w-full"],
+  button.w-full,
+  .w-full > button,
+  [data-testid*="uploader"] button,
+  [data-testid*="uploader"] div {
+    border: 2px dashed rgb(209, 213, 219) !important;
+    border-color: rgb(209, 213, 219) !important;
+  }
+
+  /* Override computed styles */
+  button[style],
+  div[style] {
+    border-color: rgb(209, 213, 219) !important;
+  }
+
+  /* Hide scrollbars while maintaining scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+  }
+
+  /* Global scrollbar hide for body and html */
+  html, body {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+  }
+}

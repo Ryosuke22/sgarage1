@@ -1,0 +1,18 @@
+{
+  "car": [
+    "Honda", "Toyota", "Nissan", "Mazda", "Mitsubishi", "Subaru", "Suzuki", "Daihatsu", "Isuzu", "Lexus", "Hino",
+    "BMW", "Mercedes-Benz", "Audi", "Volkswagen", "Porsche",
+    "Ford", "Lincoln", "Mercury", "Chevrolet", "GMC", "Pontiac", "Buick", "Oldsmobile", "Cadillac", "Saturn", "Geo", "Chrysler", "Dodge", "Plymouth", "Jeep", "Eagle", "AMC", "Studebaker", "Packard", "Hudson", "Nash", "Kaiser", "Frazer", "Willys", "International Harvester", "DeLorean", "AM General",
+    "Jaguar", "Aston Martin", "Rolls-Royce", "Bentley", "Lotus",
+    "Ferrari", "Lamborghini", "Maserati", "Alfa Romeo", "Fiat",
+    "Peugeot", "Citroën", "Renault", "Alpine", "Bugatti",
+    "Volvo", "Saab"
+  ],
+  "motorcycle": [
+    "Honda", "Yamaha", "Kawasaki", "Suzuki",
+    "BMW",
+    "Harley-Davidson", "Indian",
+    "Ducati", "Aprilia", "Moto Guzzi", "Cagiva", "Bimota", "MV Agusta", "Laverda", "Moto Morini", "Benelli", "Piaggio", "Vespa", "Gilera",
+    "Triumph", "Norton", "BSA", "Royal Enfield", "Ariel", "Matchless", "AJS", "Velocette", "Vincent"
+  ]
+}

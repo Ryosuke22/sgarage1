@@ -1,0 +1,108 @@
+import express from "express";
+import cors from "cors";
+import multer from "multer";
+import { extension as extFromMime } from "mime-types";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { nanoid } from "nanoid";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+app.use(cors());
+
+// 静的配信（アップロード成果物とフロントUI）
+const ROOT_UPLOAD = path.join(__dirname, "uploads");
+const UPLOAD_DIR = path.join(ROOT_UPLOAD, "originals");
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+app.use("/uploads", express.static(ROOT_UPLOAD, { maxAge: "365d", immutable: true }));
+app.use(express.static(path.join(__dirname, "public")));
+
+// 設定（Replit Secretsで調整可）
+const MAX_FILE_SIZE_MB = parseInt(process.env.MAX_FILE_SIZE_MB || "100", 10);
+const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+// 拡張子決定（オリジナル優先、無ければMIMEから）
+function decideExt(originalname, mimetype) {
+  const fromName = path.extname(originalname).replace(".", "").toLowerCase();
+  if (fromName) return fromName;
+  const fromMime = (extFromMime(mimetype) || "bin").toLowerCase();
+  return fromMime;
+}
+
+// ストレージ（ファイル名はID+拡張子）
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  filename: (req, file, cb) => cb(null, `${nanoid()}.${decideExt(file.originalname, file.mimetype)}`)
+});
+
+// MIME 許可：image/* と application/octet-stream を通す（端末やブラウザ差異を吸収）
+const acceptMime = (mt) => {
+  if (!mt) return true; // 一部環境で空になるケースを許容
+  return mt.startsWith("image/") || mt === "application/octet-stream";
+};
+
+const uploader = multer({
+  storage,
+  limits: { fileSize: MAX_FILE_SIZE, files: 50 },
+  fileFilter: (req, file, cb) => {
+    if (acceptMime(file.mimetype)) return cb(null, true);
+    const err = new Error(`Unsupported file type: ${file.mimetype}`);
+    err.status = 415; err.code = "UNSUPPORTED_TYPE";
+    return cb(err);
+  }
+});
+
+// デバッグ用：ヘルス & 直近のリクエストヘッダ確認
+app.get("/health", (req, res) => res.json({ ok: true, maxFileMB: MAX_FILE_SIZE_MB }));
+app.use((req, _res, next) => {
+  if (req.method === "POST" && req.path === "/api/upload") {
+    console.log("[UPLOAD] headers:", {
+      "content-type": req.headers["content-type"],
+      "content-length": req.headers["content-length"]
+    });
+  }
+  next();
+});
+
+// どんなフィールド名でも受け付ける（any）→ フロント側 name の違いで落ちない
+app.post("/api/upload", (req, res, next) => {
+  uploader.any()(req, res, (err) => {
+    if (err) return next(err);
+
+    const files = (req.files || []).map(f => ({
+      url: `/uploads/originals/${path.basename(f.path)}`,
+      originalName: f.originalname,
+      mimeType: f.mimetype,
+      size: f.size
+    }));
+
+    if (!files.length) {
+      return res.status(400).json({
+        ok: false,
+        message: 'ファイルが検出できませんでした。フォームは "multipart/form-data" で送ってください。'
+      });
+    }
+
+    console.log("[UPLOAD] saved:", files.map(f => ({ name: f.originalName, mime: f.mimeType, size: f.size })));
+    res.json({ ok: true, files });
+  });
+});
+
+// ていねいなエラーハンドラ（Multer/サイズ超過/型不一致/その他）
+app.use((err, req, res, _next) => {
+  console.error("[ERROR]", err.code || err.name, err.message);
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({
+      ok: false,
+      message: `ファイルが大きすぎます。上限は約 ${MAX_FILE_SIZE_MB}MB です。`
+    });
+  }
+  const status = err.status || 400;
+  res.status(status).json({ ok: false, message: err.message || "Upload error" });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running: http://localhost:${PORT}`));

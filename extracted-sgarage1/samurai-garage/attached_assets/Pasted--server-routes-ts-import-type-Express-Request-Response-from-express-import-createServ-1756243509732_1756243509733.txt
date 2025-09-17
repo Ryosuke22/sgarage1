@@ -1,0 +1,110 @@
+// server/routes.ts
+import type { Express, Request, Response } from "express";
+import { createServer } from "http";
+import fs from "node:fs";
+import path from "node:path";
+
+type VehicleIndex = {
+  car: Record<string, Record<string, string[]>>;
+  motorcycle: Record<string, Record<string, string[]>>;
+};
+
+// ベース（初期表示）に使うメーカー一覧：大手+代表的海外ブランド
+const BASE_MAKES = {
+  car: [
+    "Toyota","Nissan","Honda","Mazda","Mitsubishi","Subaru","Suzuki","Daihatsu","Isuzu","Hino",
+    "BMW","Mercedes-Benz","Audi","Volkswagen","Porsche","Fiat","Alfa Romeo","Ferrari","Lamborghini",
+    "Peugeot","Citroën","Renault","Volvo","Saab","Jaguar","Land Rover","Rover",
+    "Ford","Chevrolet","Dodge","Chrysler","Buick","Oldsmobile","Cadillac","Pontiac"
+  ],
+  motorcycle: [
+    "Honda","Yamaha","Kawasaki","Suzuki","Ducati","BMW","Triumph","Harley-Davidson","KTM","Husqvarna"
+  ]
+} as const;
+
+const DATA_PATH = path.resolve(import.meta.dirname, "..", "attached_assets", "vehicle-index.json");
+
+// 起動時に1回だけ読み込み（無ければ空の構造で続行）
+function loadIndex(): VehicleIndex {
+  try {
+    const raw = fs.readFileSync(DATA_PATH, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!parsed.car || !parsed.motorcycle) throw new Error("invalid root keys");
+    return parsed as VehicleIndex;
+  } catch {
+    return { car: {}, motorcycle: {} };
+  }
+}
+
+const INDEX = loadIndex();
+
+function assertCategory(c?: string): c is keyof VehicleIndex {
+  return c === "car" || c === "motorcycle";
+}
+
+// JSONキーは大文字小文字が混在する想定なので、クエリで来たメーカー名を正規化
+function normalizeMake(cat: keyof VehicleIndex, make: string) {
+  const keys = Object.keys(INDEX[cat] || {});
+  const hit = keys.find((k) => k.toLowerCase() === make.toLowerCase());
+  return hit || make;
+}
+
+// /api/makes?category=car
+function handleGetMakes(req: Request, res: Response) {
+  const cat = String(req.query.category || "");
+  if (!assertCategory(cat)) return res.status(400).json({ message: "category must be 'car' or 'motorcycle'" });
+
+  const fromJson = Object.keys(INDEX[cat] || {});
+  const union = Array.from(new Set([...(BASE_MAKES as any)[cat], ...fromJson]));
+  const makes = union.sort((a, b) => a.localeCompare(b, "en"));
+
+  res.json({ makes });
+}
+
+// /api/years?category=car&make=Toyota
+function handleGetYears(req: Request, res: Response) {
+  const cat = String(req.query.category || "");
+  const make = String(req.query.make || "");
+  if (!assertCategory(cat)) return res.status(400).json({ message: "bad category" });
+
+  const key = normalizeMake(cat, make);
+  const byMake = INDEX[cat][key];
+
+  if (!byMake) {
+    // フォールバック：2000→1950 を一律返す（UIが年式を先に選ぶ前提でも使える）
+    const years = Array.from({ length: 2000 - 1950 + 1 }, (_, i) => 2000 - i);
+    return res.json({ years });
+  }
+
+  const years = Object.keys(byMake)
+    .map((y) => parseInt(y, 10))
+    .filter((y) => !Number.isNaN(y) && y <= 2000)
+    .sort((a, b) => b - a);
+
+  res.json({ years });
+}
+
+// /api/models?category=car&make=Toyota&year=1999
+function handleGetModels(req: Request, res: Response) {
+  const cat = String(req.query.category || "");
+  const make = String(req.query.make || "");
+  const year = String(req.query.year || "");
+  if (!assertCategory(cat)) return res.status(400).json({ message: "bad category" });
+
+  const y = parseInt(year, 10);
+  if (Number.isNaN(y) || y > 2000) return res.status(400).json({ message: "year must be <= 2000" });
+
+  const key = normalizeMake(cat, make);
+  const list = INDEX[cat]?.[key]?.[year] || [];
+  res.json({ models: list });
+}
+
+export async function registerRoutes(app: Express) {
+  app.get("/api/makes", handleGetMakes);
+  app.get("/api/years", handleGetYears);
+  app.get("/api/models", handleGetModels);
+  app.get("/api/health", (_req, res) => res.json({ ok: true }));
+
+  const server = createServer(app);
+  return server;
+}

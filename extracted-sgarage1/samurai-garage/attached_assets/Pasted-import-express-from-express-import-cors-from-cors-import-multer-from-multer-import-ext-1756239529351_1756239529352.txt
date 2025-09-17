@@ -1,0 +1,103 @@
+import express from "express";
+import cors from "cors";
+import multer from "multer";
+import { extension as extFromMime } from "mime-types";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { nanoid } from "nanoid";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+
+// 必要ならCORSを有効化（同一オリジン運用なら不要）
+app.use(cors());
+
+// 静的ファイル（アップロード結果の公開＆フロント配信）
+const UPLOAD_DIR = path.join(__dirname, "uploads", "originals");
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
+  maxAge: "365d",
+  immutable: true
+}));
+app.use(express.static(path.join(__dirname, "public")));
+
+// 受け入れサイズ上限（MB）— ReplitのSecretsで調整可能
+const MAX_FILE_SIZE_MB = parseInt(process.env.MAX_FILE_SIZE_MB || "100", 10);
+const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+// 拡張子の決定（オリジナル優先、無ければMIMEから）
+function decideExt(originalname, mimetype) {
+  const extOrig = path.extname(originalname).replace(".", "").toLowerCase();
+  if (extOrig) return extOrig; // もともと拡張子があればそれを採用
+  const e = extFromMime(mimetype);
+  return (e || "bin").toLowerCase();
+}
+
+// 保存先＆ファイル名（ID+拡張子、オリジナルは保持）
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  filename: (req, file, cb) => {
+    const ext = decideExt(file.originalname, file.mimetype);
+    const id = nanoid();
+    cb(null, `${id}.${ext}`);
+  }
+});
+
+// 受け入れるMIMEタイプ（必要に応じて調整可）
+const ALLOWED = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+  "image/avif"
+]);
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: MAX_FILE_SIZE, // ここが“画像が大きい”対策の肝
+    files: 30                 // 一度に最大30枚（必要に応じ変更）
+  },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED.has(file.mimetype)) return cb(null, true);
+    // 不明MIMEでも受けたい場合は次行のコメントアウトを外す
+    // return cb(null, true);
+    return cb(new Error(`Unsupported file type: ${file.mimetype}`));
+  }
+});
+
+// アップロードAPI（複数可）— リサイズも変換も一切しない
+app.post("/api/upload", upload.array("photos", 30), (req, res) => {
+  const files = (req.files || []).map(f => {
+    const publicUrl = `/uploads/originals/${path.basename(f.path)}`;
+    return {
+      url: publicUrl,
+      originalName: f.originalname,
+      mimeType: f.mimetype,
+      size: f.size
+    };
+  });
+  res.json({ ok: true, files });
+});
+
+// エラーハンドリング（サイズ超過など）
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (err && err.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({
+      ok: false,
+      message: `ファイルが大きすぎます。上限は約 ${MAX_FILE_SIZE_MB}MB です。`
+    });
+  }
+  res.status(400).json({ ok: false, message: err.message || "Upload error" });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running: http://localhost:${PORT}`);
+});

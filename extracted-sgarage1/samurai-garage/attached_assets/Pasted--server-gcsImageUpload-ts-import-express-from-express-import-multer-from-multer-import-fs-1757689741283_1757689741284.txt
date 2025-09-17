@@ -1,0 +1,78 @@
+// server/gcsImageUpload.ts
+import express from "express";
+import multer from "multer";
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
+import { Storage } from "@google-cloud/storage";
+
+const tmpDir = path.join(process.cwd(), "tmp_uploads");
+fs.mkdirSync(tmpDir, { recursive: true });
+
+// ディスク保存（無圧縮・非加工）
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, tmpDir),
+    filename: (_req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+  }),
+  limits: { fileSize: 200 * 1024 * 1024 }, // 写真は十分余裕（必要に応じて調整）
+  fileFilter: (_req, file, cb) => {
+    const ok = [
+      "image/jpeg", "image/png", "image/webp",
+      "image/heic", "image/heif"
+    ].includes(file.mimetype);
+    cb(ok ? null : new Error("unsupported image type"));
+  },
+});
+
+const storage = new Storage({
+  projectId: process.env.GCP_PROJECT_ID,
+  credentials: process.env.GCP_SERVICE_ACCOUNT_JSON
+    ? JSON.parse(process.env.GCP_SERVICE_ACCOUNT_JSON)
+    : undefined,
+});
+const bucket = storage.bucket(process.env.GCS_BUCKET!);
+
+export const gcsImageUpload = express.Router();
+
+gcsImageUpload.post("/upload-image", upload.array("files", 20), async (req, res) => {
+  if (!req.files || !(req.files as Express.Multer.File[]).length) {
+    return res.status(400).json({ ok:false, message:"files[] required" });
+  }
+
+  const results: Array<{ objectName: string; publicUrl: string; readUrl: string }> = [];
+  for (const f of req.files as Express.Multer.File[]) {
+    const original = f.originalname.replace(/"/g, "");
+    const ext = (original.split(".").pop() || "bin").toLowerCase();
+    const objectName = `image/${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.${ext}`;
+    const contentType = f.mimetype || "application/octet-stream";
+
+    const gcsFile = bucket.file(objectName);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const read = fs.createReadStream(f.path);
+        const write = gcsFile.createWriteStream({
+          resumable: true,
+          contentType,
+          metadata: { contentDisposition: `inline; filename="${original}"` },
+        });
+        read.on("error", reject);
+        write.on("error", reject);
+        write.on("finish", resolve);
+        read.pipe(write);
+      });
+    } finally {
+      fs.unlink(f.path, () => {});
+    }
+
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${objectName}`;
+    const [readUrl] = await gcsFile.getSignedUrl({
+      version: "v4",
+      action: "read",
+      expires: Date.now() + 10 * 60 * 1000,
+    });
+    results.push({ objectName, publicUrl, readUrl });
+  }
+
+  res.json({ ok:true, items: results });
+});

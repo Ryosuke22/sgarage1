@@ -1,0 +1,91 @@
+{
+  "car": {
+    "Toyota": {
+      "0-1949": [
+        "AA","AB","AC","AE","BA","BB","BC","SA","SB","SC","SD"
+      ],
+      "1950-1959": [
+        "Crown (RS)","Corona (ST)","Master","Masterline",
+        "Stout","Land Cruiser (20)","ToyoAce","Dyna"
+      ],
+      "1960-1969": [
+        "Crown (S40/S50)","Corona (T40/T50/T60)","Publica","Corolla (E10)","Sprinter (E10)",
+        "Sports 800","2000GT","Century (G20)","Mark II (X10)",
+        "HiAce (H10)","Hilux (N10)","MiniAce","Land Cruiser (40)",
+        "Stout","ToyoAce","Dyna","Coaster"
+      ],
+      "1970-1979": [
+        "Crown (S60/S80/S90/S100)","Corona (T80/T100/T120)",
+        "Corolla (E20/E30/E50/E60/E70)","Sprinter (E20/E40/E50/E60/E70)",
+        "Celica (A20/A40)","Carina (A10/A40)","Camry (Celica Camry)",
+        "Mark II (X20/X30/X40/X50)","Chaser (X30/X40)","Cresta (X50)",
+        "Cressida","Starlet (P40/P60)","Tercel (L10)","Corsa (L10)",
+        "Supra (A40/A50)","LiteAce","TownAce","HiAce (H20/H30/H40)",
+        "Hilux (N20/N30)","Land Cruiser (55)","ToyoAce","Dyna","Coaster","Stout"
+      ],
+      "1980-1989": [
+        "Crown (S110/S120/S130)","Corona (T130/T140)",
+        "Corolla (E70/E80/E90)","Sprinter (E70/E80/E90)","Levin/Trueno (AE85/AE86/AE92)",
+        "Celica (A60/T160)","Carina (A60/A70)","Carina II","Camry (V10)","Vista (V10)",
+        "Mark II (X60/X70)","Chaser (X60/X70)","Cresta (X60/X70)","Soarer (Z10/Z20)",
+        "Supra (A60/A70)","MR2 (AW10/AW11)","Starlet (P70/P80)",
+        "Tercel/Corsa/Corolla II (L20/L30/L40)","Sprinter Carib (AL20/AE95)","Corolla FX",
+        "HiAce (H50/H100)","Hilux (N50/N60)","4Runner/Hilux Surf (N60)",
+        "LiteAce/TownAce/MasterAce Surf","Land Cruiser (60/70)","ToyoAce","Dyna","Coaster","Quick Delivery"
+      ],
+      "1990-1995": [
+        "Crown (S130/S140)","Corona (T180/T190)","Corolla (E100)","Sprinter (E100)","Levin/Trueno (AE100/AE101)",
+        "Celica (T180/T200)","Carina (A100)","Carina ED (T180/T200)","Corona EXiV (T180/T200)",
+        "Camry (XV10)","Vista (V30)","Mark II (X80/X90)","Chaser (X80/X90)","Cresta (X80/X90)",
+        "Soarer (Z30)","Supra (A80)","MR2 (SW20)","Sera (EXY10)",
+        "Celsior (UCF10)","Aristo (JZS147/JZS141)","Windom (VCV10)","Crown Majesta (S140)",
+        "Starlet (P80/P90)","Tercel/Corsa/Corolla II (L40)","Paseo/Cynos (L40)","Sprinter Marino/Ceres",
+        "Caldina (T190)","RAV4 (XA10)","Estima (XR10/XR20)",
+        "HiAce (H100)","Hilux (N80/N90)","4Runner/Hilux Surf (N130)",
+        "Land Cruiser (80)","Land Cruiser Prado (70)","Mega Cruiser",
+        "ToyoAce","Dyna","Coaster","Quick Delivery","LiteAce/TownAce"
+      ]
+    },
+
+    "Nissan": {
+      "0-1949": [
+        "Datsun 10","Datsun 11","Datsun 12","Datsun 14","Datsun 15","Datsun 16","Datsun 17",
+        "Nissan Type 70","Nissan Type 30","Nissan Type 50","Nissan Type 53",
+        "Datsun 190 Bus","Datsun 180 Truck"
+      ],
+      "1950-1959": [
+        "Patrol (4W60)","Junior","Caball","Bluebird (210)","Skyline (Prince ALSI-1)",
+        "Gloria (Prince)","Fairlady (1200/1500)","Cablight","Datsun Truck (220)"
+      ],
+      "1960-1969": [
+        "Bluebird (310/410/510)","Cedric (130/150)","Skyline (S50/C10)","Gloria (A30/A40)",
+        "President (150)","Laurel (C30)","Silvia (CSP311)","Fairlady Sports (1600/2000)",
+        "Fairlady Z (S30)","Sunny (B10/B110)","Homy (B640/T20)","C80","Cabstar (A320)","Homer (T64/T640/T641)",
+        "Junior (40/41/140)","Caball (C40/C240)"
+      ],
+      "1970-1979": [
+        "Bluebird (610/810)","Cedric (230/330)","Gloria (230/330)","Skyline (C110/C210)",
+        "Skyline GT-R (PGC10/KPGC110)","Laurel (C130/C230)","Fairlady Z (S30/S130)","Silvia (S10)",
+        "Cherry (E10/F10)","Stanza (A10)","Pulsar (N10)","Sunny (B210/B310)",
+        "Caravan (E20/E23)","Vanette (C120)","Homer (F20)","Cabstar (A321)","Datsun 620","Datsun 720",
+        "Patrol (60)","Civilian"
+      ],
+      "1980-1989": [
+        "Skyline (R30/R31)","Skyline GT-R (R32, 1989)","Bluebird (910/U11)","Cedric/Gloria (Y30)","Laurel (C31/C32)",
+        "Leopard (F30/F31)","Silvia (S110/S12)","180SX (RPS13, 1989)","200SX/240SX",
+        "Stanza (T11)","Pulsar (N12/N13)","Sunny (B11/B12)","Prairie (M10)","March (K10)","Langley","Auster","Violet",
+        "Largo (C22)","Caravan (E24)","Vanette (C22)","President (H250)","Cefiro (A31)","Cima (Y31)",
+        "Terrano (WD21)","Pathfinder (WD21)","Hardbody Truck (D21)","720 Pickup","Patrol (Y60)","Civilian",
+        "Atlas (F22)","Cabstar (F22)","Homy (E24)","AD (VB11/Y10)"
+      ],
+      "1990-1995": [
+        "Skyline (R32)","Skyline GT-R (BNR32/BCNR33)","Bluebird (U12/U13)","Cedric/Gloria (Y31/Y32)","Laurel (C33)",
+        "Leopard J Ferie (JY32)","Silvia (S13/S14)","180SX (RPS13)","Fairlady Z (Z32)","Cefiro (A31/A32)",
+        "Primera (P10)","Pulsar (N14)","Sunny (B13/B14)","March (K11)","Serena (C23)","Prairie Joy (M11)",
+        "Avenir (W10)","Rasheen (NB14)","Terrano (WD21)","Mistral","Pathfinder (WD21)","Patrol (Y60)",
+        "Caravan (E24)","Homy (E24)","Vanette (C22)","Civilian","Atlas (F23)","Cabstar",
+        "President (JHG50)","AD (Y10)","Figaro","Pao","Be-1","S-Cargo","Largo (W30)","Altima (U13)"
+      ]
+    }
+  }
+}
