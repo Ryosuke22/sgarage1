@@ -40,7 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Root route removed - let Vite middleware handle SPA serving
 
-  // Storage endpoints removed - use Object Storage UI in Replit
+  // Storage endpoints removed due to authentication issues - use Object Storage UI in Replit
 
   // API Routes for listings
   app.get("/api/listings", async (req, res) => {
