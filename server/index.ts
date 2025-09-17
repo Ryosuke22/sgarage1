@@ -106,27 +106,12 @@ app.use((req, res, next) => {
     log("Static files served from dist/public");
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen(port, "127.0.0.1", () => {
-  log(`serving on http://127.0.0.1:${port}`);
-});
-
-  // Add secondary listener on port 5000 for workflow compatibility when in development
-  const WF_PORT = 5000;
-  if (process.env.NODE_ENV === 'development' && port !== WF_PORT) {
-    try {
-      app.listen(WF_PORT, '127.0.0.1', () => {
-        log('[workflow] Secondary listener on port 5000 for workflow compatibility');
-      });
-    } catch (e) {
-      if ((e as any)?.code !== 'EADDRINUSE') {
-        console.warn('Secondary listen failed:', e);
-      }
-    }
-  }
+  // ALWAYS serve the app on port 5000 for Replit compatibility
+  // Replit expects the application to be accessible on port 5000
+  // Override any PORT environment variable to ensure proper functionality
+  const port = 5000;
+  server.listen(port, "0.0.0.0", () => {
+    log(`serving on http://0.0.0.0:${port}`);
+  });
 
 })();
