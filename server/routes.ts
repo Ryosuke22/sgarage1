@@ -38,10 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ ok: true, ts: Date.now() });
   });
 
-  // Root route
-  app.get("/", (_req, res) => {
-    res.send("Samurai Garage server is running");
-  });
+  // Root route removed - let Vite middleware handle SPA serving
 
   // API Routes for listings
   app.get("/api/listings", async (req, res) => {

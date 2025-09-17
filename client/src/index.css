@@ -102,7 +102,7 @@
 
   /* Vehicle Card Styles */
   .vehicle-card {
-    @apply bg-card border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-all duration-300;
+    @apply bg-card border border-border rounded-lg overflow-hidden hover:border-zinc-600 transition-all duration-300;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
   
@@ -112,11 +112,11 @@
 
   /* Auction Status Badges */
   .status-live {
-    @apply bg-auction-green/20 text-auction-green border border-auction-green/30;
+    @apply bg-green-900/20 text-green-400 border border-green-500/30;
   }
   
   .status-ending-soon {
-    @apply bg-auction-yellow/20 text-auction-yellow border border-auction-yellow/30;
+    @apply bg-yellow-900/20 text-yellow-400 border border-yellow-500/30;
   }
   
   .status-sold {
@@ -125,15 +125,15 @@
 
   /* Price Display */
   .price-display {
-    @apply font-semibold text-lg text-auction-green;
+    @apply font-semibold text-lg text-green-400;
   }
   
   .reserve-met {
-    @apply text-auction-green;
+    @apply text-green-400;
   }
   
   .reserve-not-met {
-    @apply text-auction-yellow;
+    @apply text-yellow-400;
   }
 
   /* Navigation Styles */
