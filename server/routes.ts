@@ -5,6 +5,7 @@ import { dbService } from './database';
 import { setupAuth } from './auth';
 import { z } from 'zod';
 import { insertBidSchema, insertCommentSchema } from '@shared/schema';
+import { addStorageListEndpoint } from './list_storage';
 
 // Authentication middleware helper
 function requireAuth(req: any, res: any, next: any) {
@@ -39,6 +40,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Root route removed - let Vite middleware handle SPA serving
+
+  // Add storage listing endpoint
+  addStorageListEndpoint(app);
 
   // API Routes for listings
   app.get("/api/listings", async (req, res) => {
