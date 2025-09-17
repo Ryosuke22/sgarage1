@@ -64,12 +64,12 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       try {
         const user = await dbService.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
+        if (!user || !user.passwordHash || !(await comparePasswords(password, user.passwordHash))) {
           return done(null, false, { message: 'ユーザー名またはパスワードが正しくありません' });
         }
         
-        // Don't include password in the session user
-        const { password: _, ...userWithoutPassword } = user;
+        // Don't include passwordHash in the session user
+        const { passwordHash: _, ...userWithoutPassword } = user;
         return done(null, userWithoutPassword);
       } catch (error) {
         return done(error);
@@ -84,8 +84,8 @@ export function setupAuth(app: Express) {
       if (!user) {
         return done(null, false);
       }
-      // Don't include password in the session user
-      const { password: _, ...userWithoutPassword } = user;
+      // Don't include passwordHash in the session user
+      const { passwordHash: _, ...userWithoutPassword } = user;
       done(null, userWithoutPassword);
     } catch (error) {
       done(error);
@@ -98,7 +98,7 @@ export function setupAuth(app: Express) {
       const validatedData = insertUserSchema.parse(req.body);
       
       // Check if username already exists
-      const existingUser = await dbService.getUserByUsername(validatedData.username);
+      const existingUser = await dbService.getUserByUsername(validatedData.username!);
       if (existingUser) {
         return res.status(400).json({ message: 'このユーザー名は既に使用されています' });
       }
@@ -112,18 +112,18 @@ export function setupAuth(app: Express) {
       }
 
       // Create user with hashed password
-      const hashedPassword = await hashPassword(validatedData.password);
+      const hashedPassword = await hashPassword((validatedData as any).password);
       const newUser = await dbService.createUser({
         ...validatedData,
-        password: hashedPassword,
+        passwordHash: hashedPassword,
       });
 
       // Log the user in immediately after registration
       req.login(newUser, (err) => {
         if (err) return next(err);
         
-        // Don't return password in response
-        const { password: _, ...userWithoutPassword } = newUser;
+        // Don't return passwordHash in response
+        const { passwordHash: _, ...userWithoutPassword } = newUser;
         res.status(201).json(userWithoutPassword);
       });
     } catch (error) {

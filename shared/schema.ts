@@ -466,6 +466,9 @@ export const loginSchema = z.object({
   password: z.string().min(1, "パスワードを入力してください"),
 });
 
+// Legacy compatibility for auth system
+export const loginUserSchema = loginSchema;
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
