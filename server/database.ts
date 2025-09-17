@@ -12,7 +12,7 @@ import type {
   SelectComment, 
   InsertComment,
   SelectUser,
-  InsertUser 
+  UpsertUser 
 } from '@shared/schema';
 
 if (!process.env.DATABASE_URL) {
@@ -50,14 +50,13 @@ export class DatabaseService {
         year: schema.listings.year,
         mileage: schema.listings.mileage,
         locationText: schema.listings.locationText,
-        featuredImageUrl: schema.listings.featuredImageUrl,
-        imageUrls: schema.listings.imageUrls,
+        imageUrl: schema.listings.imageUrl,
         status: schema.listings.status,
         endStatus: schema.listings.endStatus,
-        startDate: schema.listings.startDate,
-        endDate: schema.listings.endDate,
-        reservePrice: schema.listings.reservePrice,
-        sellPrice: schema.listings.sellPrice,
+        startAt: schema.listings.startAt,
+        endAt: schema.listings.endAt,
+        startingPrice: schema.listings.startingPrice,
+        currentPrice: schema.listings.currentPrice,
         createdAt: schema.listings.createdAt,
       })
       .from(schema.listings);
@@ -153,8 +152,7 @@ export class DatabaseService {
     return await db
       .select({
         id: schema.comments.id,
-        content: schema.comments.content,
-        isQuestion: schema.comments.isQuestion,
+        body: schema.comments.body,
         createdAt: schema.comments.createdAt,
         user: {
           id: schema.users.id,
@@ -163,7 +161,7 @@ export class DatabaseService {
         }
       })
       .from(schema.comments)
-      .leftJoin(schema.users, eq(schema.comments.userId, schema.users.id))
+      .leftJoin(schema.users, eq(schema.comments.authorId, schema.users.id))
       .where(eq(schema.comments.listingId, listingId))
       .orderBy(desc(schema.comments.createdAt));
   }
@@ -280,14 +278,13 @@ export class DatabaseService {
         year: schema.listings.year,
         mileage: schema.listings.mileage,
         locationText: schema.listings.locationText,
-        featuredImageUrl: schema.listings.featuredImageUrl,
+        imageUrl: schema.listings.imageUrl,
         status: schema.listings.status,
         endStatus: schema.listings.endStatus,
-        startDate: schema.listings.startDate,
-        endDate: schema.listings.endDate,
-        reservePrice: schema.listings.reservePrice,
-        sellPrice: schema.listings.sellPrice,
-        adminNotes: schema.listings.adminNotes,
+        startAt: schema.listings.startAt,
+        endAt: schema.listings.endAt,
+        startingPrice: schema.listings.startingPrice,
+        currentPrice: schema.listings.currentPrice,
         createdAt: schema.listings.createdAt,
         updatedAt: schema.listings.updatedAt,
         seller: {

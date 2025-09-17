@@ -1,11 +1,11 @@
-import { type SelectUser as User, type InsertUser, type SelectListing as Listing, type InsertListing, type SelectBid as Bid, type InsertBid, type SelectComment as Comment, type InsertComment, type ListingWithBids } from "@shared/schema";
+import { type SelectUser as User, type UpsertUser, type SelectListing as Listing, type InsertListing, type SelectBid as Bid, type InsertBid, type SelectComment as Comment, type InsertComment, type ListingWithBids } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: UpsertUser): Promise<User>;
 
   // Listing methods
   getListings(filters?: {
@@ -53,7 +53,6 @@ export class MemStorage implements IStorage {
     // Create sample listings (using years <= 2001 per schema requirement)
     const sampleListings: InsertListing[] = [
       {
-        slug: "toyota-camry-hybrid-1999",
         title: "トヨタ カムリ ハイブリッド",
         description: "1999年式トヨタカムリハイブリッド。走行距離12,000km。車検2年付き。",
         category: "car",
@@ -61,15 +60,15 @@ export class MemStorage implements IStorage {
         model: "カムリ",
         year: 1999,
         mileage: 12000,
-        featuredImageUrl: "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        reservePrice: "2500000.00",
+        startingPrice: "2500000.00",
         locationText: "東京都",
-        endDate: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
+        city: "東京",
+        startAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        endAt: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
         status: "published",
         sellerId: "seller1",
       },
       {
-        slug: "honda-cbr600rr-2001",
         title: "ホンダ CBR600RR",
         description: "2001年式ホンダCBR600RR。走行距離8,500km。メンテナンス記録完備。",
         category: "motorcycle",
@@ -77,10 +76,11 @@ export class MemStorage implements IStorage {
         model: "CBR600RR",
         year: 2001,
         mileage: 8500,
-        featuredImageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        reservePrice: "1000000.00",
+        startingPrice: "1000000.00",
         locationText: "大阪府",
-        endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
+        city: "大阪",
+        startAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+        endAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
         status: "published",
         sellerId: "seller1",
       },
@@ -89,11 +89,12 @@ export class MemStorage implements IStorage {
     for (const listingData of sampleListings) {
       const listing = await this.createListing(listingData);
       // Add some initial bids
-      const bidAmount = parseFloat(listingData.reservePrice || "0") + Math.floor(Math.random() * 500000);
+      const bidAmount = parseFloat(listingData.startingPrice || "0") + Math.floor(Math.random() * 500000);
       await this.createBid({
         listingId: listing.id,
         bidderId: "bidder1",
         amount: bidAmount.toString(),
+        maxBidAmount: (bidAmount + 100000).toString(),
       });
     }
   }
@@ -108,16 +109,29 @@ export class MemStorage implements IStorage {
     );
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: UpsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
       ...insertUser, 
       id, 
-      email: insertUser.email || null,
+      email: insertUser.email,
+      username: insertUser.username || null,
       firstName: insertUser.firstName || null,
       lastName: insertUser.lastName || null,
+      firstNameKana: insertUser.firstNameKana || null,
+      lastNameKana: insertUser.lastNameKana || null,
       profileImageUrl: insertUser.profileImageUrl || null,
       role: insertUser.role || "user",
+      emailVerified: insertUser.emailVerified || false,
+      emailVerificationToken: insertUser.emailVerificationToken || null,
+      pendingEmail: insertUser.pendingEmail || null,
+      emailChangeToken: insertUser.emailChangeToken || null,
+      emailChangeExpires: insertUser.emailChangeExpires || null,
+      passwordResetToken: insertUser.passwordResetToken || null,
+      passwordResetExpires: insertUser.passwordResetExpires || null,
+      stripeCustomerId: insertUser.stripeCustomerId || null,
+      stripeSubscriptionId: insertUser.stripeSubscriptionId || null,
+      passwordHash: insertUser.passwordHash || null,
       createdAt: new Date(), 
       updatedAt: new Date() 
     };
@@ -143,14 +157,14 @@ export class MemStorage implements IStorage {
       if (filters.minPrice && listings.length > 0) {
         listings = listings.filter(l => {
           const latestBid = this.getLatestBidForListingSync(l.id);
-          const currentPrice = latestBid ? parseFloat(latestBid.amount) : parseFloat(l.reservePrice || "0");
+          const currentPrice = latestBid ? parseFloat(latestBid.amount) : parseFloat(l.startingPrice || "0");
           return currentPrice >= filters.minPrice!;
         });
       }
       if (filters.maxPrice && listings.length > 0) {
         listings = listings.filter(l => {
           const latestBid = this.getLatestBidForListingSync(l.id);
-          const currentPrice = latestBid ? parseFloat(latestBid.amount) : parseFloat(l.reservePrice || "0");
+          const currentPrice = latestBid ? parseFloat(latestBid.amount) : parseFloat(l.startingPrice || "0");
           return currentPrice <= filters.maxPrice!;
         });
       }
@@ -175,8 +189,8 @@ export class MemStorage implements IStorage {
 
     // Sort by end time (soonest first)
     listings.sort((a, b) => {
-      const aTime = a.endDate ? new Date(a.endDate).getTime() : 0;
-      const bTime = b.endDate ? new Date(b.endDate).getTime() : 0;
+      const aTime = a.endAt ? new Date(a.endAt).getTime() : 0;
+      const bTime = b.endAt ? new Date(b.endAt).getTime() : 0;
       return aTime - bTime;
     });
 
@@ -215,9 +229,20 @@ export class MemStorage implements IStorage {
 
   async createListing(insertListing: InsertListing): Promise<Listing> {
     const id = randomUUID();
+    
+    // Generate slug from title
+    const slug = insertListing.title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    
     const listing: Listing = {
       ...insertListing,
       id,
+      slug,
+      currentPrice: insertListing.startingPrice, // Set currentPrice to startingPrice
+      city: insertListing.city || null,
       status: insertListing.status || "draft",
       specifications: insertListing.specifications || null,
       condition: insertListing.condition || null,
@@ -229,14 +254,13 @@ export class MemStorage implements IStorage {
       shakenMonth: insertListing.shakenMonth || null,
       isTemporaryRegistration: insertListing.isTemporaryRegistration || false,
       reservePrice: insertListing.reservePrice || null,
-      sellPrice: insertListing.sellPrice || null,
       endStatus: insertListing.endStatus || null,
-      startDate: insertListing.startDate || null,
-      endDate: insertListing.endDate || null,
-      featuredImageUrl: insertListing.featuredImageUrl || null,
-      imageUrls: insertListing.imageUrls || null,
-      sellerId: insertListing.sellerId || null,
-      adminNotes: insertListing.adminNotes || null,
+      winningBidderId: null, // Set to null as this is auto-managed
+      extensionCount: 0, // Set to 0 as this is auto-managed
+      preferredDayOfWeek: insertListing.preferredDayOfWeek || null,
+      preferredStartTime: insertListing.preferredStartTime || null,
+      auctionDuration: insertListing.auctionDuration || null,
+      videoUrl: insertListing.videoUrl || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -262,6 +286,11 @@ export class MemStorage implements IStorage {
     const bid: Bid = {
       ...insertBid,
       id,
+      maxBidAmount: insertBid.maxBidAmount || insertBid.amount,
+      feeAmount: insertBid.feeAmount || null,
+      feePaymentIntentId: insertBid.feePaymentIntentId || null,
+      feePaymentStatus: insertBid.feePaymentStatus || null,
+      feePaidAt: insertBid.feePaidAt || null,
       createdAt: new Date(),
     };
     this.bids.set(id, bid);
@@ -275,7 +304,7 @@ export class MemStorage implements IStorage {
 
   async getCommentsForListing(listingId: string): Promise<Comment[]> {
     return Array.from(this.comments.values())
-      .filter(comment => comment.listingId === listingId)
+      .filter(comment => comment.listingId === listingId && !comment.isHidden)
       .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
   }
 
@@ -284,8 +313,7 @@ export class MemStorage implements IStorage {
     const comment: Comment = {
       ...insertComment,
       id,
-      isQuestion: insertComment.isQuestion || false,
-      parentId: insertComment.parentId || null,
+      isHidden: insertComment.isHidden || false,
       createdAt: new Date(),
     };
     this.comments.set(id, comment);
