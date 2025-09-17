@@ -50,7 +50,7 @@ export class DatabaseService {
         year: schema.listings.year,
         mileage: schema.listings.mileage,
         locationText: schema.listings.locationText,
-        imageUrl: schema.listings.imageUrl,
+
         status: schema.listings.status,
         endStatus: schema.listings.endStatus,
         startAt: schema.listings.startAt,
@@ -206,7 +206,7 @@ export class DatabaseService {
     return user || null;
   }
 
-  async createUser(user: InsertUser): Promise<SelectUser> {
+  async createUser(user: UpsertUser): Promise<SelectUser> {
     const [created] = await db
       .insert(schema.users)
       .values(user)
@@ -278,7 +278,7 @@ export class DatabaseService {
         year: schema.listings.year,
         mileage: schema.listings.mileage,
         locationText: schema.listings.locationText,
-        imageUrl: schema.listings.imageUrl,
+
         status: schema.listings.status,
         endStatus: schema.listings.endStatus,
         startAt: schema.listings.startAt,
@@ -386,10 +386,10 @@ export class DatabaseService {
     }
 
     // Create a new guest user
-    const guestUser: InsertUser = {
+    const guestUser: UpsertUser = {
       username: 'guest_user',
       email: 'guest@anonymous.local',
-      password: 'hashed_guest_password_placeholder',
+      passwordHash: await hashPassword('guest123'),
       firstName: 'ゲスト',
       lastName: 'ユーザー',
       role: 'user',
@@ -412,11 +412,11 @@ export class DatabaseService {
     }
 
     // Create sample users with authentication data
-    const sampleUsers: InsertUser[] = [
+    const sampleUsers: UpsertUser[] = [
       {
         username: 'admin',
         email: 'admin@samuraigarage.com',
-        password: await hashPassword('admin123'), // Test password: admin123
+        passwordHash: await hashPassword('admin123'), // Test password: admin123
         firstName: '管理者',
         lastName: 'システム',
         role: 'admin', // Admin user for testing
@@ -424,7 +424,7 @@ export class DatabaseService {
       {
         username: 'tanaka_taro',
         email: 'seller1@example.com',
-        password: await hashPassword('password123'), // Test password: password123
+        passwordHash: await hashPassword('password123'), // Test password: password123
         firstName: '田中',
         lastName: '太郎',
         role: 'user',
@@ -432,7 +432,7 @@ export class DatabaseService {
       {
         username: 'sato_hanako',
         email: 'seller2@example.com', 
-        password: await hashPassword('password123'), // Test password: password123
+        passwordHash: await hashPassword('password123'), // Test password: password123
         firstName: '佐藤',
         lastName: '花子',
         role: 'user',
@@ -446,7 +446,6 @@ export class DatabaseService {
     // Create sample listings
     const sampleListings: InsertListing[] = [
       {
-        slug: 'toyota-ae86-1986',
         title: '1986年 トヨタ AE86 カローラ レビン',
         description: '希少な1986年式AE86カローラレビン。走行距離78,000km（実走行）。エンジンは4A-GEツインカム16バルブを搭載。内装・外装ともに良好な状態を保っています。車検は2年付き。',
         specifications: 'エンジン: 4A-GE 1.6L DOHC 16V\n最高出力: 130ps/6,600rpm\nミッション: 5速MT\n駆動方式: FR',
@@ -462,19 +461,13 @@ export class DatabaseService {
         shakenYear: '2026',
         shakenMonth: '3',
         locationText: '神奈川県横浜市',
-        reservePrice: '1800000',
         status: 'published',
-        startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // Started yesterday
-        endDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000), // Ends in 6 days
-        featuredImageUrl: 'https://images.unsplash.com/photo-1600712242805-5f78671b24da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1600712242805-5f78671b24da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-          'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-        ],
+        startAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // Started yesterday
+        endAt: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000), // Ends in 6 days
+        startingPrice: '1800000',
         sellerId: createdUsers[0].id,
       },
       {
-        slug: 'honda-nsx-1991',
         title: '1991年 ホンダ NSX タイプR',
         description: '伝説の1991年式ホンダNSX。走行距離45,000km（記録簿完備）。VTEC V6エンジンの咆哮とミッドシップレイアウトによる卓越したハンドリングが魅力。',
         specifications: 'エンジン: C30A 3.0L DOHC VTEC V6\n最高出力: 280ps/7,300rpm\nミッション: 5速MT\n駆動方式: MR',
@@ -490,19 +483,13 @@ export class DatabaseService {
         shakenYear: '2025',
         shakenMonth: '12',
         locationText: '東京都渋谷区',
-        reservePrice: '12000000',
         status: 'published',
-        startDate: new Date(Date.now() - 12 * 60 * 60 * 1000), // Started 12 hours ago
-        endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // Ends in 4 days
-        featuredImageUrl: 'https://images.unsplash.com/photo-1544829365-4a3d5ee7c8b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1544829365-4a3d5ee7c8b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-          'https://images.unsplash.com/photo-1549399081-e7a8992e5742?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-        ],
+        startAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // Started 12 hours ago
+        endAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // Ends in 4 days
+        startingPrice: '12000000',
         sellerId: createdUsers[1].id,
       },
       {
-        slug: 'suzuki-gsx-r1000-2001',
         title: '2001年 スズキ GSX-R1000 K1',
         description: '初代GSX-R1000の2001年式K1モデル。走行距離28,000km。スズキの名車中の名車。エンジンは完全にオーバーホール済み。',
         specifications: 'エンジン: 988cc 直列4気筒 DOHC\n最高出力: 160ps/9,500rpm\nミッション: 6速\n車重: 170kg',
@@ -516,15 +503,10 @@ export class DatabaseService {
         mileageVerified: true,
         hasShaken: false,
         locationText: '大阪府大阪市',
-        reservePrice: '450000',
         status: 'published',
-        startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // Started 2 days ago
-        endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Ends in 2 days
-        featuredImageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-        imageUrls: [
-          'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-          'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-        ],
+        startAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // Started 2 days ago
+        endAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Ends in 2 days
+        startingPrice: '450000',
         sellerId: createdUsers[0].id,
       },
     ];
