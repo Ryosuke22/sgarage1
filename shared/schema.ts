@@ -10,6 +10,7 @@ import {
   decimal,
   boolean,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -25,16 +26,27 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for authentication
+// User storage table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: varchar("username").unique().notNull(),
-  email: varchar("email").unique(),
-  password: varchar("password").notNull(),
+  email: varchar("email").unique().notNull(),
+  username: varchar("username").unique(),
+  passwordHash: varchar("password_hash"), // For local auth
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  firstNameKana: varchar("first_name_kana"),
+  lastNameKana: varchar("last_name_kana"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("user"), // "user" | "admin"
+  emailVerified: boolean("email_verified").notNull().default(false),
+  emailVerificationToken: varchar("email_verification_token"),
+  pendingEmail: varchar("pending_email"), // New email waiting for verification
+  emailChangeToken: varchar("email_change_token"), // Token for email change verification
+  emailChangeExpires: timestamp("email_change_expires"),
+  passwordResetToken: varchar("password_reset_token"),
+  passwordResetExpires: timestamp("password_reset_expires"),
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -75,54 +87,245 @@ export const listings = pgTable("listings", {
   shakenMonth: varchar("shaken_month"),
   isTemporaryRegistration: boolean("is_temporary_registration").notNull().default(false),
   locationText: varchar("location_text").notNull(),
-  reservePrice: decimal("reserve_price", { precision: 10, scale: 2 }),
-  sellPrice: decimal("sell_price", { precision: 10, scale: 2 }),
+  city: varchar("city"),
+  reservePrice: decimal("reserve_price", { precision: 12, scale: 2 }),
+  startingPrice: decimal("starting_price", { precision: 12, scale: 2 }).notNull(),
+  currentPrice: decimal("current_price", { precision: 12, scale: 2 }).notNull(),
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at").notNull(),
   status: listingStatusEnum("status").notNull().default("draft"),
   endStatus: endStatusEnum("end_status"),
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  featuredImageUrl: varchar("featured_image_url"),
-  imageUrls: text("image_urls").array(),
-  sellerId: varchar("seller_id").references(() => users.id),
-  adminNotes: text("admin_notes"),
+  sellerId: varchar("seller_id").notNull().references(() => users.id),
+  winningBidderId: varchar("winning_bidder_id").references(() => users.id),
+  extensionCount: integer("extension_count").notNull().default(0),
+  preferredDayOfWeek: varchar("preferred_day_of_week"), // "sunday", "monday", etc.
+  preferredStartTime: varchar("preferred_start_time"), // "09:00", "10:00", etc.
+  auctionDuration: varchar("auction_duration"), // "3days", "7days", etc.
+  videoUrl: text("video_url"), // Optional video URL for embedded display
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Bids table
+// Photo storage
+export const photos = pgTable("photos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  listingId: varchar("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Document type enum
+export const documentTypeEnum = pgEnum("document_type", [
+  "registration_certificate", // 車検証
+  "transfer_certificate",     // 譲渡証明書
+  "registration_seal",        // 印鑑証明書
+  "insurance_certificate",    // 自賠責保険証明書
+  "maintenance_record",       // 整備記録簿
+  "other"                     // その他
+]);
+
+// Document storage for legal paperwork
+export const documents = pgTable("documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  listingId: varchar("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+  type: documentTypeEnum("type").notNull(),
+  fileName: varchar("file_name").notNull(),
+  url: text("url").notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+});
+
+// Bid storage
 export const bids = pgTable("bids", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  listingId: varchar("listing_id").notNull().references(() => listings.id),
+  listingId: varchar("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
   bidderId: varchar("bidder_id").notNull().references(() => users.id),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  maxBidAmount: decimal("max_bid_amount", { precision: 12, scale: 2 }).notNull().default("0.00"), // プロキシ入札用の最大入札額
+  feeAmount: decimal("fee_amount", { precision: 12, scale: 2 }), // 手数料額（入札額の5%）
+  feePaymentIntentId: varchar("fee_payment_intent_id"), // Stripe PaymentIntent ID
+  feePaymentStatus: varchar("fee_payment_status").default("pending"), // pending, paid, failed, refunded
+  feePaidAt: timestamp("fee_paid_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Comments table  
+// Comments
 export const comments = pgTable("comments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  listingId: varchar("listing_id").notNull().references(() => listings.id),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  content: text("content").notNull(),
-  isQuestion: boolean("is_question").notNull().default(false),
-  parentId: varchar("parent_id"),
+  listingId: varchar("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+  authorId: varchar("author_id").notNull().references(() => users.id),
+  body: text("body").notNull(),
+  isHidden: boolean("is_hidden").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Watch list
+export const watchList = pgTable("watch_list", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  listingId: varchar("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Audit log
+export const auditLog = pgTable("audit_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  actorId: varchar("actor_id").references(() => users.id),
+  action: varchar("action").notNull(),
+  entity: varchar("entity").notNull(),
+  entityId: varchar("entity_id").notNull(),
+  metaJson: jsonb("meta_json"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Settings for bid increments etc
+export const settings = pgTable("settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key").notNull().unique(),
+  valueJson: jsonb("value_json").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Notification frequency enum
+export const notificationFrequencyEnum = pgEnum("notification_frequency", [
+  "immediate",  // 即座
+  "hourly",     // 1時間ごと
+  "daily",      // 1日1回
+  "disabled"    // 無効
+]);
+
+// User settings table
+export const userSettings = pgTable("user_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }).unique(),
+  
+  // Display settings
+  theme: varchar("theme").notNull().default("system"), // "light" | "dark" | "system"
+  language: varchar("language").notNull().default("ja"), // "ja" | "en"
+  currency: varchar("currency").notNull().default("JPY"), // "JPY" | "USD" | "EUR" | "GBP"
+  compactView: boolean("compact_view").notNull().default(false),
+  
+  // Global notification settings
+  emailNotifications: boolean("email_notifications").notNull().default(true),
+  pushNotifications: boolean("push_notifications").notNull().default(false),
+  smsNotifications: boolean("sms_notifications").notNull().default(false),
+  
+  // Notification frequency settings
+  emailFrequency: notificationFrequencyEnum("email_frequency").notNull().default("immediate"),
+  pushFrequency: notificationFrequencyEnum("push_frequency").notNull().default("immediate"),
+  
+  // Auction-related notifications
+  newBidNotifications: boolean("new_bid_notifications").notNull().default(true),
+  outbidNotifications: boolean("outbid_notifications").notNull().default(true),
+  bidConfirmationNotifications: boolean("bid_confirmation_notifications").notNull().default(true),
+  auctionEndNotifications: boolean("auction_end_notifications").notNull().default(true),
+  winningNotifications: boolean("winning_notifications").notNull().default(true),
+  losingNotifications: boolean("losing_notifications").notNull().default(true),
+  reserveMetNotifications: boolean("reserve_met_notifications").notNull().default(true),
+  lastMinuteBidNotifications: boolean("last_minute_bid_notifications").notNull().default(true),
+  auctionExtensionNotifications: boolean("auction_extension_notifications").notNull().default(true),
+  
+  // Listing-related notifications (for sellers)
+  listingApprovedNotifications: boolean("listing_approved_notifications").notNull().default(true),
+  listingRejectedNotifications: boolean("listing_rejected_notifications").notNull().default(true),
+  firstBidNotifications: boolean("first_bid_notifications").notNull().default(true),
+  sellerBidUpdateNotifications: boolean("seller_bid_update_notifications").notNull().default(true),
+  listingExpiredNotifications: boolean("listing_expired_notifications").notNull().default(true),
+  
+  // Account-related notifications
+  profileUpdateNotifications: boolean("profile_update_notifications").notNull().default(true),
+  emailChangeNotifications: boolean("email_change_notifications").notNull().default(true),
+  passwordChangeNotifications: boolean("password_change_notifications").notNull().default(true),
+  
+  // Security notifications
+  loginNotifications: boolean("login_notifications").notNull().default(false),
+  newDeviceLoginNotifications: boolean("new_device_login_notifications").notNull().default(true),
+  suspiciousActivityNotifications: boolean("suspicious_activity_notifications").notNull().default(true),
+  
+  // Marketing notifications
+  newsletterNotifications: boolean("newsletter_notifications").notNull().default(false),
+  promotionalNotifications: boolean("promotional_notifications").notNull().default(false),
+  weeklyDigestNotifications: boolean("weekly_digest_notifications").notNull().default(false),
+  
+  // System notifications
+  maintenanceNotifications: boolean("maintenance_notifications").notNull().default(true),
+  systemUpdateNotifications: boolean("system_update_notifications").notNull().default(false),
+  
+  // Watch list notifications
+  watchListBidNotifications: boolean("watch_list_bid_notifications").notNull().default(true),
+  watchListEndingSoonNotifications: boolean("watch_list_ending_soon_notifications").notNull().default(true),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Auto bid strategy enum
+export const autoBidStrategyEnum = pgEnum("auto_bid_strategy", [
+  "snipe",        // スナイピング入札（指定時間前に1回入札）
+  "incremental"   // 段階的自動入札（他の入札者に抜かれた時に自動再入札）
+]);
+
+// Auto bid configurations
+export const autoBids = pgTable("auto_bids", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  listingId: varchar("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+  maxAmount: decimal("max_amount", { precision: 12, scale: 2 }).notNull(), // 最大入札額（円）
+  triggerMinutes: integer("trigger_minutes").notNull(), // 終了何分前に実行するか (3-10)
+  strategyType: autoBidStrategyEnum("strategy_type").notNull().default("snipe"),
+  incrementAmount: decimal("increment_amount", { precision: 12, scale: 2 }), // 段階的入札の場合の増額
+  isActive: boolean("is_active").notNull().default(true),
+  hasExecuted: boolean("has_executed").notNull().default(false), // スナイピング入札が実行済みかどうか
+  lastExecutedAt: timestamp("last_executed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  uniqueAutoBid: unique().on(table.userId, table.listingId),
+}));
+
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  listings: many(listings),
+export const usersRelations = relations(users, ({ many, one }) => ({
+  listings: many(listings, { relationName: "seller" }),
+  wonListings: many(listings, { relationName: "winner" }),
   bids: many(bids),
   comments: many(comments),
+  watchList: many(watchList),
+  autoBids: many(autoBids),
+  settings: one(userSettings),
 }));
 
 export const listingsRelations = relations(listings, ({ one, many }) => ({
   seller: one(users, {
     fields: [listings.sellerId],
     references: [users.id],
+    relationName: "seller",
   }),
+  winner: one(users, {
+    fields: [listings.winningBidderId],
+    references: [users.id],
+    relationName: "winner",
+  }),
+  photos: many(photos),
+  documents: many(documents),
   bids: many(bids),
   comments: many(comments),
+  watchList: many(watchList),
+  autoBids: many(autoBids),
+}));
+
+export const photosRelations = relations(photos, ({ one }) => ({
+  listing: one(listings, {
+    fields: [photos.listingId],
+    references: [listings.id],
+  }),
+}));
+
+export const documentsRelations = relations(documents, ({ one }) => ({
+  listing: one(listings, {
+    fields: [documents.listingId],
+    references: [listings.id],
+  }),
 }));
 
 export const bidsRelations = relations(bids, ({ one }) => ({
@@ -136,44 +339,71 @@ export const bidsRelations = relations(bids, ({ one }) => ({
   }),
 }));
 
-export const commentsRelations = relations(comments, ({ one, many }) => ({
+export const commentsRelations = relations(comments, ({ one }) => ({
   listing: one(listings, {
     fields: [comments.listingId],
     references: [listings.id],
   }),
-  user: one(users, {
-    fields: [comments.userId],
+  author: one(users, {
+    fields: [comments.authorId],
     references: [users.id],
   }),
-  replies: many(comments),
 }));
 
-// Zod schemas for validation
+export const watchListRelations = relations(watchList, ({ one }) => ({
+  listing: one(listings, {
+    fields: [watchList.listingId],
+    references: [listings.id],
+  }),
+  user: one(users, {
+    fields: [watchList.userId],
+    references: [users.id],
+  }),
+}));
+
+export const autoBidsRelations = relations(autoBids, ({ one }) => ({
+  user: one(users, {
+    fields: [autoBids.userId],
+    references: [users.id],
+  }),
+  listing: one(listings, {
+    fields: [autoBids.listingId],
+    references: [listings.id],
+  }),
+}));
+
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(users, {
+    fields: [userSettings.userId],
+    references: [users.id],
+  }),
+}));
+
+// Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-}).extend({
-  username: z.string().min(3, 'ユーザー名は3文字以上である必要があります').max(20, 'ユーザー名は20文字以下である必要があります'),
-  password: z.string().min(8, 'パスワードは8文字以上である必要があります'),
-  email: z.string().email('有効なメールアドレスを入力してください').optional(),
-  firstName: z.string().min(1, '名前を入力してください'),
-  lastName: z.string().min(1, '名字を入力してください'),
-});
-
-// Login schema for authentication
-export const loginUserSchema = z.object({
-  username: z.string().min(1, 'ユーザー名を入力してください'),
-  password: z.string().min(1, 'パスワードを入力してください'),
 });
 
 export const insertListingSchema = createInsertSchema(listings).omit({
   id: true,
+  slug: true,
+  currentPrice: true,
+  winningBidderId: true,
+  extensionCount: true,
   createdAt: true,
   updatedAt: true,
-}).extend({
-  year: z.number().min(1900).max(2001), // Historical vehicles only
-  mileage: z.number().min(0),
+});
+
+export const insertPhotoSchema = createInsertSchema(photos).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertDocumentSchema = createInsertSchema(documents).omit({
+  id: true,
+  uploadedAt: true,
 });
 
 export const insertBidSchema = createInsertSchema(bids).omit({
@@ -186,18 +416,119 @@ export const insertCommentSchema = createInsertSchema(comments).omit({
   createdAt: true,
 });
 
-// Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type SelectUser = typeof users.$inferSelect;
-export type SessionUser = Omit<SelectUser, 'password'>; // User without password for sessions
-export type InsertListing = z.infer<typeof insertListingSchema>;
-export type SelectListing = typeof listings.$inferSelect;
-export type InsertBid = z.infer<typeof insertBidSchema>;
-export type SelectBid = typeof bids.$inferSelect;
-export type InsertComment = z.infer<typeof insertCommentSchema>;
-export type SelectComment = typeof comments.$inferSelect;
+export const insertWatchSchema = createInsertSchema(watchList).omit({
+  id: true,
+  createdAt: true,
+});
 
-// Extended types for UI components
+export const insertAutoBidSchema = createInsertSchema(autoBids).omit({
+  id: true,
+  hasExecuted: true,
+  lastExecutedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAuditLogSchema = createInsertSchema(auditLog).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSettingSchema = createInsertSchema(settings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Auth schemas
+export const signupSchema = z.object({
+  userId: z.string().min(3, "ユーザーIDは3文字以上で入力してください").max(20, "ユーザーIDは20文字以下で入力してください").regex(/^[a-zA-Z0-9_-]+$/, "ユーザーIDは英数字、ハイフン、アンダースコアのみ使用可能です"),
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(8, "パスワードは8文字以上で入力してください"),
+  confirmPassword: z.string().min(1, "パスワード確認を入力してください"),
+  lastName: z.string().min(1, "姓を入力してください"),
+  firstName: z.string().min(1, "名を入力してください"),
+  lastNameKana: z.string().min(1, "姓（カタカナ）を入力してください").regex(/^[ァ-ヶー\s]+$/, "カタカナで入力してください"),
+  firstNameKana: z.string().min(1, "名（カタカナ）を入力してください").regex(/^[ァ-ヶー\s]+$/, "カタカナで入力してください"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "パスワードが一致しません",
+  path: ["confirmPassword"],
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(1, "パスワードを入力してください"),
+});
+
+// Types
+export type UpsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+export type InsertListing = z.infer<typeof insertListingSchema>;
+export type Listing = typeof listings.$inferSelect;
+export type InsertPhoto = z.infer<typeof insertPhotoSchema>;
+export type Photo = typeof photos.$inferSelect;
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type Document = typeof documents.$inferSelect;
+export type InsertBid = z.infer<typeof insertBidSchema>;
+export type Bid = typeof bids.$inferSelect;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type Comment = typeof comments.$inferSelect;
+export type InsertWatch = z.infer<typeof insertWatchSchema>;
+export type Watch = typeof watchList.$inferSelect;
+export type InsertAutoBid = z.infer<typeof insertAutoBidSchema>;
+export type AutoBid = typeof autoBids.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type AuditLog = typeof auditLog.$inferSelect;
+export type InsertSetting = z.infer<typeof insertSettingSchema>;
+export type Setting = typeof settings.$inferSelect;
+export type InsertUserSettings = z.infer<typeof insertUserSettingsSchema>;
+export type UserSettings = typeof userSettings.$inferSelect;
+
+// Extended types for joins
+export type ListingWithDetails = Listing & {
+  seller: User;
+  winner?: User;
+  photos: Photo[];
+  documents: Document[];
+  bids: (Bid & { bidder: User })[];
+  comments: (Comment & { author: User })[];
+  _count: {
+    bids: number;
+    watchList: number;
+  };
+};
+
+export type BidWithDetails = Bid & {
+  bidder: User;
+  listing: Listing;
+};
+
+// Email change schema
+export const emailChangeSchema = z.object({
+  newEmail: z.string().email("有効なメールアドレスを入力してください")
+});
+export type EmailChangeRequest = z.infer<typeof emailChangeSchema>;
+
+// Email verification schemas
+export const emailVerificationSchema = z.object({
+  token: z.string().min(1, "認証トークンが必要です")
+});
+export type EmailVerificationRequest = z.infer<typeof emailVerificationSchema>;
+
+// Legacy compatibility types for current storage implementation
+export type SelectUser = User;
+export type SelectListing = Listing;
+export type SelectBid = Bid;
+export type SelectComment = Comment;
+export type SessionUser = Omit<SelectUser, 'passwordHash'>;
+
+// Legacy extended types
 export type ListingWithBids = SelectListing & {
   currentBid?: string | null;
   bidCount?: number;
