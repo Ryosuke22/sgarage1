@@ -1,0 +1,10 @@
+# ファイル形式に合わせて展開
+unzip -o sgarage1   2>/dev/null || \
+tar -xzf sgarage1   2>/dev/null || \
+tar -xf sgarage1    2>/dev/null || \
+gunzip -k sgarage1  2>/dev/null
+
+cd sgarage1 || true
+npm ci || npm install
+npm run build
+npm run preview

@@ -1,10 +1,21 @@
-// vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    runtimeErrorOverlay(),
+    ...(process.env.NODE_ENV !== "production" &&
+    process.env.REPL_ID !== undefined
+      ? [
+          await import("@replit/vite-plugin-cartographer").then((m) =>
+            m.cartographer(),
+          ),
+        ]
+      : []),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -18,22 +29,9 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    fs: { strict: true, deny: ["**/.*"] },
-    // Replit で外部からアクセスできるようにローカル固定をやめる
-    host: true,              // 0.0.0.0 で待受
-    port: 5174,
-    // ← ここが今回の主因。Replit の動的ホストを許可
-    allowedHosts: [
-      ".replit.dev",         // 例: xxxx.worf.replit.dev
-      ".repl.co"             // 一部の環境で使われる旧ドメイン
-    ],
-    proxy: {
-      "/health": {
-        target: "http://127.0.0.1:5002",
-        changeOrigin: true,
-      },
+    fs: {
+      strict: true,
+      deny: ["**/.*"],
     },
-    // HTTPS 環境でのHMRが不安定なら有効化（任意）
-    // hmr: { clientPort: 443 },
   },
 });
