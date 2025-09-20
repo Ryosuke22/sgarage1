@@ -1728,6 +1728,37 @@ class MemStorage implements IStorage {
     return bids.length > 0 ? bids[0] : undefined;
   }
 
+  // Audit operations
+  async logAction(log: InsertAuditLog): Promise<void> {
+    // Simple in-memory implementation - just log to console for now
+    console.log('Audit Log:', log);
+  }
+
+  async getAuditLogs(filters?: { entity?: string; entityId?: string; limit?: number }): Promise<AuditLog[]> {
+    return [];
+  }
+
+  // Settings operations
+  async getSetting(key: string): Promise<Setting | undefined> {
+    return undefined;
+  }
+
+  async setSetting(key: string, value: any): Promise<void> {
+    // No-op for in-memory storage
+  }
+
+  async upsertUserSettings(userId: string, settings: Partial<InsertUserSettings>): Promise<UserSettings> {
+    // Simple implementation for user settings
+    const userSettings: UserSettings = {
+      id: `settings-${userId}`,
+      userId,
+      ...settings,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as UserSettings;
+    return userSettings;
+  }
+
   // Implement remaining interface methods with minimal implementations
   async addComment(): Promise<Comment> { throw new Error('Not implemented'); }
   async getCommentsByListingId(): Promise<(Comment & { author: User })[]> { return []; }
@@ -1740,6 +1771,10 @@ class MemStorage implements IStorage {
   async getAutoBidByUserAndListing(): Promise<AutoBid | undefined> { return undefined; }
   async updateAutoBid(): Promise<AutoBid> { throw new Error('Not implemented'); }
   async executeAutoBids(): Promise<void> {}
+  async deleteAutoBid(): Promise<boolean> { return false; }
+  async getActiveAutoBids(): Promise<AutoBid[]> { return []; }
+  async findScheduledAutoBid(): Promise<AutoBid | undefined> { return undefined; }
+  async findDueAutoBids(): Promise<AutoBid[]> { return []; }
   async markAutoBidExecuted(): Promise<void> {}
   async markAutoBidExpired(): Promise<void> {}
   async getExpiredAuctions(): Promise<any[]> { return []; }
@@ -1759,6 +1794,30 @@ class MemStorage implements IStorage {
   async getListingForUpdate(): Promise<ListingWithDetails | undefined> { return undefined; }
   async getLastBid(): Promise<BidWithDetails | undefined> { return undefined; }
   async findExpiredLiveListings(): Promise<any[]> { return []; }
+  async extendListing(): Promise<void> {}
+  async settleListing(): Promise<void> {}
+  async createBid(): Promise<Bid> { throw new Error('Not implemented'); }
+  async getListingsForAdmin(): Promise<ListingWithDetails[]> { return []; }
+  async getAllUsers(): Promise<User[]> { return Array.from(this.users.values()); }
+  async updateUserRole(): Promise<void> {}
+  async getAdminDashboard(): Promise<any> { 
+    return {
+      activeAuctions: 0,
+      pendingApproval: 0,
+      totalUsers: this.users.size,
+      totalBids: this.bids.size
+    };
+  }
+  async getDashboardStats(): Promise<any> { 
+    return {
+      activeAuctions: 0,
+      pendingApproval: 0,
+      monthlySales: "0",
+      conversionRate: "0%"
+    };
+  }
+  async getBidderProfile(): Promise<any> { return null; }
+  async extendAuction(): Promise<void> {}
 }
 
 export const storage = new MemStorage();
