@@ -156,7 +156,25 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  // Check session-based authentication first (for email/password login)
+  if ((req as any).session?.userId) {
+    return next();
+  }
+
+  // Development mode fallback - auto-login as demo user (same as /api/auth/user)
+  if (process.env.NODE_ENV === 'development') {
+    const { storage } = await import("./storage");
+    const demoUser = await storage.getUser('samurai-user-1');
+    if (demoUser) {
+      // Set session for demo user
+      (req as any).session.userId = demoUser.id;
+      (req as any).session.user = demoUser;
+      return next();
+    }
+  }
+
+  // Check OAuth authentication (for Replit auth)
+  if (!req.isAuthenticated() || !user?.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
