@@ -1630,6 +1630,7 @@ class MemStorage implements IStorage {
       id: `listing-${Date.now()}`,
       sellerId,
       slug: listing.title.toLowerCase().replace(/\s+/g, '-'),
+      status: listing.status || 'published', // Default to 'published' if no status provided
       createdAt: new Date(),
       updatedAt: new Date()
     } as Listing;
