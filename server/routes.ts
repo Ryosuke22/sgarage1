@@ -908,7 +908,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Document routes
   app.post("/api/listings/:listingId/documents", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const userId = req.user?.claims?.sub || req.user?.id;
+      const userId = getUserId(req);
       const { listingId } = req.params;
       const { type, fileName, url } = req.body;
 
