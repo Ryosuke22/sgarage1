@@ -39,7 +39,7 @@ export default function AuctionCard({ listing }: AuctionCardProps) {
     }
   };
 
-  const mainPhoto = listing.photos[0];
+  const mainPhoto = listing.photos?.[0];
 
   return (
     <div 
@@ -105,7 +105,7 @@ export default function AuctionCard({ listing }: AuctionCardProps) {
         <div className="flex justify-between items-start mb-4">
           <div>
             <p className="text-3xl font-bold text-gradient mb-1" data-testid={`text-price-${listing.id}`}>
-              {formatCurrency(parseFloat(listing.currentPrice), currency)}
+              {formatCurrency(Number(listing.currentPrice ?? listing.startingPrice ?? 0), currency)}
             </p>
             <p className="text-xs text-gray-500 font-medium">{t('auctioncard.currentPrice')}</p>
           </div>
@@ -117,7 +117,7 @@ export default function AuctionCard({ listing }: AuctionCardProps) {
               {formatTimeRemainingLocal(timeRemaining)}
             </p>
             <p className="text-xs text-gray-500" data-testid={`text-bid-count-${listing.id}`}>
-              {t('auctioncard.bidCount', { count: listing._count.bids })}
+              {t('auctioncard.bidCount', { count: listing._count?.bids ?? (Array.isArray((listing as any).bids) ? (listing as any).bids.length : 0) })}
             </p>
           </div>
         </div>
