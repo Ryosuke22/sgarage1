@@ -1226,7 +1226,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/listings/:id", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = getUserId(req);
+      
+      if (!userId) {
+        return res.status(401).json({ error: "ユーザーIDが取得できません" });
+      }
+      
       const listing = await storage.getListingById(req.params.id);
       
       if (!listing) {
