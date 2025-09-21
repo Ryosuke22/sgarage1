@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Users, 
   Car, 
@@ -12,7 +13,9 @@ import {
   CheckCircle2, 
   XCircle,
   Settings,
-  BarChart3
+  BarChart3,
+  Eye,
+  FileText
 } from 'lucide-react';
 import { AdminProtectedRoute } from '@/lib/admin-protected-route';
 
@@ -132,6 +135,72 @@ function AdminStats() {
   );
 }
 
+// Document types mapping
+const DOCUMENT_TYPE_LABELS: { [key: string]: string } = {
+  registration_certificate: '車検証',
+  transfer_certificate: '名義変更証',
+  registration_seal: '印鑑証明書',
+  insurance_certificate: '保険証',
+  maintenance_record: '整備記録簿',
+  other: 'その他'
+};
+
+// Documents Viewer Component
+function DocumentsViewer({ listingId, listingTitle }: { listingId: string, listingTitle: string }) {
+  const { data: documents, isLoading } = useQuery({
+    queryKey: ['/api/listings', listingId, 'documents'],
+    queryFn: async () => {
+      const response = await fetch(`/api/listings/${listingId}/documents`);
+      if (!response.ok) throw new Error('Failed to fetch documents');
+      return response.json();
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2].map((i) => (
+          <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!documents || documents.length === 0) {
+    return (
+      <div className="text-center py-6 text-muted-foreground">
+        <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+        <p>書類がアップロードされていません</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <h4 className="font-medium text-sm">アップロード済み書類 ({documents.length}件)</h4>
+      {documents.map((doc: any) => (
+        <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-3">
+            <FileText className="w-4 h-4 text-blue-600" />
+            <div>
+              <p className="font-medium text-sm">{DOCUMENT_TYPE_LABELS[doc.type] || doc.type}</p>
+              <p className="text-xs text-muted-foreground">{doc.fileName}</p>
+            </div>
+          </div>
+          <a 
+            href={doc.url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+          >
+            表示
+          </a>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Vehicle Approval Component
 function VehicleApproval() {
   const { data: pendingListings, isLoading } = useQuery<AdminListing[]>({
@@ -244,6 +313,25 @@ function VehicleApproval() {
                     </div>
                   </div>
                   <div className="flex gap-2 ml-4">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                          data-testid={`button-documents-${listing.id}`}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          書類確認
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>{listing.title} - 提出書類</DialogTitle>
+                        </DialogHeader>
+                        <DocumentsViewer listingId={listing.id} listingTitle={listing.title} />
+                      </DialogContent>
+                    </Dialog>
                     <Button
                       size="sm"
                       variant="outline"
