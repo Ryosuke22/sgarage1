@@ -38,4 +38,7 @@ temp/
 
 # IDE files
 .vscode/
-.idea/
+.idea/sgarage1.zip
+*.zip
+uploads/
+tmp_uploads/
