@@ -127,19 +127,6 @@
     direction: ltr !important;
   }
 
-  /* すべての白いヘッダーに縁取り効果を適用 */
-  h1.text-white, h2.text-white, h3.text-white {
-    text-shadow: 
-      -2px -2px 0 #000,  
-      2px -2px 0 #000,
-      -2px 2px 0 #000,
-      2px 2px 0 #000,
-      -1px 0 0 #000,
-      1px 0 0 #000,
-      0 -1px 0 #000,
-      0 1px 0 #000,
-      0 0 8px rgba(0, 0, 0, 0.9) !important;
-  }
   
   /* Ensure all text elements display horizontally on mobile */
   h1, h2, h3, h4, h5, h6, p, span, div {
@@ -466,66 +453,7 @@
     border-color: rgb(209, 213, 219) !important;
   }
 
-  /* 白い文字の縁取り効果 */
-  .text-white-outlined {
-    color: white !important;
-    text-shadow: 
-      -2px -2px 0 #000,  
-      2px -2px 0 #000,
-      -2px 2px 0 #000,
-      2px 2px 0 #000,
-      -1px 0 0 #000,
-      1px 0 0 #000,
-      0 -1px 0 #000,
-      0 1px 0 #000,
-      0 0 8px rgba(0, 0, 0, 0.9) !important;
-  }
 
-  .text-white-glow {
-    color: white;
-    text-shadow: 
-      0 0 5px rgba(255, 255, 255, 0.8),
-      0 0 10px rgba(255, 255, 255, 0.6),
-      -1px -1px 0 rgba(0, 0, 0, 0.8),
-      1px -1px 0 rgba(0, 0, 0, 0.8),
-      -1px 1px 0 rgba(0, 0, 0, 0.8),
-      1px 1px 0 rgba(0, 0, 0, 0.8);
-  }
-
-  .text-white-stroke {
-    color: white;
-    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.8);
-    text-shadow: 
-      0 0 8px rgba(0, 0, 0, 0.6),
-      2px 2px 4px rgba(0, 0, 0, 0.4);
-  }
-
-  .text-white-bold-outline {
-    color: white;
-    text-shadow: 
-      -2px -2px 0 #000,
-      2px -2px 0 #000,
-      -2px 2px 0 #000,
-      2px 2px 0 #000,
-      -1px 0 0 #000,
-      1px 0 0 #000,
-      0 -1px 0 #000,
-      0 1px 0 #000,
-      0 0 6px rgba(0, 0, 0, 0.9);
-  }
-
-  .text-white-neon {
-    color: white;
-    text-shadow: 
-      0 0 5px #fff,
-      0 0 10px #fff,
-      0 0 15px #c41e3a,
-      0 0 20px #c41e3a,
-      -1px -1px 0 #000,
-      1px -1px 0 #000,
-      -1px 1px 0 #000,
-      1px 1px 0 #000;
-  }
 
   /* Hide scrollbars while maintaining scroll functionality */
   .scrollbar-hide {

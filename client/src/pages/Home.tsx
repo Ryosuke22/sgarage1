@@ -51,12 +51,7 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-12 md:items-center">
             {/* 左側: タイトル */}
             <div className="sm:col-span-6">
-              <h1 
-                className="text-2xl lg:text-3xl font-bold text-white whitespace-nowrap"
-                style={{
-                  textShadow: '-2px -2px 0 #333, 2px -2px 0 #333, -2px 2px 0 #333, 2px 2px 0 #333, -1px 0 0 #333, 1px 0 0 #333, 0 -1px 0 #333, 0 1px 0 #333, 0 0 8px rgba(100, 100, 100, 0.8)'
-                }}
-              >
+              <h1 className="text-2xl lg:text-3xl font-bold text-white whitespace-nowrap">
                 {showResults ? "落札結果" : "進行中のオークション"}
               </h1>
               <p className="text-gray-300 mt-1">
