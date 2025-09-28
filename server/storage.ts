@@ -1681,7 +1681,9 @@ class MemStorage implements IStorage {
   }
   
   async getPhotosByListingId(listingId: string): Promise<Photo[]> {
-    return Array.from(this.photos.values()).filter(p => p.listingId === listingId);
+    return Array.from(this.photos.values())
+      .filter(p => p.listingId === listingId)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
   }
   
   async deletePhoto(id: string): Promise<void> {
