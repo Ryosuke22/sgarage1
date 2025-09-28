@@ -534,7 +534,7 @@ export default function CreateListing() {
         isTemporaryRegistration: Math.random() > 0.9,
         preferredDayOfWeek: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"][Math.floor(Math.random() * 7)],
         preferredStartTime: ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"][Math.floor(Math.random() * 13)],
-        auctionDuration: ["3minutes", "5days", "7days", "10days", "14days"][Math.floor(Math.random() * 5)],
+        auctionDuration: ["3minutes", "5minutes", "30minutes", "5days", "7days", "10days", "14days"][Math.floor(Math.random() * 7)],
         vin: `TEST${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
         videoUrl: ""
       };
@@ -2546,6 +2546,8 @@ export default function CreateListing() {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="3minutes">3分間（デモ用）</SelectItem>
+                            <SelectItem value="5minutes">5分間</SelectItem>
+                            <SelectItem value="30minutes">30分間</SelectItem>
                             <SelectItem value="5days">5日間</SelectItem>
                             <SelectItem value="7days">7日間（推奨）</SelectItem>
                             <SelectItem value="10days">10日間</SelectItem>
