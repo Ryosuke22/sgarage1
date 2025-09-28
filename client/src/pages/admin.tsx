@@ -1,10 +1,12 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   Users, 
   Car, 
@@ -15,9 +17,12 @@ import {
   Settings,
   BarChart3,
   Eye,
-  FileText
+  FileText,
+  Calendar
 } from 'lucide-react';
 import { AdminProtectedRoute } from '@/lib/admin-protected-route';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 // Type definitions for admin data
 interface AdminStats {
@@ -57,6 +62,11 @@ interface AdminUser {
   lastName: string | null;
   role: string;
   createdAt: string;
+}
+
+interface AdminListingWithSchedule extends AdminListing {
+  endAt: string;
+  startAt?: string;
 }
 
 // Admin Stats Component
@@ -132,6 +142,151 @@ function AdminStats() {
         );
       })}
     </div>
+  );
+}
+
+// Schedule Dialog Component for setting auction start/end times
+function ScheduleDialog({ 
+  listing, 
+  open, 
+  onOpenChange, 
+  onSuccess 
+}: { 
+  listing: AdminListingWithSchedule | null; 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  onSuccess: () => void; 
+}) {
+  const [startAt, setStartAt] = useState("");
+  const [endAt, setEndAt] = useState("");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (listing && open) {
+      // Set default start time to 1 hour from now
+      const defaultStart = new Date();
+      defaultStart.setHours(defaultStart.getHours() + 1);
+      defaultStart.setMinutes(0, 0, 0); // Round to the hour
+      
+      // Set default end time to 7 days from start
+      const defaultEnd = new Date(defaultStart);
+      defaultEnd.setDate(defaultEnd.getDate() + 7);
+      
+      setStartAt(defaultStart.toISOString().slice(0, 16));
+      setEndAt(defaultEnd.toISOString().slice(0, 16));
+    }
+  }, [listing, open]);
+
+  const scheduleMutation = useMutation({
+    mutationFn: async () => {
+      if (!listing) throw new Error("No listing selected");
+      
+      const response = await apiRequest("PUT", `/api/admin/listings/${listing.id}/schedule`, {
+        startAt: new Date(startAt).toISOString(),
+        endAt: new Date(endAt).toISOString(),
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "スケジュール設定完了",
+        description: "オークションの開始・終了時間を設定しました",
+        variant: "default",
+      });
+      onSuccess();
+    },
+    onError: (error) => {
+      toast({
+        title: "エラー",
+        description: "スケジュール設定に失敗しました",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!startAt || !endAt) {
+      toast({
+        title: "入力エラー",
+        description: "開始・終了時間を入力してください",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (new Date(startAt) >= new Date(endAt)) {
+      toast({
+        title: "入力エラー",
+        description: "終了時間は開始時間より後にしてください",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    scheduleMutation.mutate();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>オークションスケジュール設定</DialogTitle>
+          <DialogDescription>
+            オークションの開始・終了時間を設定します
+          </DialogDescription>
+        </DialogHeader>
+        
+        {listing && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <p className="text-sm font-medium text-gray-900">{listing.title}</p>
+              <p className="text-xs text-gray-500">{listing.make} {listing.model} ({listing.year})</p>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="start-time">開始日時</Label>
+                <Input
+                  id="start-time"
+                  type="datetime-local"
+                  value={startAt}
+                  onChange={(e) => setStartAt(e.target.value)}
+                  required
+                  data-testid="input-start-time"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="end-time">終了日時</Label>
+                <Input
+                  id="end-time"
+                  type="datetime-local"
+                  value={endAt}
+                  onChange={(e) => setEndAt(e.target.value)}
+                  required
+                  data-testid="input-end-time"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                キャンセル
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={scheduleMutation.isPending}
+                data-testid="button-schedule-submit"
+              >
+                {scheduleMutation.isPending ? "設定中..." : "スケジュール設定"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -453,6 +608,28 @@ function UserManagement() {
 
 // Main Admin Dashboard
 export default function AdminDashboard() {
+  const [selectedListing, setSelectedListing] = useState<AdminListingWithSchedule | null>(null);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Query for fetching all listings with schedule information  
+  const { data: allListings, isLoading } = useQuery<AdminListingWithSchedule[]>({
+    queryKey: ['/api/admin/listings'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/listings');
+      if (!response.ok) throw new Error('Failed to fetch listings');
+      return response.json();
+    },
+  });
+
+  const handleScheduleSuccess = () => {
+    setShowScheduleDialog(false);
+    setSelectedListing(null);
+    queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+  };
+
   return (
     <AdminProtectedRoute>
       <div className="container mx-auto p-6" data-testid="admin-dashboard">
@@ -491,19 +668,97 @@ export default function AdminDashboard() {
           <TabsContent value="listings">
             <Card>
               <CardHeader>
-                <CardTitle>出品管理</CardTitle>
+                <CardTitle>出品管理・オークションスケジュール</CardTitle>
                 <CardDescription>
-                  すべての出品を管理し、ステータスを変更できます。
+                  すべての出品を管理し、オークション終了時刻を設定できます。
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  実装予定: 全出品のリストとステータス管理
-                </p>
+                {isLoading ? (
+                  <div className="text-center py-8">読み込み中...</div>
+                ) : !allListings || allListings.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    出品がありません
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid gap-4">
+                      {allListings.map((listing) => (
+                        <Card key={listing.id} className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-start space-x-4">
+                              {listing.featuredImageUrl && (
+                                <img 
+                                  src={listing.featuredImageUrl} 
+                                  alt={listing.title}
+                                  className="w-20 h-16 object-cover rounded-md"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="font-medium text-lg" data-testid={`listing-title-${listing.id}`}>
+                                    {listing.title}
+                                  </h4>
+                                  <Badge 
+                                    variant={listing.status === 'published' ? 'default' : 'secondary'}
+                                    data-testid={`listing-status-${listing.id}`}
+                                  >
+                                    {listing.status === 'published' ? '進行中' : 
+                                     listing.status === 'submitted' ? '審査待ち' :
+                                     listing.status === 'approved' ? '承認済み' : 
+                                     listing.status === 'ended' ? '終了' : '下書き'}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  {listing.make} {listing.model} ({listing.year}) - 
+                                  走行距離: {listing.mileage?.toLocaleString()}km - 
+                                  場所: {listing.locationText}
+                                </p>
+                                <div className="flex items-center gap-4 text-sm">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4" />
+                                    終了予定: <span data-testid={`listing-end-time-${listing.id}`}>
+                                      {listing.endAt ? new Date(listing.endAt).toLocaleString('ja-JP') : '未設定'}
+                                    </span>
+                                  </span>
+                                  {listing.reservePrice && (
+                                    <span>希望価格: ¥{parseFloat(listing.reservePrice).toLocaleString()}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedListing(listing);
+                                  setShowScheduleDialog(true);
+                                }}
+                                data-testid={`button-schedule-${listing.id}`}
+                              >
+                                <Calendar className="w-4 h-4 mr-1" />
+                                スケジュール設定
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Schedule Dialog */}
+        <ScheduleDialog
+          listing={selectedListing}
+          open={showScheduleDialog}
+          onOpenChange={setShowScheduleDialog}
+          onSuccess={handleScheduleSuccess}
+        />
       </div>
     </AdminProtectedRoute>
   );
