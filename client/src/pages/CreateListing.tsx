@@ -5,7 +5,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import Layout from "@/components/Layout";
-import { SimpleImageUploader } from "@/components/SimpleImageUploader";
+import { PhotoManager } from "@/components/PhotoManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,7 +71,7 @@ export default function CreateListing() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const [uploadedPhotos, setUploadedPhotos] = useState<{id: string; url: string; sortOrder: number}[]>([]);
   const [uploadedDocuments, setUploadedDocuments] = useState<{type: string, fileName: string, url: string}[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -210,7 +210,7 @@ export default function CreateListing() {
         preferredDayOfWeek: data.preferredDayOfWeek || "saturday",
         preferredStartTime: data.preferredStartTime || "19:00",
         auctionDuration: data.auctionDuration || "7days",
-        photos: uploadedPhotos,
+        photos: uploadedPhotos.map(photo => photo.url), // Extract URLs from PhotoItem objects
         sellerId: (user as any)?.id || "",
         // Add required dates as Date objects not strings
         startAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
@@ -295,8 +295,8 @@ export default function CreateListing() {
     },
   });
 
-  const handlePhotoUpload = async (urls: string[]) => {
-    setUploadedPhotos(prev => [...prev, ...urls]);
+  const handlePhotoUpload = (photos: {id: string; url: string; sortOrder: number}[]) => {
+    setUploadedPhotos(photos);
   };
 
   const onSubmit = async (data: CreateListingForm) => {
@@ -363,7 +363,7 @@ export default function CreateListing() {
     
     const dataWithPhotos = {
       ...data,
-      photos: uploadedPhotos,
+      photos: uploadedPhotos.map(photo => photo.url), // Extract URLs from PhotoItem objects
       videoUrl: normalizedVideoUrl || undefined, // Send embed URL or undefined
     };
     
@@ -2167,25 +2167,13 @@ export default function CreateListing() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <SimpleImageUploader
-                    onUploadComplete={handlePhotoUpload}
+                  <PhotoManager
+                    photos={uploadedPhotos}
+                    onPhotosChange={handlePhotoUpload}
                     maxFiles={10}
                     className="w-full"
                   />
 
-                  {uploadedPhotos.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {uploadedPhotos.map((url, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={url}
-                            alt={`Uploaded photo ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
