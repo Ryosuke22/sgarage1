@@ -422,11 +422,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "管理者権限が必要です" });
       }
 
-      const { status = "all", limit = "50" } = req.query;
-      const listings = await storage.getListings({
-        status: status === "all" ? undefined : status as string,
-        limit: parseInt(limit as string),
-      });
+      const { status } = req.query;
+      const listings = await storage.getListingsForAdmin(status === "all" ? undefined : status as string);
       
       res.json(listings);
     } catch (error: any) {
@@ -1877,26 +1874,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/listings", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = getUserId(req);
-      if (!userId) {
-        return res.status(401).json({ error: "認証が必要です" });
-      }
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== "admin") {
-        return res.status(403).json({ error: "管理者権限が必要です" });
-      }
-
-      const { status } = req.query;
-      const listings = await storage.getListingsForAdmin(status as string);
-      res.json(listings);
-    } catch (error) {
-      console.error("Error fetching admin listings:", error);
-      res.status(500).json({ error: "Failed to fetch listings" });
-    }
-  });
 
   app.post("/api/admin/listing/:id/approve", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
