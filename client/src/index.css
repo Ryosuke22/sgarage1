@@ -126,6 +126,20 @@
     text-orientation: mixed !important;
     direction: ltr !important;
   }
+
+  /* すべての白いヘッダーに縁取り効果を適用 */
+  h1.text-white, h2.text-white, h3.text-white {
+    text-shadow: 
+      -2px -2px 0 #000,  
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000,
+      -1px 0 0 #000,
+      1px 0 0 #000,
+      0 -1px 0 #000,
+      0 1px 0 #000,
+      0 0 8px rgba(0, 0, 0, 0.9) !important;
+  }
   
   /* Ensure all text elements display horizontally on mobile */
   h1, h2, h3, h4, h5, h6, p, span, div {
@@ -454,13 +468,17 @@
 
   /* 白い文字の縁取り効果 */
   .text-white-outlined {
-    color: white;
+    color: white !important;
     text-shadow: 
-      -1px -1px 0 #000,  
-      1px -1px 0 #000,
-      -1px 1px 0 #000,
-      1px 1px 0 #000,
-      0 0 4px rgba(0, 0, 0, 0.8);
+      -2px -2px 0 #000,  
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000,
+      -1px 0 0 #000,
+      1px 0 0 #000,
+      0 -1px 0 #000,
+      0 1px 0 #000,
+      0 0 8px rgba(0, 0, 0, 0.9) !important;
   }
 
   .text-white-glow {
