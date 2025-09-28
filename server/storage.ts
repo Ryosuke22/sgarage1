@@ -1428,7 +1428,7 @@ class MemStorage implements IStorage {
         startingPrice: 8000000,
         currentPrice: 8500000,
         reservePrice: 9000000,
-        status: "live",
+        status: "submitted",
         sellerId: "samurai-user-1",
         slug: "1992-honda-nsx-type-r",
         startAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // started yesterday
@@ -1449,7 +1449,7 @@ class MemStorage implements IStorage {
         startingPrice: 3500000,
         currentPrice: 4200000,
         reservePrice: 4500000,
-        status: "live",
+        status: "submitted",
         sellerId: "samurai-user-1", 
         slug: "1993-mazda-rx7-fd3s",
         startAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // started 12 hours ago
@@ -1798,7 +1798,30 @@ class MemStorage implements IStorage {
   async extendListing(): Promise<void> {}
   async settleListing(): Promise<void> {}
   async createBid(): Promise<Bid> { throw new Error('Not implemented'); }
-  async getListingsForAdmin(): Promise<ListingWithDetails[]> { return []; }
+  async getListingsForAdmin(status?: string): Promise<ListingWithDetails[]> {
+    let listings = Array.from(this.listings.values());
+    
+    // Apply status filter if provided
+    if (status) {
+      listings = listings.filter(l => l.status === status);
+    }
+    
+    // Sort by creation date descending (newest first)
+    listings.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    
+    return listings.map(l => ({
+      ...l,
+      seller: this.users.get(l.sellerId)!,
+      photos: Array.from(this.photos.values()).filter(p => p.listingId === l.id),
+      documents: Array.from(this.documents.values()).filter(d => d.listingId === l.id),
+      bids: Array.from(this.bids.values()).filter(b => b.listingId === l.id),
+      comments: [], // Empty for now
+      _count: {
+        bids: Array.from(this.bids.values()).filter(b => b.listingId === l.id).length,
+        watchList: Array.from(this.watches.values()).filter(w => w.listingId === l.id).length,
+      }
+    })) as ListingWithDetails[];
+  }
   async getAllUsers(): Promise<User[]> { return Array.from(this.users.values()); }
   async updateUserRole(): Promise<void> {}
   async getAdminDashboard(): Promise<any> { 

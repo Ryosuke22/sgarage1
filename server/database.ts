@@ -461,9 +461,9 @@ export class DatabaseService {
         shakenYear: '2026',
         shakenMonth: '3',
         locationText: '神奈川県横浜市',
-        status: 'published',
-        startAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // Started yesterday
-        endAt: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000), // Ends in 6 days
+        status: 'submitted',
+        startAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Will start in 1 day (after approval)
+        endAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Ends in 7 days
         startingPrice: '1800000',
         sellerId: createdUsers[0].id,
       },
@@ -483,9 +483,9 @@ export class DatabaseService {
         shakenYear: '2025',
         shakenMonth: '12',
         locationText: '東京都渋谷区',
-        status: 'published',
-        startAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // Started 12 hours ago
-        endAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // Ends in 4 days
+        status: 'submitted',
+        startAt: new Date(Date.now() + 12 * 60 * 60 * 1000), // Will start in 12 hours (after approval)
+        endAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Ends in 5 days
         startingPrice: '12000000',
         sellerId: createdUsers[1].id,
       },
