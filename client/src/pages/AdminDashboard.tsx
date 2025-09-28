@@ -16,19 +16,15 @@ import { ListingWithDetails } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/formatters";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { DialogFooter } from "@/components/ui/dialog";
 
 // Schedule Dialog Component
-function ScheduleDialog({ 
-  listing, 
-  open, 
-  onOpenChange, 
-  onSuccess 
-}: { 
-  listing: ListingWithDetails | null; 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  onSuccess: () => void; 
-}) {
+const ScheduleDialog = ({ listing, open, onOpenChange, onSuccess }: {
+  listing: ListingWithDetails | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}) => {
   const [startAt, setStartAt] = useState("");
   const [endAt, setEndAt] = useState("");
   const { toast } = useToast();
@@ -38,7 +34,7 @@ function ScheduleDialog({
       // Set default start time to 1 hour from now
       const defaultStart = new Date();
       defaultStart.setHours(defaultStart.getHours() + 1);
-      defaultStart.setMinutes(0, 0, 0); // Round to the hour
+      defaultStart.setMinutes(0, 0, 0);
       
       // Set default end time to 7 days from start
       const defaultEnd = new Date(defaultStart);
@@ -129,6 +125,7 @@ function ScheduleDialog({
                   value={startAt}
                   onChange={(e) => setStartAt(e.target.value)}
                   required
+                  data-testid="input-start-time"
                 />
               </div>
 
@@ -140,24 +137,34 @@ function ScheduleDialog({
                   value={endAt}
                   onChange={(e) => setEndAt(e.target.value)}
                   required
+                  data-testid="input-end-time"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                data-testid="button-cancel-schedule"
+              >
                 キャンセル
               </Button>
-              <Button type="submit" disabled={scheduleMutation.isPending}>
+              <Button
+                type="submit"
+                disabled={scheduleMutation.isPending}
+                data-testid="button-save-schedule"
+              >
                 {scheduleMutation.isPending ? "設定中..." : "スケジュール設定"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         )}
       </DialogContent>
     </Dialog>
   );
-}
+};
 
 export default function AdminDashboard() {
   const { user, isLoading } = useAuth();

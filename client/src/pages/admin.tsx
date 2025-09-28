@@ -23,6 +23,14 @@ import {
 import { AdminProtectedRoute } from '@/lib/admin-protected-route';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 // Type definitions for admin data
 interface AdminStats {
@@ -605,6 +613,128 @@ function UserManagement() {
     </div>
   );
 }
+
+// Schedule Dialog Component  
+const ScheduleDialog = ({ listing, open, onOpenChange, onSuccess }: {
+  listing: AdminListingWithSchedule | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}) => {
+  const [startAt, setStartAt] = useState("");
+  const [endAt, setEndAt] = useState("");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (listing && open) {
+      // Set default start time to 1 hour from now
+      const defaultStart = new Date();
+      defaultStart.setHours(defaultStart.getHours() + 1);
+      defaultStart.setMinutes(0, 0, 0);
+      
+      // Set default end time to 7 days from start
+      const defaultEnd = new Date(defaultStart);
+      defaultEnd.setDate(defaultEnd.getDate() + 7);
+      
+      setStartAt(defaultStart.toISOString().slice(0, 16));
+      setEndAt(defaultEnd.toISOString().slice(0, 16));
+    }
+  }, [listing, open]);
+
+  const handleSubmit = async () => {
+    if (!listing || !startAt || !endAt) return;
+
+    if (new Date(startAt) >= new Date(endAt)) {
+      toast({
+        title: "入力エラー",
+        description: "終了時間は開始時間より後にしてください",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await apiRequest(`/api/admin/listings/${listing.id}/schedule`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          startAt: new Date(startAt).toISOString(),
+          endAt: new Date(endAt).toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "成功",
+          description: "オークションスケジュールを設定しました",
+        });
+        onSuccess();
+        onOpenChange(false);
+      } else {
+        const error = await response.json();
+        toast({
+          title: "エラー",
+          description: error.error || "スケジュール設定に失敗しました",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Schedule setting error:', error);
+      toast({
+        title: "エラー", 
+        description: "通信エラーが発生しました",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>オークションスケジュール設定</DialogTitle>
+        </DialogHeader>
+        {listing && (
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <p className="font-medium">{listing.title}</p>
+              <p className="text-sm text-muted-foreground">{listing.make} {listing.model} ({listing.year})</p>
+            </div>
+            <div>
+              <Label htmlFor="startAt">開始時刻</Label>
+              <input
+                id="startAt"
+                type="datetime-local"
+                value={startAt}
+                onChange={(e) => setStartAt(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                data-testid="input-start-time"
+              />
+            </div>
+            <div>
+              <Label htmlFor="endAt">終了時刻</Label>
+              <input
+                id="endAt"
+                type="datetime-local"
+                value={endAt}
+                onChange={(e) => setEndAt(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                data-testid="input-end-time"
+              />
+            </div>
+          </div>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel-schedule">
+            キャンセル
+          </Button>
+          <Button onClick={handleSubmit} data-testid="button-save-schedule">
+            スケジュール設定
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 // Main Admin Dashboard
 export default function AdminDashboard() {
