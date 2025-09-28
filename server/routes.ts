@@ -1266,7 +1266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = getUserId(req);
       
       if (!userId) {
-        return res.status(401).json({ error: "ユーザーIDが取得できません" });
+        return res.status(401).json({ error: "認証が必要です" });
       }
       
       const { listingId, photoUpdates } = req.body as { 
@@ -1274,8 +1274,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         photoUpdates: { id: string; sortOrder: number }[] 
       };
 
-      if (!listingId || !photoUpdates || !Array.isArray(photoUpdates)) {
-        return res.status(400).json({ error: "listingIdとphotoUpdatesが必要です" });
+      // Validate request payload
+      if (!listingId || typeof listingId !== 'string') {
+        return res.status(400).json({ error: "有効なlistingIdが必要です" });
+      }
+      
+      if (!photoUpdates || !Array.isArray(photoUpdates)) {
+        return res.status(400).json({ error: "photoUpdatesの配列が必要です" });
+      }
+
+      // Validate each photo update
+      for (const update of photoUpdates) {
+        if (!update.id || typeof update.id !== 'string' || 
+            typeof update.sortOrder !== 'number' || update.sortOrder < 0) {
+          return res.status(400).json({ 
+            error: "各photoUpdateにはid(文字列)とsortOrder(0以上の数値)が必要です" 
+          });
+        }
       }
 
       // Get the listing to verify ownership
@@ -1288,6 +1303,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Only seller or admin can reorder photos
       if (listing.sellerId !== userId && req.user?.claims?.role !== "admin") {
         return res.status(403).json({ error: "この出品の写真を編集する権限がありません" });
+      }
+
+      // Verify all photo IDs belong to this listing
+      const existingPhotos = await storage.getPhotosByListingId(listingId);
+      const existingPhotoIds = new Set(existingPhotos.map(p => p.id));
+      
+      for (const update of photoUpdates) {
+        if (!existingPhotoIds.has(update.id)) {
+          return res.status(400).json({ 
+            error: `写真ID ${update.id} は出品 ${listingId} に属していません` 
+          });
+        }
       }
 
       // Update photo sort orders
