@@ -1260,6 +1260,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reorder photos for a listing
+  app.put("/api/photos/reorder", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = getUserId(req);
+      
+      if (!userId) {
+        return res.status(401).json({ error: "ユーザーIDが取得できません" });
+      }
+      
+      const { listingId, photoUpdates } = req.body as { 
+        listingId: string;
+        photoUpdates: { id: string; sortOrder: number }[] 
+      };
+
+      if (!listingId || !photoUpdates || !Array.isArray(photoUpdates)) {
+        return res.status(400).json({ error: "listingIdとphotoUpdatesが必要です" });
+      }
+
+      // Get the listing to verify ownership
+      const listing = await storage.getListingById(listingId);
+      
+      if (!listing) {
+        return res.status(404).json({ error: "出品が見つかりません" });
+      }
+      
+      // Only seller or admin can reorder photos
+      if (listing.sellerId !== userId && req.user?.claims?.role !== "admin") {
+        return res.status(403).json({ error: "この出品の写真を編集する権限がありません" });
+      }
+
+      // Update photo sort orders
+      await storage.updatePhotoSortOrder(listingId, photoUpdates);
+      
+      await storage.logAction({
+        actorId: userId,
+        action: "photos_reordered",
+        entity: "listing",
+        entityId: listingId,
+        metaJson: { photoCount: photoUpdates.length },
+      });
+
+      // Return updated photos
+      const updatedListing = await storage.getListingById(listingId);
+      res.json({ 
+        success: true, 
+        photos: updatedListing?.photos || [] 
+      });
+    } catch (error) {
+      console.error("Error reordering photos:", error);
+      res.status(500).json({ error: "写真の順序変更に失敗しました" });
+    }
+  });
+
   // Create payment intent for bid fee
   app.post("/api/create-bid-fee-payment", [isAuthenticated], async (req: AuthenticatedRequest, res: Response) => {
     try {

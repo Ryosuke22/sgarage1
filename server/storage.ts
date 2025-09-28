@@ -73,6 +73,7 @@ export interface IStorage {
   addPhotos(photos: InsertPhoto[]): Promise<Photo[]>;
   getPhotosByListingId(listingId: string): Promise<Photo[]>;
   deletePhoto(id: string): Promise<void>;
+  updatePhotoSortOrder(listingId: string, photoUpdates: { id: string; sortOrder: number }[]): Promise<void>;
 
   // Document operations
   addDocuments(documents: InsertDocument[]): Promise<Document[]>;
@@ -549,6 +550,18 @@ export class DatabaseStorage implements IStorage {
 
   async deletePhoto(id: string): Promise<void> {
     await db.delete(photos).where(eq(photos.id, id));
+  }
+
+  async updatePhotoSortOrder(listingId: string, photoUpdates: { id: string; sortOrder: number }[]): Promise<void> {
+    // Update each photo's sortOrder in a transaction
+    await db.transaction(async (tx) => {
+      for (const update of photoUpdates) {
+        await tx
+          .update(photos)
+          .set({ sortOrder: update.sortOrder })
+          .where(and(eq(photos.id, update.id), eq(photos.listingId, listingId)));
+      }
+    });
   }
 
   // Document operations
@@ -1673,6 +1686,17 @@ class MemStorage implements IStorage {
   
   async deletePhoto(id: string): Promise<void> {
     this.photos.delete(id);
+  }
+
+  async updatePhotoSortOrder(listingId: string, photoUpdates: { id: string; sortOrder: number }[]): Promise<void> {
+    // Update each photo's sortOrder in memory
+    for (const update of photoUpdates) {
+      const photo = this.photos.get(update.id);
+      if (photo && photo.listingId === listingId) {
+        photo.sortOrder = update.sortOrder;
+        this.photos.set(photo.id, photo);
+      }
+    }
   }
 
   // Document operations
