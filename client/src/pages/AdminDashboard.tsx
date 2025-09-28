@@ -252,7 +252,7 @@ export default function AdminDashboard() {
     onSuccess: (data) => {
       toast({
         title: "テストデータ作成完了",
-        description: `${data.listings}件の出品データを作成しました`,
+        description: `${(data as any).listings}件の出品データを作成しました`,
         variant: "default",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/listings"] });
