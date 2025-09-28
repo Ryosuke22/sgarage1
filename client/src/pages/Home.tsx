@@ -54,7 +54,7 @@ export default function Home() {
               <h1 
                 className="text-2xl lg:text-3xl font-bold text-white whitespace-nowrap"
                 style={{
-                  textShadow: '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, -1px 0 0 #000, 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, 0 0 8px rgba(0, 0, 0, 0.9)'
+                  textShadow: '-2px -2px 0 #333, 2px -2px 0 #333, -2px 2px 0 #333, 2px 2px 0 #333, -1px 0 0 #333, 1px 0 0 #333, 0 -1px 0 #333, 0 1px 0 #333, 0 0 8px rgba(100, 100, 100, 0.8)'
                 }}
               >
                 {showResults ? "落札結果" : "進行中のオークション"}
