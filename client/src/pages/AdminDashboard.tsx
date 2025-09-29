@@ -662,6 +662,9 @@ export default function AdminDashboard() {
                         <div><span className="font-medium">車検満了:</span> {selectedListing.shakenYear}年{selectedListing.shakenMonth}月</div>
                       )}
                       <div><span className="font-medium">仮登録:</span> {selectedListing.isTemporaryRegistration ? "はい" : "いいえ"}</div>
+                      {(selectedListing as any).vin && (
+                        <div><span className="font-medium">VIN番号:</span> {(selectedListing as any).vin}</div>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -683,6 +686,45 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+
+                {/* Vehicle History & Maintenance */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">車両履歴</h3>
+                    <div className="space-y-2 text-sm">
+                      {(selectedListing as any).hasAccidentHistory && (
+                        <div><span className="font-medium">事故歴:</span> {(selectedListing as any).hasAccidentHistory === "yes" ? "あり" : "なし"}</div>
+                      )}
+                      {(selectedListing as any).purchaseYear && (
+                        <div><span className="font-medium">購入年:</span> {(selectedListing as any).purchaseYear}年</div>
+                      )}
+                      {(selectedListing as any).modifiedParts && (
+                        <div><span className="font-medium">改造部品:</span> {(selectedListing as any).modifiedParts || "なし"}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">メンテナンス情報</h3>
+                    <div className="space-y-2 text-sm">
+                      {(selectedListing as any).ownerMaintenance && (
+                        <div><span className="font-medium">メンテナンス履歴:</span> {(selectedListing as any).ownerMaintenance}</div>
+                      )}
+                      {(selectedListing as any).knownIssues && (
+                        <div><span className="font-medium">既知の問題:</span> {(selectedListing as any).knownIssues}</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Purchase Information */}
+                {(selectedListing as any).prePurchaseInfo && (
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">購入前情報</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
+                      {(selectedListing as any).prePurchaseInfo}
+                    </div>
+                  </div>
+                )}
 
                 {/* Description */}
                 <div>
