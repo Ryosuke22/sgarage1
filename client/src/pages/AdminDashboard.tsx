@@ -403,7 +403,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
           <div className="ml-6 md:ml-0">
             <h1 className="text-2xl md:text-3xl font-bold text-white ml-[10px] mr-[10px]">管理画面</h1>
-            <p className="text-gray-300 mt-1 text-sm md:text-base">
+            <p className="text-gray-300 mt-1 text-sm md:text-base ml-[10px] mr-[10px]">
               オークションサイトの管理・監視
             </p>
           </div>
