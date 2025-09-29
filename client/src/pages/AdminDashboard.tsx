@@ -644,6 +644,46 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* Vehicle Details */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">車両詳細</h3>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">所在地:</span> {selectedListing.locationText || "未設定"}</div>
+                      {selectedListing.city && (
+                        <div><span className="font-medium">都市:</span> {selectedListing.city}</div>
+                      )}
+                      <div><span className="font-medium">走行距離認証:</span> {selectedListing.mileageVerified ? "認証済み" : "未認証"}</div>
+                      {selectedListing.ownershipMileage && (
+                        <div><span className="font-medium">所有期間中走行距離:</span> {selectedListing.ownershipMileage.toLocaleString()} km</div>
+                      )}
+                      <div><span className="font-medium">車検:</span> {selectedListing.hasShaken ? "あり" : "なし"}</div>
+                      {selectedListing.hasShaken && selectedListing.shakenYear && selectedListing.shakenMonth && (
+                        <div><span className="font-medium">車検満了:</span> {selectedListing.shakenYear}年{selectedListing.shakenMonth}月</div>
+                      )}
+                      <div><span className="font-medium">仮登録:</span> {selectedListing.isTemporaryRegistration ? "はい" : "いいえ"}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">オークション設定</h3>
+                    <div className="space-y-2 text-sm">
+                      {selectedListing.auctionDuration && (
+                        <div><span className="font-medium">希望期間:</span> {selectedListing.auctionDuration}</div>
+                      )}
+                      {selectedListing.preferredDayOfWeek && (
+                        <div><span className="font-medium">希望開始曜日:</span> {selectedListing.preferredDayOfWeek}</div>
+                      )}
+                      {selectedListing.preferredStartTime && (
+                        <div><span className="font-medium">希望開始時刻:</span> {selectedListing.preferredStartTime}</div>
+                      )}
+                      <div><span className="font-medium">延長回数:</span> {selectedListing.extensionCount}回</div>
+                      {selectedListing.endStatus && (
+                        <div><span className="font-medium">終了ステータス:</span> {selectedListing.endStatus}</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Description */}
                 <div>
                   <h3 className="font-medium text-gray-900 mb-2">説明文</h3>
@@ -651,6 +691,90 @@ export default function AdminDashboard() {
                     {selectedListing.description || "説明文がありません"}
                   </div>
                 </div>
+
+                {/* Specifications */}
+                {selectedListing.specifications && (
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">仕様</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
+                      {selectedListing.specifications}
+                    </div>
+                  </div>
+                )}
+
+                {/* Condition */}
+                {selectedListing.condition && (
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">車両状態</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
+                      {selectedListing.condition}
+                    </div>
+                  </div>
+                )}
+
+                {/* Highlights */}
+                {selectedListing.highlights && (
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">ハイライト・特徴</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
+                      {selectedListing.highlights}
+                    </div>
+                  </div>
+                )}
+
+                {/* Documents */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">書類 ({selectedListing.documents?.length || 0}件)</h3>
+                  {selectedListing.documents && selectedListing.documents.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedListing.documents.map((doc, index) => (
+                        <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <div className="font-medium text-sm">{doc.fileName}</div>
+                            <div className="text-xs text-gray-500">
+                              種類: {
+                                doc.type === "registration_certificate" ? "車検証" :
+                                doc.type === "transfer_certificate" ? "譲渡証明書" :
+                                doc.type === "registration_seal" ? "印鑑証明書" :
+                                doc.type === "insurance_certificate" ? "自賠責保険証明書" :
+                                doc.type === "maintenance_record" ? "整備記録簿" :
+                                "その他"
+                              }
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(doc.url, '_blank')}
+                          >
+                            確認
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500 py-4 bg-gray-50 rounded-lg">
+                      書類がアップロードされていません
+                    </div>
+                  )}
+                </div>
+
+                {/* Video */}
+                {selectedListing.videoUrl && (
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2">動画</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <a 
+                        href={selectedListing.videoUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-700 underline"
+                      >
+                        動画を確認する
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {/* Photos */}
                 <div>
