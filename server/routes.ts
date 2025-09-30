@@ -2747,7 +2747,17 @@ Sitemap: https://${req.hostname}/sitemap.xml`;
       "Ducati": "ドゥカティ",
       "Triumph": "トライアンフ",
       "Kawasaki": "カワサキ",
-      "Yamaha": "ヤマハ"
+      "Yamaha": "ヤマハ",
+      "Norton": "ノートン",
+      "Vespa": "ベスパ",
+      "Gilera": "ジレラ",
+      "BSA": "BSA",
+      "Royal Enfield": "ロイヤルエンフィールド",
+      "Ariel": "アリエル",
+      "Matchless": "マチレス",
+      "AJS": "AJS",
+      "Velocette": "ベロセット",
+      "Vincent": "ビンセント"
     };
 
     // Define manufacturers by country
@@ -2906,7 +2916,17 @@ Sitemap: https://${req.hostname}/sitemap.xml`;
       "ドゥカティ": "Ducati",
       "トライアンフ": "Triumph",
       "カワサキ": "Kawasaki",
-      "ヤマハ": "Yamaha"
+      "ヤマハ": "Yamaha",
+      "ノートン": "Norton",
+      "ベスパ": "Vespa",
+      "ジレラ": "Gilera",
+      "BSA": "BSA",
+      "ロイヤルエンフィールド": "Royal Enfield",
+      "アリエル": "Ariel",
+      "マチレス": "Matchless",
+      "AJS": "AJS",
+      "ベロセット": "Velocette",
+      "ビンセント": "Vincent"
     };
 
     // Enhanced Japanese make mapping for database lookup
@@ -2975,7 +2995,17 @@ Sitemap: https://${req.hostname}/sitemap.xml`;
       "Ducati": "ドゥカティ",
       "Triumph": "トライアンフ",
       "Kawasaki": "カワサキ",
-      "Yamaha": "ヤマハ"
+      "Yamaha": "ヤマハ",
+      "Norton": "ノートン",
+      "Vespa": "ベスパ",
+      "Gilera": "ジレラ",
+      "BSA": "BSA",
+      "Royal Enfield": "ロイヤルエンフィールド",
+      "Ariel": "アリエル",
+      "Matchless": "マチレス",
+      "AJS": "AJS",
+      "Velocette": "ベロセット",
+      "Vincent": "ビンセント"
     };
 
     try {
