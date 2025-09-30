@@ -66,6 +66,9 @@ export const categoryEnum = pgEnum("category", ["car", "motorcycle"]);
 // Listing end status enum
 export const endStatusEnum = pgEnum("end_status", ["sold", "unsold"]);
 
+// Accident history enum
+export const accidentHistoryEnum = pgEnum("accident_history", ["yes", "no", "unknown"]);
+
 // Main listings table
 export const listings = pgTable("listings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -102,6 +105,13 @@ export const listings = pgTable("listings", {
   preferredStartTime: varchar("preferred_start_time"), // "09:00", "10:00", etc.
   auctionDuration: varchar("auction_duration"), // "3days", "7days", etc.
   videoUrl: text("video_url"), // Optional video URL for embedded display
+  vin: varchar("vin"), // VIN number
+  hasAccidentHistory: accidentHistoryEnum("has_accident_history"), // Accident history
+  purchaseYear: varchar("purchase_year"), // Year of purchase
+  modifiedParts: text("modified_parts"), // Modified parts description
+  prePurchaseInfo: text("pre_purchase_info"), // Pre-purchase information
+  ownerMaintenance: text("owner_maintenance"), // Maintenance history
+  knownIssues: text("known_issues"), // Known issues
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
