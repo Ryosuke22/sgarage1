@@ -2899,6 +2899,8 @@ Sitemap: https://${req.hostname}/sitemap.xml`;
       "ルノー": "Renault",
       "アルピーヌ": "Alpine",
       "ブガッティ": "Bugatti",
+      "ボルボ": "Volvo",
+      "サーブ": "Saab",
       // Motorcycle mappings
       "ハーレーダビッドソン": "Harley-Davidson",
       "ドゥカティ": "Ducati",
@@ -2955,6 +2957,8 @@ Sitemap: https://${req.hostname}/sitemap.xml`;
       "Renault": "ルノー",
       "Alpine": "アルピーヌ",
       "Bugatti": "ブガッティ",
+      "Volvo": "ボルボ",
+      "Saab": "サーブ",
       "AMC": "AMC",
       "Studebaker": "スタデベーカー",
       "Packard": "パッカード",
@@ -2971,7 +2975,6 @@ Sitemap: https://${req.hostname}/sitemap.xml`;
       "Ducati": "ドゥカティ",
       "Triumph": "トライアンフ",
       "Kawasaki": "カワサキ",
-      "Suzuki": "スズキ",
       "Yamaha": "ヤマハ"
     };
 
