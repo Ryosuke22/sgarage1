@@ -210,7 +210,7 @@ export default function CreateListing() {
         preferredDayOfWeek: data.preferredDayOfWeek || "saturday",
         preferredStartTime: data.preferredStartTime || "19:00",
         auctionDuration: data.auctionDuration || "7days",
-        photos: uploadedPhotos.map(photo => photo.url), // Extract URLs from PhotoItem objects
+        photos: uploadedPhotos.map(photo => ({ url: photo.url, sortOrder: photo.sortOrder })), // Send URL and sortOrder
         sellerId: (user as any)?.id || "",
         // Add required dates as Date objects not strings
         startAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
@@ -363,7 +363,7 @@ export default function CreateListing() {
     
     const dataWithPhotos = {
       ...data,
-      photos: uploadedPhotos.map(photo => photo.url), // Extract URLs from PhotoItem objects
+      photos: uploadedPhotos.map(photo => ({ url: photo.url, sortOrder: photo.sortOrder })), // Send URL and sortOrder
       videoUrl: normalizedVideoUrl || undefined, // Send embed URL or undefined
     };
     
@@ -511,6 +511,26 @@ export default function CreateListing() {
         "コンディション良好、即乗車可能"
       ];
       
+      const modifiedPartsOptions = [
+        "エアロパーツ、マフラー交換済み",
+        "社外ホイール装着",
+        "車高調整済み",
+        "オリジナル状態（改造なし）",
+        "エキゾーストシステム交換",
+        "ブレーキシステム強化",
+        "サスペンション改良"
+      ];
+      
+      const knownIssuesOptions = [
+        "小キズあり、動作に問題なし",
+        "年式相応の使用感あり",
+        "エアコン要修理",
+        "特になし、良好な状態",
+        "タイヤ交換推奨",
+        "バッテリー交換推奨",
+        "定期メンテナンス必要"
+      ];
+      
       // その他のフィールドを設定
       const otherFields = {
         mileage: randomMileage.toString(),
@@ -518,10 +538,10 @@ export default function CreateListing() {
         highlights: testHighlights[Math.floor(Math.random() * testHighlights.length)],
         hasAccidentHistory: ["yes", "no", "unknown"][Math.floor(Math.random() * 3)] as "yes" | "no" | "unknown",
         purchaseYear: (randomYear + Math.floor(Math.random() * 5)).toString(),
-        modifiedParts: Math.random() > 0.7 ? "エアロパーツ、マフラー交換済み" : "",
+        modifiedParts: modifiedPartsOptions[Math.floor(Math.random() * modifiedPartsOptions.length)],
         prePurchaseInfo: "ディーラー購入、点検記録あり",
         ownerMaintenance: "定期点検実施、オイル交換記録あり",
-        knownIssues: Math.random() > 0.8 ? "小キズあり、動作に問題なし" : "",
+        knownIssues: knownIssuesOptions[Math.floor(Math.random() * knownIssuesOptions.length)],
         locationText: randomPrefecture,
         city: randomCity,
         startingPrice: randomStartPrice.toString(),

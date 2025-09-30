@@ -1194,10 +1194,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create photo records if photos were provided
       if (req.body.photos && req.body.photos.length > 0) {
-        const photoData = req.body.photos.map((photoUrl: string, index: number) => ({
+        const photoData = req.body.photos.map((photo: any, index: number) => ({
           listingId: listing.id,
-          url: photoUrl,
-          sortOrder: index,
+          url: typeof photo === 'string' ? photo : photo.url,
+          sortOrder: typeof photo === 'string' ? index : (photo.sortOrder ?? index),
         }));
         await storage.addPhotos(photoData);
       }
