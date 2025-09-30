@@ -825,7 +825,11 @@ export default function AdminDashboard() {
                     {selectedListing.photos.map((photo, index) => (
                       <div key={photo.id} className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
                         <img
-                          src={photo.url}
+                          src={(() => {
+                            if (typeof photo.url === 'string') return photo.url;
+                            if (typeof photo.url === 'object' && photo.url?.url) return photo.url.url;
+                            return '';
+                          })()}
                           alt={`${selectedListing.title} - 写真 ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
