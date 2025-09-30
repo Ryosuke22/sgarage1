@@ -164,6 +164,7 @@ export function DocumentUpload({
             </div>
             <div className="flex gap-2">
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
                 onClick={() => window.open(existingDocument.url, '_blank')}
@@ -172,6 +173,7 @@ export function DocumentUpload({
                 表示
               </Button>
               <Button
+                type="button"
                 size="sm"
                 variant="ghost"
                 onClick={onRemove}
@@ -206,7 +208,7 @@ export function DocumentUpload({
               </div>
             </div>
             {uploadingFile.status === 'error' && (
-              <Button size="sm" variant="ghost" onClick={resetUpload}>
+              <Button type="button" size="sm" variant="ghost" onClick={resetUpload}>
                 <X className="h-4 w-4" />
               </Button>
             )}
@@ -249,6 +251,7 @@ export function DocumentUpload({
             </p>
           </div>
           <Button 
+            type="button"
             size="sm" 
             variant="outline"
             onClick={() => document.getElementById(`file-${documentType}`)?.click()}
