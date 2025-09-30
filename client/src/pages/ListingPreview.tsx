@@ -109,7 +109,12 @@ export default function ListingPreview() {
                     {/* Main Image */}
                     <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
                       <img
-                        src={typeof (listing as any).photos[0] === 'string' ? (listing as any).photos[0] : (listing as any).photos[0].url}
+                        src={(() => {
+                          const photo = (listing as any).photos[0];
+                          if (typeof photo === 'string') return photo;
+                          if (typeof photo.url === 'string') return photo.url;
+                          return photo.url.url; // Handle nested url object
+                        })()}
                         alt={listing.title}
                         className="w-full h-full object-cover"
                       />
@@ -121,7 +126,11 @@ export default function ListingPreview() {
                         {(listing as any).photos.slice(1, 9).map((photo: any, index: number) => (
                           <div key={index} className="aspect-square bg-gray-100 rounded overflow-hidden">
                             <img
-                              src={typeof photo === 'string' ? photo : photo.url}
+                              src={(() => {
+                                if (typeof photo === 'string') return photo;
+                                if (typeof photo.url === 'string') return photo.url;
+                                return photo.url.url; // Handle nested url object
+                              })()}
                               alt={`${listing.title} - 画像 ${index + 2}`}
                               className="w-full h-full object-cover cursor-pointer hover:opacity-75 transition-opacity"
                             />
@@ -182,8 +191,15 @@ export default function ListingPreview() {
 
                 <div className="flex items-center text-gray-600">
                   <MapPinIcon className="h-4 w-4 mr-2" />
-                  <span>{listing.locationText}</span>
+                  <span>{listing.locationText}{(listing as any).city ? ` - ${(listing as any).city}` : ''}</span>
                 </div>
+
+                {(listing as any).vin && (
+                  <div className="pt-2 border-t">
+                    <span className="text-gray-500 text-sm">VIN番号:</span>
+                    <p className="font-mono text-sm">{(listing as any).vin}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -290,6 +306,88 @@ export default function ListingPreview() {
                 <CardContent>
                   <div className="prose prose-sm max-w-none">
                     <p className="whitespace-pre-wrap">{listing.highlights}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Vehicle History */}
+            {((listing as any).hasAccidentHistory || (listing as any).purchaseYear) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>車両履歴</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {(listing as any).hasAccidentHistory && (
+                    <div>
+                      <span className="text-gray-500 text-sm">事故歴:</span>
+                      <p className="font-medium">
+                        {(listing as any).hasAccidentHistory === 'yes' ? 'あり' : 
+                         (listing as any).hasAccidentHistory === 'no' ? 'なし' : '不明'}
+                      </p>
+                    </div>
+                  )}
+                  {(listing as any).purchaseYear && (
+                    <div>
+                      <span className="text-gray-500 text-sm">購入した年:</span>
+                      <p className="font-medium">{(listing as any).purchaseYear}年</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Modified Parts */}
+            {(listing as any).modifiedParts && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>改造されている場所</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap">{(listing as any).modifiedParts}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Pre-Purchase Info */}
+            {(listing as any).prePurchaseInfo && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>購入前情報</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap">{(listing as any).prePurchaseInfo}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Owner Maintenance */}
+            {(listing as any).ownerMaintenance && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>メンテナンス情報</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap">{(listing as any).ownerMaintenance}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Known Issues */}
+            {(listing as any).knownIssues && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>車両の問題点</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap">{(listing as any).knownIssues}</p>
                   </div>
                 </CardContent>
               </Card>
