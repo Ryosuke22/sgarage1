@@ -1,0 +1,116 @@
+{
+  "bike_periods": {
+    "ヤマハ": [
+      { "model": "YA-1", "from": 1955, "to": 1958 },
+      { "model": "YD-1", "from": 1957, "to": 1962 },
+      { "model": "YDS 250シリーズ", "from": 1959, "to": 1969 },
+
+      { "model": "DT-1 250", "from": 1968, "to": 1973 },
+      { "model": "RD250", "from": 1973, "to": 1987 },
+      { "model": "RD350", "from": 1973, "to": 1975 },
+      { "model": "RD400", "from": 1976, "to": 1979 },
+
+      { "model": "TY50", "from": 1973, "to": 1981 },
+      { "model": "TY80", "from": 1974, "to": 1985 },
+      { "model": "TY125", "from": 1975, "to": 1981 },
+      { "model": "TY175", "from": 1975, "to": 1981 },
+      { "model": "TY250", "from": 1973, "to": 1986 },
+
+      { "model": "YZ80", "from": 1974, "to": 1995 },
+      { "model": "YZ125", "from": 1974, "to": 1995 },
+      { "model": "YZ250", "from": 1974, "to": 1995 },
+
+      { "model": "XT500", "from": 1976, "to": 1981 },
+      { "model": "TT500", "from": 1976, "to": 1981 },
+
+      { "model": "SR400", "from": 1978, "to": 1995 },
+      { "model": "SR500", "from": 1978, "to": 1995 },
+
+      { "model": "DT50", "from": 1978, "to": 1995 },
+      { "model": "DT125", "from": 1974, "to": 1990 },
+      { "model": "DT175", "from": 1974, "to": 1981 },
+      { "model": "DT200R", "from": 1984, "to": 1995 },
+      { "model": "DT250", "from": 1974, "to": 1981 },
+      { "model": "DT360", "from": 1974, "to": 1975 },
+      { "model": "DT400", "from": 1974, "to": 1979 },
+
+      { "model": "パッソル", "from": 1977, "to": 1982 },
+      { "model": "タウニー", "from": 1979, "to": 1982 },
+      { "model": "パッソーラ", "from": 1981, "to": 1983 },
+      { "model": "チャッピー", "from": 1973, "to": 1987 },
+
+      { "model": "RZ250", "from": 1980, "to": 1988 },
+      { "model": "RZ350", "from": 1983, "to": 1995 },
+      { "model": "RZV500R", "from": 1984, "to": 1986 },
+
+      { "model": "PW50", "from": 1980, "to": 1995 },
+      { "model": "PW80", "from": 1991, "to": 1995 },
+
+      { "model": "XJ400", "from": 1980, "to": 1984 },
+      { "model": "XJ650", "from": 1980, "to": 1983 },
+      { "model": "XJ750", "from": 1981, "to": 1986 },
+      { "model": "XJ900", "from": 1983, "to": 1994 },
+      { "model": "XJ1100", "from": 1982, "to": 1982 },
+
+      { "model": "XS650", "from": 1970, "to": 1985 },
+      { "model": "XS750", "from": 1976, "to": 1981 },
+      { "model": "XS850", "from": 1980, "to": 1981 },
+      { "model": "XS1100", "from": 1978, "to": 1981 },
+
+      { "model": "セロー225", "from": 1985, "to": 1995 },
+      { "model": "XT250", "from": 1980, "to": 1995 },
+      { "model": "XT600", "from": 1984, "to": 1995 },
+      { "model": "XT600Z テネレ", "from": 1983, "to": 1991 },
+      { "model": "XTZ660 テネレ", "from": 1991, "to": 1995 },
+      { "model": "XTZ750 スーパーテネレ", "from": 1989, "to": 1995 },
+      { "model": "TW200", "from": 1987, "to": 1995 },
+
+      { "model": "FZ750", "from": 1985, "to": 1991 },
+      { "model": "FZR250", "from": 1986, "to": 1994 },
+      { "model": "FZR400", "from": 1987, "to": 1994 },
+      { "model": "FZR600", "from": 1989, "to": 1995 },
+      { "model": "FZR750", "from": 1987, "to": 1988 },
+      { "model": "FZR1000", "from": 1987, "to": 1995 },
+      { "model": "YZF750R", "from": 1993, "to": 1995 },
+
+      { "model": "TZR125", "from": 1987, "to": 1995 },
+      { "model": "TZR250", "from": 1986, "to": 1995 },
+      { "model": "TDR250", "from": 1988, "to": 1993 },
+      { "model": "TZM50R", "from": 1994, "to": 1995 },
+      { "model": "YSR50", "from": 1986, "to": 1992 },
+
+      { "model": "SRX250", "from": 1984, "to": 1988 },
+      { "model": "SRX400", "from": 1985, "to": 1990 },
+      { "model": "SRX600", "from": 1985, "to": 1990 },
+      { "model": "SRV250", "from": 1992, "to": 1995 },
+      { "model": "R1-Z", "from": 1990, "to": 1995 },
+
+      { "model": "ビラーゴ250（XV250）", "from": 1988, "to": 1995 },
+      { "model": "ビラーゴ400（XV400）", "from": 1987, "to": 1995 },
+      { "model": "ビラーゴ535（XV535）", "from": 1987, "to": 1995 },
+      { "model": "ビラーゴ750（XV750）", "from": 1981, "to": 1995 },
+      { "model": "ビラーゴ1100（XV1100）", "from": 1986, "to": 1995 },
+      { "model": "V-MAX（1200）", "from": 1985, "to": 1995 },
+      { "model": "XJR400", "from": 1993, "to": 1995 },
+      { "model": "XJR1200", "from": 1994, "to": 1995 },
+
+      { "model": "FJ1100", "from": 1984, "to": 1985 },
+      { "model": "FJ1200", "from": 1986, "to": 1995 },
+      { "model": "GTS1000", "from": 1993, "to": 1995 },
+      { "model": "TDM850", "from": 1991, "to": 1995 },
+      { "model": "TRX850", "from": 1995, "to": 1995 },
+
+      { "model": "ベルーガ80", "from": 1981, "to": 1983 },
+      { "model": "ベルーガ125", "from": 1981, "to": 1987 },
+      { "model": "ジョグ（JOG）", "from": 1983, "to": 1995 },
+      { "model": "チャンプ", "from": 1988, "to": 1991 },
+      { "model": "ミント", "from": 1986, "to": 1995 },
+      { "model": "アクシス90", "from": 1988, "to": 1995 },
+      { "model": "アクシス50", "from": 1990, "to": 1995 },
+      { "model": "シグナス125", "from": 1995, "to": 1995 },
+      { "model": "ギア（GEAR・業務用）", "from": 1988, "to": 1995 },
+      { "model": "タウンメイト（T50/T80/T90）", "from": 1982, "to": 1995 },
+      { "model": "メイト（U・V系）", "from": 1978, "to": 1995 }
+    ]
+  }
+}
