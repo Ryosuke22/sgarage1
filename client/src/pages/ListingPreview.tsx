@@ -185,7 +185,28 @@ export default function ListingPreview() {
                   </div>
                   <div>
                     <span className="text-gray-500">走行距離:</span>
-                    <p className="font-medium">{listing.mileage ? listing.mileage.toLocaleString() : '記載なし'} km</p>
+                    <p className="font-medium">
+                      {listing.mileage ? listing.mileage.toLocaleString() : '記載なし'} km
+                      {listing.mileageVerified && <span className="ml-2 text-green-600">✓認証済み</span>}
+                    </p>
+                  </div>
+                  {listing.ownershipMileage && (
+                    <div className="col-span-2">
+                      <span className="text-gray-500">所有期間中走行距離:</span>
+                      <p className="font-medium">{listing.ownershipMileage.toLocaleString()} km</p>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-gray-500">車検:</span>
+                    <p className="font-medium">
+                      {listing.hasShaken ? 'あり' : 'なし'}
+                      {listing.hasShaken && listing.shakenYear && listing.shakenMonth && 
+                        ` (${listing.shakenYear}年${listing.shakenMonth}月まで)`}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">仮登録:</span>
+                    <p className="font-medium">{listing.isTemporaryRegistration ? 'はい' : 'いいえ'}</p>
                   </div>
                 </div>
 
@@ -389,6 +410,65 @@ export default function ListingPreview() {
                   <div className="prose prose-sm max-w-none">
                     <p className="whitespace-pre-wrap">{(listing as any).knownIssues}</p>
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Video URL */}
+            {(listing as any).videoUrl && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>動画</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <a 
+                    href={(listing as any).videoUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline flex items-center"
+                  >
+                    {(listing as any).videoUrl}
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Auction Preferences */}
+            {((listing as any).preferredDayOfWeek || (listing as any).preferredStartTime || (listing as any).auctionDuration) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>オークション希望設定</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {(listing as any).preferredDayOfWeek && (
+                    <div>
+                      <span className="text-gray-500 text-sm">希望開始曜日:</span>
+                      <p className="font-medium">
+                        {(listing as any).preferredDayOfWeek === 'monday' ? '月曜日' :
+                         (listing as any).preferredDayOfWeek === 'tuesday' ? '火曜日' :
+                         (listing as any).preferredDayOfWeek === 'wednesday' ? '水曜日' :
+                         (listing as any).preferredDayOfWeek === 'thursday' ? '木曜日' :
+                         (listing as any).preferredDayOfWeek === 'friday' ? '金曜日' :
+                         (listing as any).preferredDayOfWeek === 'saturday' ? '土曜日' :
+                         (listing as any).preferredDayOfWeek === 'sunday' ? '日曜日' : '未設定'}
+                      </p>
+                    </div>
+                  )}
+                  {(listing as any).preferredStartTime && (
+                    <div>
+                      <span className="text-gray-500 text-sm">希望開始時刻:</span>
+                      <p className="font-medium">{(listing as any).preferredStartTime}</p>
+                    </div>
+                  )}
+                  {(listing as any).auctionDuration && (
+                    <div>
+                      <span className="text-gray-500 text-sm">オークション期間:</span>
+                      <p className="font-medium">{(listing as any).auctionDuration}日間</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
