@@ -485,14 +485,20 @@ export default function CreateListing() {
       }
       
       // 9. その他のフィールドをランダム生成して設定
+      console.log("Step 9: Generating other fields");
       const randomMileage = Math.floor(Math.random() * 200000) + 1000;
       const randomStartPrice = (Math.floor(Math.random() * 50) + 1) * 10000;
       const randomReservePrice = Math.floor(randomStartPrice * (1.2 + Math.random() * 0.3));
       
+      console.log("Accessing cityData...");
       const prefectures = Object.keys(cityData);
+      console.log("Prefectures:", prefectures.length);
       const randomPrefecture = prefectures[Math.floor(Math.random() * prefectures.length)];
+      console.log("Random prefecture:", randomPrefecture);
       const cities = cityData[randomPrefecture];
+      console.log("Cities for", randomPrefecture, ":", cities?.length);
       const randomCity = cities[Math.floor(Math.random() * cities.length)];
+      console.log("Random city:", randomCity);
       
       const testSpecs = [
         "エンジン良好、メンテナンス記録あり",
@@ -559,20 +565,30 @@ export default function CreateListing() {
         videoUrl: ""
       };
       
+      console.log("Setting otherFields:", otherFields);
+      console.log("City value:", otherFields.city);
+      console.log("PurchaseYear value:", otherFields.purchaseYear);
+      
       Object.entries(otherFields).forEach(([key, value]) => {
         form.setValue(key as keyof CreateListingForm, value as any, { shouldDirty: true });
+        if (key === 'city' || key === 'purchaseYear') {
+          console.log(`Set ${key} to:`, value);
+        }
       });
       
       toast({
         title: "テストデータを入力しました",
-        description: `${category === "car" ? "車" : "バイク"}の実際のデータベースから連動してテストデータを生成しました。`,
+        description: `${category === "car" ? "車" : "バイク"}の実際のデータベースから連動してテストデータを生成しました。市町村: ${otherFields.city}, 購入年: ${otherFields.purchaseYear}`,
       });
       
     } catch (error) {
       console.error("テストデータ生成エラー:", error);
+      console.error("エラーの詳細:", JSON.stringify(error, null, 2));
+      console.error("エラーメッセージ:", error instanceof Error ? error.message : String(error));
+      console.error("エラースタック:", error instanceof Error ? error.stack : 'スタックなし');
       toast({
         title: "エラー",
-        description: `テストデータの生成に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`,
+        description: `テストデータの生成に失敗しました: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive",
       });
     }
