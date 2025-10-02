@@ -12,7 +12,7 @@ import {
   User, MessageSquare, Clock, TestTube, BellRing, Gavel, Trophy,
   Eye, Lock, Megaphone, Wrench, CheckCircle
 } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 import { useTheme } from "@/components/ThemeProvider";

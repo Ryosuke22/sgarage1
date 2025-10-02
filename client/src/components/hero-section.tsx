@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { Car, Bike, ArrowRight } from "lucide-react";
 
 export default function HeroSection() {
@@ -52,7 +52,7 @@ export default function HeroSection() {
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 jp-body group"
             data-testid="hero-find-cars"
           >
-            <Link to="/?category=car">
+            <Link href="/?category=car">
               <Car className="w-5 h-5 mr-2" />
               車を探す
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -65,7 +65,7 @@ export default function HeroSection() {
             className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-4 jp-body group"
             data-testid="hero-find-motorcycles"
           >
-            <Link to="/?category=motorcycle">
+            <Link href="/?category=motorcycle">
               <Bike className="w-5 h-5 mr-2" />
               バイクを探す
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

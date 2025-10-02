@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 type Props = { rightSlot?: React.ReactNode };
 
@@ -10,7 +10,7 @@ export default function SiteHeader({ rightSlot }: Props) {
                       pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
         {/* ロゴは常に左起点・縮まない */}
         <Link 
-          to="/landing" 
+          href="/landing" 
           className="shrink-0 cursor-pointer"
           onClick={(e) => {
             e.preventDefault();

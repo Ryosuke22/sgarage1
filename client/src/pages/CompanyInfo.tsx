@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "wouter";
 
 export default function CompanyInfo() {
   const [, navigate] = useLocation();

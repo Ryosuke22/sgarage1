@@ -1,6 +1,6 @@
 import { User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "wouter";
 
 export function UserProfile() {
   const { user } = useAuth();

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "react-router-dom";
+import { useRoute } from "wouter";
 import { type ListingWithBids, type BidWithUser } from "@shared/schema";
 import Header from "@/components/header";
 import CountdownTimer from "@/components/countdown-timer";

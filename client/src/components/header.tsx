@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -28,20 +28,20 @@ export default function Header({ onSearch }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
-            <Link to="/" className="flex items-center" data-testid="logo-link">
+            <Link href="/" className="flex items-center" data-testid="logo-link">
               <Car className="text-primary text-2xl mr-2" />
               <h1 className="text-xl font-bold text-foreground jp-title">サムライガレージ</h1>
             </Link>
             <nav className="hidden md:flex space-x-6">
               <Link 
-                to="/" 
+                href="/" 
                 className="nav-link jp-body"
                 data-testid="nav-home"
               >
                 ホーム
               </Link>
               <Link 
-                to="/?category=car" 
+                href="/?category=car" 
                 className="nav-link jp-body flex items-center gap-1"
                 data-testid="nav-cars"
               >
@@ -49,7 +49,7 @@ export default function Header({ onSearch }: HeaderProps) {
                 車
               </Link>
               <Link 
-                to="/?category=motorcycle" 
+                href="/?category=motorcycle" 
                 className="nav-link jp-body flex items-center gap-1"
                 data-testid="nav-motorcycles"
               >
@@ -137,7 +137,7 @@ export default function Header({ onSearch }: HeaderProps) {
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link to="/auth">
+                <Link href="/auth">
                   <Button 
                     className="bg-primary text-primary-foreground hover:bg-primary/90 jp-body"
                     data-testid="login-button"
@@ -146,7 +146,7 @@ export default function Header({ onSearch }: HeaderProps) {
                     ログイン
                   </Button>
                 </Link>
-                <Link to="/auth">
+                <Link href="/auth">
                   <Button 
                     variant="secondary"
                     className="jp-body"

@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useRouter } from "wouter";
 import { Car, Heart, Plus, Shield, LogOut, Menu, User, Settings } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -15,8 +15,7 @@ const CreateListing = lazyWithPreload(() => import("@/pages/CreateListing"));
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = [
@@ -36,7 +35,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       {navigation.map((item) => {
         const Icon = item.icon;
-        const isActive = location.pathname === item.href;
+        const isActive = location === item.href;
         return (
           <span
             key={item.name}
@@ -87,7 +86,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {isAdmin && (
           <span
             className={`flex items-center px-2 py-1.5 rounded-md text-xs font-medium ${
-              location.pathname === "/admin" || location.pathname.startsWith("/admin/")
+              location === "/admin" || location.startsWith("/admin/")
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-accent"
             } cursor-pointer whitespace-nowrap`}
@@ -244,19 +243,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">サービス</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">オークションの流れ</Link></li>
-                <li><Link to="/fees" className="text-muted-foreground hover:text-foreground transition-colors">手数料について</Link></li>
-                <li><Link to="/listing-guide" className="text-muted-foreground hover:text-foreground transition-colors">出品ガイド</Link></li>
-                <li><Link to="/photo-guide" className="text-muted-foreground hover:text-foreground transition-colors">写真撮影ガイド</Link></li>
+                <li><Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">オークションの流れ</Link></li>
+                <li><Link href="/fees" className="text-muted-foreground hover:text-foreground transition-colors">手数料について</Link></li>
+                <li><Link href="/listing-guide" className="text-muted-foreground hover:text-foreground transition-colors">出品ガイド</Link></li>
+                <li><Link href="/photo-guide" className="text-muted-foreground hover:text-foreground transition-colors">写真撮影ガイド</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">企業情報</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/company" className="text-muted-foreground hover:text-foreground transition-colors">会社概要</Link></li>
-                <li><Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">利用規約</Link></li>
-                <li><Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">プライバシーポリシー</Link></li>
+                <li><Link href="/company" className="text-muted-foreground hover:text-foreground transition-colors">会社概要</Link></li>
+                <li><Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">利用規約</Link></li>
+                <li><Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">プライバシーポリシー</Link></li>
               </ul>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { Car, LogOut } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";

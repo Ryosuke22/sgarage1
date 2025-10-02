@@ -10,7 +10,7 @@ import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Car } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "wouter";
 
 type SignupForm = z.infer<typeof signupSchema>;
 type LoginForm = z.infer<typeof loginSchema>;
