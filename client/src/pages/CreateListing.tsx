@@ -196,7 +196,7 @@ export default function CreateListing() {
         make: data.make,
         model: data.model,
         year: parseInt(data.year.toString()),
-        mileage: parseInt(data.mileage.toString()) || 0, // Convert to integer as schema expects
+        mileage: parseInt(data.mileage.toString()) || 0,
         mileageVerified: data.mileageVerified || false,
         ownershipMileage: data.ownershipMileage ? parseInt(data.ownershipMileage.toString()) : null,
         hasShaken: data.hasShaken || false,
@@ -210,11 +210,18 @@ export default function CreateListing() {
         preferredDayOfWeek: data.preferredDayOfWeek || "saturday",
         preferredStartTime: data.preferredStartTime || "19:00",
         auctionDuration: data.auctionDuration || "7days",
-        photos: uploadedPhotos.map(photo => ({ url: photo.url, sortOrder: photo.sortOrder })), // Send URL and sortOrder
+        vin: data.vin || "",
+        hasAccidentHistory: data.hasAccidentHistory || "unknown",
+        purchaseYear: data.purchaseYear || "",
+        modifiedParts: data.modifiedParts || "",
+        prePurchaseInfo: data.prePurchaseInfo || "",
+        ownerMaintenance: data.ownerMaintenance || "",
+        knownIssues: data.knownIssues || "",
+        videoUrl: data.videoUrl || "",
+        photos: uploadedPhotos.map(photo => ({ url: photo.url, sortOrder: photo.sortOrder })),
         sellerId: (user as any)?.id || "",
-        // Add required dates as Date objects not strings
-        startAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-        endAt: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000), // 8 days from now
+        startAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        endAt: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
       };
       
       console.log("Sending listing data:", listingData);
