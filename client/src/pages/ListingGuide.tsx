@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLocation } from "wouter";
+import { useLocation } from "react-router-dom";
 
 export default function ListingGuide() {
   const [, navigate] = useLocation();

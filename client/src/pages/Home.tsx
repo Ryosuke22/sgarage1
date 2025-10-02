@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
 import AuctionCard from "@/components/AuctionCard";
 
@@ -11,7 +11,7 @@ import { Search } from "lucide-react";
 import { ListingWithDetails } from "@shared/schema";
 
 export default function Home() {
-  const [location] = useLocation();
+  const location = useLocation();
   const [sortBy, setSortBy] = useState<"endingSoon" | "newest">("endingSoon");
   const [category, setCategory] = useState<"" | "car" | "motorcycle">("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,7 +24,7 @@ export default function Home() {
     if (searchParam) {
       setSearchTerm(searchParam);
     }
-  }, [location]);
+  }, [location.pathname + location.search]);
 
   const { data: listings, isLoading } = useQuery({
     queryKey: ["/api/listings", { status: showResults ? "ended" : "published", sortBy, category, searchTerm }],

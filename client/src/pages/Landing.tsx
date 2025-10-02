@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Car, Zap, Shield, Clock, Award, Globe, TrendingUp, Users, LogOut, User, Menu, X, Home, Settings } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";

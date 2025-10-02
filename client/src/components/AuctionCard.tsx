@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { Car } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ListingWithDetails } from "@shared/schema";

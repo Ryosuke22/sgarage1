@@ -1,7 +1,7 @@
 // client/src/lib/protected-route.tsx - From blueprint:javascript_auth_all_persistance
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
-import { Redirect, Route } from "wouter";
+import { Redirect, Route } from "react-router-dom";
 
 export function ProtectedRoute({
   path,

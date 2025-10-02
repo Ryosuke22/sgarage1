@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "wouter";
+import { useLocation } from "react-router-dom";
 import { ReactNode } from "react";
 
 interface AdminProtectedRouteProps {
@@ -29,7 +29,7 @@ export function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">アクセス拒否</h1>
           <p className="text-gray-600 mb-4">このページにアクセスするには管理者権限が必要です。</p>
-          <a href="/" className="text-red-600 hover:underline">ホームに戻る</a>
+          <a to="/" className="text-red-600 hover:underline">ホームに戻る</a>
         </div>
       </div>
     );
