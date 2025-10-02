@@ -1382,7 +1382,7 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// switch to MemStorage for now due to database auth issues
+// Switch to MemStorage due to database auth issues
 // export const storage = new DatabaseStorage();
 
 class MemStorage implements IStorage {
