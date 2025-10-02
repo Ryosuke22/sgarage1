@@ -2306,25 +2306,63 @@ export default function CreateListing() {
                   />
 
                   {form.watch("hasShaken") === true && (
-                    <FormField
-                      control={form.control}
-                      name="shakenMonth"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">車検有効期限（年月まで）</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="month"
-                              {...field}
-                              min={new Date().toISOString().slice(0, 7)}
-                              max={new Date(Date.now() + 3 * 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 7)}
-                              data-testid="input-shaken-expiry"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="shakenYear"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-white">車検有効期限（年）</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="bg-gray-700 border-white/20 text-white" data-testid="select-shaken-year">
+                                  <SelectValue placeholder="年を選択" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Array.from({ length: 4 }, (_, i) => {
+                                  const year = new Date().getFullYear() + i;
+                                  return (
+                                    <SelectItem key={year} value={year.toString()}>
+                                      {year}年
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="shakenMonth"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-white">車検有効期限（月）</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="bg-gray-700 border-white/20 text-white" data-testid="select-shaken-month">
+                                  <SelectValue placeholder="月を選択" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Array.from({ length: 12 }, (_, i) => {
+                                  const month = (i + 1).toString().padStart(2, '0');
+                                  return (
+                                    <SelectItem key={month} value={month}>
+                                      {i + 1}月
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   )}
 
                   <FormField
