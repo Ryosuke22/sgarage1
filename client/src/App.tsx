@@ -2,7 +2,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { queryClient } from "@/lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Routes } from "@/routes";
+import { AppRoutes } from "@/routes";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PerformanceProvider } from "@/components/PerformanceProvider";
 import CriticalResourcePreloader from "@/components/CriticalResourcePreloader";
@@ -52,7 +52,7 @@ const App = memo(function App() {
           <TooltipProvider>
             <Toaster />
             <Suspense fallback={<PageLoading />}>
-              <Routes />
+              <AppRoutes />
             </Suspense>
           </TooltipProvider>
         </ThemeProvider>

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Switch, Route } from "wouter";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { PageLoading } from "@/components/LoadingSpinner";
 import { logPerformanceMetrics, preloadCriticalResources } from "@/utils/performance";
@@ -12,6 +12,7 @@ const Auth = lazy(() => import("@/pages/Auth"));
 const Login = lazy(() => import("@/pages/Login"));
 const Signup = lazy(() => import("@/pages/Signup"));
 const ListingDetail = lazyWithPreload(() => import("@/pages/ListingDetail"));
+const ListingDetailPage = lazy(() => import("@/pages/ListingDetailPage"));
 const ListingPreview = lazy(() => import("@/pages/ListingPreview"));
 const CreateListing = lazyWithPreload(() => import("@/pages/CreateListing"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
@@ -40,7 +41,7 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function Routes() {
+export function AppRoutes() {
   const { isAuthenticated, isLoading, user, error } = useAuth();
 
   console.log("Router state:", { isAuthenticated, isLoading, user: !!user, error: !!error });
@@ -83,57 +84,59 @@ export function Routes() {
   // Development mode: Force authentication to bypass issues
   const forceAuthenticated = process.env.NODE_ENV === 'development' ? true : !!user;
 
+  if (!(isAuthenticated || forceAuthenticated)) {
+    return (
+      <SuspenseWrapper>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route 
+            path="/create" 
+            element={<LoginPrompt message="出品を作成するにはログインが必要です" />} 
+          />
+          <Route path="/photo-guide" element={<PhotoGuide />} />
+          <Route path="/company" element={<CompanyInfo />} />
+          <Route path="/listing-guide" element={<ListingGuide />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/fees" element={<Fees />} />
+          <Route path="/pricing-guide" element={<div>価格設定ガイド（準備中）</div>} />
+          <Route path="/terms" element={<div>利用規約（準備中）</div>} />
+          <Route path="*" element={<Landing />} />
+        </Routes>
+      </SuspenseWrapper>
+    );
+  }
+
   return (
     <SuspenseWrapper>
-      <Switch>
-        {!(isAuthenticated || forceAuthenticated) ? (
-          <>
-            <Route path="/" component={Landing} />
-            <Route path="/auth" component={() => <Auth />} />
-            <Route path="/login" component={Login} />
-            <Route path="/signup" component={Signup} />
-            <Route 
-              path="/create" 
-              component={() => <LoginPrompt message="出品を作成するにはログインが必要です" />} 
-            />
-            <Route path="/photo-guide" component={PhotoGuide} />
-            <Route path="/company" component={CompanyInfo} />
-            <Route path="/listing-guide" component={ListingGuide} />
-            <Route path="/how-it-works" component={HowItWorks} />
-            <Route path="/fees" component={Fees} />
-            <Route path="/pricing-guide" component={() => <div>価格設定ガイド（準備中）</div>} />
-            <Route path="/terms" component={() => <div>利用規約（準備中）</div>} />
-            <Route component={Landing} />
-          </>
-        ) : (
-          <>
-            <Route path="/" component={Home} />
-            <Route path="/dashboard" component={Home} />
-            <Route path="/landing" component={Landing} />
-            <Route path="/listing/:slug" component={ListingDetail} />
-            <Route path="/listing/new" component={CreateListing} />
-            <Route path="/create" component={CreateListing} />
-            <Route path="/create-listing" component={CreateListing} />
-            <Route path="/preview/:id" component={ListingPreview} />
-            <Route path="/admin" component={AdminDashboard} />
-            <Route path="/admin/users" component={UserManagement} />
-            <Route path="/admin/objects" component={ObjectManagement} />
-            <Route path="/admin/performance" component={PerformanceDashboard} />
-            <Route path="/profile" component={Profile} />
-            <Route path="/settings" component={Settings} />
-            <Route path="/watch" component={WatchList} />
-            <Route path="/photo-guide" component={PhotoGuide} />
-            <Route path="/company" component={CompanyInfo} />
-            <Route path="/listing-guide" component={ListingGuide} />
-            <Route path="/how-it-works" component={HowItWorks} />
-            <Route path="/fees" component={Fees} />
-            <Route path="/upload-test" component={UploadTest} />
-            <Route path="/pricing-guide" component={() => <div>価格設定ガイド（準備中）</div>} />
-            <Route path="/terms" component={() => <div>利用規約（準備中）</div>} />
-          </>
-        )}
-        <Route component={NotFound} />
-      </Switch>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Home />} />
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/listing/:slug" element={<ListingDetailPage />} />
+        <Route path="/listing/new" element={<CreateListing />} />
+        <Route path="/create" element={<CreateListing />} />
+        <Route path="/create-listing" element={<CreateListing />} />
+        <Route path="/preview/:id" element={<ListingPreview />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/objects" element={<ObjectManagement />} />
+        <Route path="/admin/performance" element={<PerformanceDashboard />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/watch" element={<WatchList />} />
+        <Route path="/photo-guide" element={<PhotoGuide />} />
+        <Route path="/company" element={<CompanyInfo />} />
+        <Route path="/listing-guide" element={<ListingGuide />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/fees" element={<Fees />} />
+        <Route path="/upload-test" element={<UploadTest />} />
+        <Route path="/pricing-guide" element={<div>価格設定ガイド（準備中）</div>} />
+        <Route path="/terms" element={<div>利用規約（準備中）</div>} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </SuspenseWrapper>
   );
 }
