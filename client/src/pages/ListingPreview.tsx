@@ -138,15 +138,24 @@ export default function ListingPreview() {
 
   // Build specs object
   const specs: Record<string, string | number> = {
+    カテゴリー: listing.category === 'car' ? '自動車' : 'バイク',
     年式: listing.year,
     メーカー: listing.make,
     モデル: listing.model,
     走行距離: `${listing.mileage?.toLocaleString()} km`,
   };
 
+  if (listing.mileageVerified) {
+    specs['走行距離認証'] = '認証済み ✓';
+  }
+
+  if (listing.ownershipMileage) {
+    specs['所有期間走行'] = `${listing.ownershipMileage.toLocaleString()} km`;
+  }
+
   if (listing.hasShaken) {
     specs['車検'] = listing.shakenYear && listing.shakenMonth 
-      ? `${listing.shakenYear}年${listing.shakenMonth}月`
+      ? `${listing.shakenYear}年${listing.shakenMonth}月まで`
       : 'あり';
   } else {
     specs['車検'] = 'なし';
@@ -160,9 +169,7 @@ export default function ListingPreview() {
     specs['VIN'] = (listing as any).vin;
   }
 
-  if (listing.ownershipMileage) {
-    specs['所有期間走行'] = `${listing.ownershipMileage.toLocaleString()} km`;
-  }
+  specs['所在地'] = listing.locationText;
 
   if ((listing as any).city) {
     specs['市区町村'] = (listing as any).city;
@@ -172,9 +179,6 @@ export default function ListingPreview() {
   const highlights: string[] = [];
   if (listing.highlights) {
     highlights.push(...listing.highlights.split('\n').filter(h => h.trim()));
-  }
-  if (listing.mileageVerified) {
-    highlights.push('走行距離認証済み');
   }
 
   return (
