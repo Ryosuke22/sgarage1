@@ -88,19 +88,20 @@ export default function ListingPreview() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-6">
         {/* Preview Header */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h1 className="text-xl font-bold text-blue-900 mb-2">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <h1 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">
             プレビュー - 出品確認
           </h1>
-          <p className="text-blue-700">
+          <p className="text-blue-700 dark:text-blue-300">
             以下が実際の出品ページでの表示内容です。問題がなければ「出品を確定」ボタンを押してください。
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Images */}
+        {/* Top Section: Images and Key Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Left: Images */}
           <div className="lg:col-span-2">
             <Card>
               <CardContent className="p-0">
@@ -151,12 +152,12 @@ export default function ListingPreview() {
             </Card>
           </div>
 
-          {/* Right Column - Details */}
-          <div className="space-y-6">
-            {/* Title and Basic Info */}
-            <Card>
+          {/* Right: Key Info */}
+          <div className="space-y-4">
+            {/* Title and Category */}
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 mb-2">
                   <Badge variant={listing.category === "car" ? "default" : "secondary"}>
                     {listing.category === "car" ? "自動車" : "バイク"}
                   </Badge>
@@ -167,80 +168,61 @@ export default function ListingPreview() {
                      listing.status === "published" ? "公開中" : "終了"}
                   </Badge>
                 </div>
-                <CardTitle className="text-2xl">{listing.title}</CardTitle>
+                <CardTitle className="text-2xl dark:text-white">{listing.title}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-gray-500">メーカー:</span>
-                    <p className="font-medium">{listing.make}</p>
+                    <span className="text-gray-500 dark:text-gray-400">メーカー</span>
+                    <p className="font-medium dark:text-white">{listing.make}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">モデル:</span>
-                    <p className="font-medium">{listing.model}</p>
+                    <span className="text-gray-500 dark:text-gray-400">モデル</span>
+                    <p className="font-medium dark:text-white">{listing.model}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">年式:</span>
-                    <p className="font-medium">{listing.year}年</p>
+                    <span className="text-gray-500 dark:text-gray-400">年式</span>
+                    <p className="font-medium dark:text-white">{listing.year}年</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">走行距離:</span>
-                    <p className="font-medium">
+                    <span className="text-gray-500 dark:text-gray-400">走行距離</span>
+                    <p className="font-medium dark:text-white">
                       {listing.mileage ? listing.mileage.toLocaleString() : '記載なし'} km
-                      {listing.mileageVerified && <span className="ml-2 text-green-600">✓認証済み</span>}
                     </p>
                   </div>
-                  {listing.ownershipMileage && (
-                    <div className="col-span-2">
-                      <span className="text-gray-500">所有期間中走行距離:</span>
-                      <p className="font-medium">{listing.ownershipMileage.toLocaleString()} km</p>
-                    </div>
-                  )}
                   <div>
-                    <span className="text-gray-500">車検:</span>
-                    <p className="font-medium">
+                    <span className="text-gray-500 dark:text-gray-400">車検</span>
+                    <p className="font-medium dark:text-white">
                       {listing.hasShaken ? 'あり' : 'なし'}
                       {listing.hasShaken && listing.shakenYear && listing.shakenMonth && 
-                        ` (${listing.shakenYear}年${listing.shakenMonth}月まで)`}
+                        ` (${listing.shakenYear}年${listing.shakenMonth}月)`}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-500">仮登録:</span>
-                    <p className="font-medium">{listing.isTemporaryRegistration ? 'はい' : 'いいえ'}</p>
+                    <span className="text-gray-500 dark:text-gray-400">所在地</span>
+                    <p className="font-medium dark:text-white">{listing.locationText}</p>
                   </div>
                 </div>
-
-                <div className="flex items-center text-gray-600">
-                  <MapPinIcon className="h-4 w-4 mr-2" />
-                  <span>{listing.locationText}{(listing as any).city ? ` - ${(listing as any).city}` : ''}</span>
-                </div>
-
-                {(listing as any).vin && (
-                  <div className="pt-2 border-t">
-                    <span className="text-gray-500 text-sm">VIN番号:</span>
-                    <p className="font-mono text-sm">{(listing as any).vin}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
-            {/* Pricing */}
-            <Card>
+            {/* Price */}
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
               <CardHeader>
-                <CardTitle>価格情報</CardTitle>
+                <CardTitle className="text-green-900 dark:text-green-100">価格情報</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div>
-                    <span className="text-gray-500 text-sm">開始価格</span>
-                    <p className="text-2xl font-bold text-green-600">
+                    <span className="text-sm text-green-700 dark:text-green-300">開始価格</span>
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                       {formatPrice(parseInt(listing.startingPrice))}
                     </p>
                   </div>
                   {listing.reservePrice && (
                     <div>
-                      <span className="text-gray-500 text-sm">リザーブ価格</span>
-                      <p className="text-lg font-semibold">
+                      <span className="text-sm text-green-700 dark:text-green-300">リザーブ価格</span>
+                      <p className="text-xl font-semibold text-green-600 dark:text-green-400">
                         {formatPrice(parseInt(listing.reservePrice))}
                       </p>
                     </div>
@@ -249,248 +231,210 @@ export default function ListingPreview() {
               </CardContent>
             </Card>
 
-            {/* Auction Timing */}
-            <Card>
+            {/* Auction Info */}
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
               <CardHeader>
-                <CardTitle>オークション期間</CardTitle>
+                <CardTitle className="dark:text-white">オークション期間</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <CalendarIcon className="h-4 w-4 mr-2" />
-                    <div>
-                      <span className="text-gray-500 text-sm">開始:</span>
-                      <p className="font-medium">
-                        {new Date(listing.startAt).toLocaleString('ja-JP')}
-                      </p>
-                    </div>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <CalendarIcon className="h-4 w-4 mt-1 text-gray-500 dark:text-gray-400" />
+                  <div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">開始</span>
+                    <p className="font-medium dark:text-white">
+                      {new Date(listing.startAt).toLocaleString('ja-JP')}
+                    </p>
                   </div>
-                  <div className="flex items-center">
-                    <CalendarIcon className="h-4 w-4 mr-2" />
-                    <div>
-                      <span className="text-gray-500 text-sm">終了:</span>
-                      <p className="font-medium">
-                        {new Date(listing.endAt).toLocaleString('ja-JP')}
-                      </p>
-                    </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CalendarIcon className="h-4 w-4 mt-1 text-gray-500 dark:text-gray-400" />
+                  <div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">終了</span>
+                    <p className="font-medium dark:text-white">
+                      {new Date(listing.endAt).toLocaleString('ja-JP')}
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Description */}
-            <Card>
-              <CardHeader>
-                <CardTitle>基本説明</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap">{listing.description}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Specifications */}
-            {listing.specifications && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>仕様・装備</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{listing.specifications}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Condition */}
-            {listing.condition && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>コンディション</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{listing.condition}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Highlights */}
-            {listing.highlights && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>セールスポイント</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{listing.highlights}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Vehicle History */}
-            {((listing as any).hasAccidentHistory || (listing as any).purchaseYear) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>車両履歴</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {(listing as any).hasAccidentHistory && (
-                    <div>
-                      <span className="text-gray-500 text-sm">事故歴:</span>
-                      <p className="font-medium">
-                        {(listing as any).hasAccidentHistory === 'yes' ? 'あり' : 
-                         (listing as any).hasAccidentHistory === 'no' ? 'なし' : '不明'}
-                      </p>
-                    </div>
-                  )}
-                  {(listing as any).purchaseYear && (
-                    <div>
-                      <span className="text-gray-500 text-sm">購入した年:</span>
-                      <p className="font-medium">{(listing as any).purchaseYear}年</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Modified Parts */}
-            {(listing as any).modifiedParts && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>改造されている場所</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{(listing as any).modifiedParts}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Pre-Purchase Info */}
-            {(listing as any).prePurchaseInfo && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>購入前情報</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{(listing as any).prePurchaseInfo}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Owner Maintenance */}
-            {(listing as any).ownerMaintenance && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>メンテナンス情報</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{(listing as any).ownerMaintenance}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Known Issues */}
-            {(listing as any).knownIssues && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>車両の問題点</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{(listing as any).knownIssues}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Video URL */}
-            {(listing as any).videoUrl && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>動画</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <a 
-                    href={(listing as any).videoUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline flex items-center"
-                  >
-                    {(listing as any).videoUrl}
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Auction Preferences */}
-            {((listing as any).preferredDayOfWeek || (listing as any).preferredStartTime || (listing as any).auctionDuration) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>オークション希望設定</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {(listing as any).preferredDayOfWeek && (
-                    <div>
-                      <span className="text-gray-500 text-sm">希望開始曜日:</span>
-                      <p className="font-medium">
-                        {(listing as any).preferredDayOfWeek === 'monday' ? '月曜日' :
-                         (listing as any).preferredDayOfWeek === 'tuesday' ? '火曜日' :
-                         (listing as any).preferredDayOfWeek === 'wednesday' ? '水曜日' :
-                         (listing as any).preferredDayOfWeek === 'thursday' ? '木曜日' :
-                         (listing as any).preferredDayOfWeek === 'friday' ? '金曜日' :
-                         (listing as any).preferredDayOfWeek === 'saturday' ? '土曜日' :
-                         (listing as any).preferredDayOfWeek === 'sunday' ? '日曜日' : '未設定'}
-                      </p>
-                    </div>
-                  )}
-                  {(listing as any).preferredStartTime && (
-                    <div>
-                      <span className="text-gray-500 text-sm">希望開始時刻:</span>
-                      <p className="font-medium">{(listing as any).preferredStartTime}</p>
-                    </div>
-                  )}
-                  {(listing as any).auctionDuration && (
-                    <div>
-                      <span className="text-gray-500 text-sm">オークション期間:</span>
-                      <p className="font-medium">{(listing as any).auctionDuration}日間</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
           </div>
         </div>
 
+        {/* Bottom Section: Detailed Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          {/* Description */}
+          {listing.description && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">基本説明</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap dark:text-gray-300">{listing.description}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Specifications */}
+          {listing.specifications && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">仕様・装備</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap dark:text-gray-300">{listing.specifications}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Highlights */}
+          {listing.highlights && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">セールスポイント</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap dark:text-gray-300">{listing.highlights}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Vehicle History */}
+          {((listing as any).hasAccidentHistory || (listing as any).purchaseYear) && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">車両履歴</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {(listing as any).hasAccidentHistory && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">事故歴:</span>
+                    <span className="ml-2 font-medium dark:text-white">
+                      {(listing as any).hasAccidentHistory === 'yes' ? 'あり' : 
+                       (listing as any).hasAccidentHistory === 'no' ? 'なし' : '不明'}
+                    </span>
+                  </div>
+                )}
+                {(listing as any).purchaseYear && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">購入年:</span>
+                    <span className="ml-2 font-medium dark:text-white">{(listing as any).purchaseYear}年</span>
+                  </div>
+                )}
+                {listing.ownershipMileage && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">所有期間走行:</span>
+                    <span className="ml-2 font-medium dark:text-white">{listing.ownershipMileage.toLocaleString()} km</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Modified Parts */}
+          {(listing as any).modifiedParts && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">改造箇所</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap dark:text-gray-300">{(listing as any).modifiedParts}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pre-Purchase Info */}
+          {(listing as any).prePurchaseInfo && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">購入前情報</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap dark:text-gray-300">{(listing as any).prePurchaseInfo}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Maintenance */}
+          {(listing as any).ownerMaintenance && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">メンテナンス</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap dark:text-gray-300">{(listing as any).ownerMaintenance}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Known Issues */}
+          {(listing as any).knownIssues && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">問題点</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap dark:text-gray-300">{(listing as any).knownIssues}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* VIN & Other Details */}
+          {((listing as any).vin || (listing as any).videoUrl || listing.isTemporaryRegistration) && (
+            <Card className="dark:bg-gray-800/50 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-white">その他情報</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {(listing as any).vin && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">VIN:</span>
+                    <p className="font-mono dark:text-white">{(listing as any).vin}</p>
+                  </div>
+                )}
+                {listing.isTemporaryRegistration && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">一時抹消:</span>
+                    <span className="ml-2 font-medium dark:text-white">登録済み</span>
+                  </div>
+                )}
+                {(listing as any).videoUrl && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">動画:</span>
+                    <a 
+                      href={(listing as any).videoUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="ml-2 text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                    >
+                      視聴する
+                    </a>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
         {/* Action Buttons */}
-        <div className="mt-8 flex justify-center space-x-4">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate("/create")}
-            data-testid="button-edit"
-          >
-            編集に戻る
-          </Button>
-          <Button 
-            onClick={() => submitListing()}
-            disabled={submitMutation.isPending}
-            data-testid="button-confirm"
-          >
-            {submitMutation.isPending ? "提出中..." : "出品を確定"}
-          </Button>
+        <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 -mx-6 px-6">
+          <div className="max-w-7xl mx-auto flex justify-end gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/create")}
+              data-testid="button-edit"
+              className="dark:border-white/20 dark:text-white dark:hover:bg-white/10"
+            >
+              編集に戻る
+            </Button>
+            <Button 
+              onClick={() => submitListing()}
+              disabled={submitMutation.isPending}
+              data-testid="button-confirm"
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+            >
+              {submitMutation.isPending ? "提出中..." : "出品を確定"}
+            </Button>
+          </div>
         </div>
       </div>
     </Layout>
