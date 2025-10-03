@@ -130,40 +130,41 @@ export default function CreateListing() {
   // Load existing listing data into form when editing
   useEffect(() => {
     if (existingListing) {
+      const listing = existingListing as any;
       form.reset({
-        specifications: existingListing.specifications || "",
-        hasAccidentHistory: existingListing.hasAccidentHistory || "unknown",
-        purchaseYear: existingListing.purchaseYear || "",
-        modifiedParts: existingListing.modifiedParts || "",
-        prePurchaseInfo: existingListing.prePurchaseInfo || "",
-        ownerMaintenance: existingListing.ownerMaintenance || "",
-        knownIssues: existingListing.knownIssues || "",
-        highlights: existingListing.highlights || "",
-        category: existingListing.category,
-        make: existingListing.make,
-        model: existingListing.model,
-        vin: existingListing.vin || "",
-        year: existingListing.year,
-        mileage: existingListing.mileage?.toString() || "",
-        mileageVerified: existingListing.mileageVerified || false,
-        ownershipMileage: existingListing.ownershipMileage?.toString() || "",
-        hasShaken: existingListing.hasShaken || false,
-        shakenYear: existingListing.shakenYear || "",
-        shakenMonth: existingListing.shakenMonth || "",
-        isTemporaryRegistration: existingListing.isTemporaryRegistration || false,
-        locationText: existingListing.locationText || "",
-        city: existingListing.city || "",
-        startingPrice: existingListing.startingPrice || "",
-        reservePrice: existingListing.reservePrice || "",
-        preferredDayOfWeek: existingListing.preferredDayOfWeek || "",
-        preferredStartTime: existingListing.preferredStartTime || "",
-        auctionDuration: existingListing.auctionDuration || "",
-        videoUrl: existingListing.videoUrl || "",
+        specifications: listing.specifications || "",
+        hasAccidentHistory: listing.hasAccidentHistory || "unknown",
+        purchaseYear: listing.purchaseYear || "",
+        modifiedParts: listing.modifiedParts || "",
+        prePurchaseInfo: listing.prePurchaseInfo || "",
+        ownerMaintenance: listing.ownerMaintenance || "",
+        knownIssues: listing.knownIssues || "",
+        highlights: listing.highlights || "",
+        category: listing.category,
+        make: listing.make,
+        model: listing.model,
+        vin: listing.vin || "",
+        year: listing.year,
+        mileage: listing.mileage?.toString() || "",
+        mileageVerified: listing.mileageVerified || false,
+        ownershipMileage: listing.ownershipMileage?.toString() || "",
+        hasShaken: listing.hasShaken || false,
+        shakenYear: listing.shakenYear || "",
+        shakenMonth: listing.shakenMonth || "",
+        isTemporaryRegistration: listing.isTemporaryRegistration || false,
+        locationText: listing.locationText || "",
+        city: listing.city || "",
+        startingPrice: listing.startingPrice || "",
+        reservePrice: listing.reservePrice || "",
+        preferredDayOfWeek: listing.preferredDayOfWeek || "",
+        preferredStartTime: listing.preferredStartTime || "",
+        auctionDuration: listing.auctionDuration || "",
+        videoUrl: listing.videoUrl || "",
       });
       
       // Load photos if available
-      if (existingListing.photos && Array.isArray(existingListing.photos)) {
-        const photos = existingListing.photos.map((photo: any, index: number) => ({
+      if (listing.photos && Array.isArray(listing.photos)) {
+        const photos = listing.photos.map((photo: any, index: number) => ({
           id: `photo-${Date.now()}-${index}`,
           url: photo.url || photo,
           sortOrder: photo.sortOrder ?? index
@@ -172,8 +173,8 @@ export default function CreateListing() {
       }
       
       // Load documents if available
-      if (existingListing.documents && Array.isArray(existingListing.documents)) {
-        setUploadedDocuments(existingListing.documents);
+      if (listing.documents && Array.isArray(listing.documents)) {
+        setUploadedDocuments(listing.documents);
       }
     }
   }, [existingListing, form]);
