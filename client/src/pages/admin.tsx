@@ -23,14 +23,7 @@ import {
 import { AdminProtectedRoute } from '@/lib/admin-protected-route';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { DialogFooter } from '@/components/ui/dialog';
 
 // Type definitions for admin data
 interface AdminStats {

@@ -370,33 +370,41 @@ export default function ListingPreview() {
                 <div className="mt-3 space-y-3">
                   {(listing as any).modifiedParts && (
                     <Card className="dark:bg-gray-800 dark:border-gray-700">
-                      <CardContent className="p-4">
-                        <div className="font-semibold mb-1 dark:text-white">改造箇所</div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{(listing as any).modifiedParts}</div>
+                      <CardHeader>
+                        <CardTitle>改造箇所</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="whitespace-pre-wrap text-sm dark:text-gray-300">{(listing as any).modifiedParts}</p>
                       </CardContent>
                     </Card>
                   )}
                   {(listing as any).prePurchaseInfo && (
                     <Card className="dark:bg-gray-800 dark:border-gray-700">
-                      <CardContent className="p-4">
-                        <div className="font-semibold mb-1 dark:text-white">購入前情報</div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{(listing as any).prePurchaseInfo}</div>
+                      <CardHeader>
+                        <CardTitle>購入前情報</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="whitespace-pre-wrap text-sm dark:text-gray-300">{(listing as any).prePurchaseInfo}</p>
                       </CardContent>
                     </Card>
                   )}
                   {(listing as any).ownerMaintenance && (
                     <Card className="dark:bg-gray-800 dark:border-gray-700">
-                      <CardContent className="p-4">
-                        <div className="font-semibold mb-1 dark:text-white">メンテナンス</div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{(listing as any).ownerMaintenance}</div>
+                      <CardHeader>
+                        <CardTitle>メンテナンス</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="whitespace-pre-wrap text-sm dark:text-gray-300">{(listing as any).ownerMaintenance}</p>
                       </CardContent>
                     </Card>
                   )}
                   {(listing as any).knownIssues && (
                     <Card className="dark:bg-gray-800 dark:border-gray-700">
-                      <CardContent className="p-4">
-                        <div className="font-semibold mb-1 dark:text-white">問題点</div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{(listing as any).knownIssues}</div>
+                      <CardHeader>
+                        <CardTitle>既知の不具合</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="whitespace-pre-wrap text-sm dark:text-gray-300">{(listing as any).knownIssues}</p>
                       </CardContent>
                     </Card>
                   )}
