@@ -73,6 +73,15 @@ export default function CreateListing() {
   const queryClient = useQueryClient();
   const [uploadedPhotos, setUploadedPhotos] = useState<{id: string; url: string; sortOrder: number}[]>([]);
   const [uploadedDocuments, setUploadedDocuments] = useState<{type: string, fileName: string, url: string}[]>([]);
+  
+  // Get edit ID from URL parameters
+  const editId = new URLSearchParams(window.location.search).get('edit');
+  
+  // Fetch existing listing data if editing
+  const { data: existingListing } = useQuery({
+    queryKey: [`/api/listings/${editId}`],
+    enabled: !!editId,
+  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isLoading, isAuthenticated } = useAuth();
   
@@ -117,6 +126,57 @@ export default function CreateListing() {
   const watchedMake = useWatch({ control: form.control, name: "make" });
   const watchedYear = useWatch({ control: form.control, name: "year" });
   const watchedLocation = useWatch({ control: form.control, name: "locationText" });
+
+  // Load existing listing data into form when editing
+  useEffect(() => {
+    if (existingListing) {
+      form.reset({
+        specifications: existingListing.specifications || "",
+        hasAccidentHistory: existingListing.hasAccidentHistory || "unknown",
+        purchaseYear: existingListing.purchaseYear || "",
+        modifiedParts: existingListing.modifiedParts || "",
+        prePurchaseInfo: existingListing.prePurchaseInfo || "",
+        ownerMaintenance: existingListing.ownerMaintenance || "",
+        knownIssues: existingListing.knownIssues || "",
+        highlights: existingListing.highlights || "",
+        category: existingListing.category,
+        make: existingListing.make,
+        model: existingListing.model,
+        vin: existingListing.vin || "",
+        year: existingListing.year,
+        mileage: existingListing.mileage?.toString() || "",
+        mileageVerified: existingListing.mileageVerified || false,
+        ownershipMileage: existingListing.ownershipMileage?.toString() || "",
+        hasShaken: existingListing.hasShaken || false,
+        shakenYear: existingListing.shakenYear || "",
+        shakenMonth: existingListing.shakenMonth || "",
+        isTemporaryRegistration: existingListing.isTemporaryRegistration || false,
+        locationText: existingListing.locationText || "",
+        city: existingListing.city || "",
+        startingPrice: existingListing.startingPrice || "",
+        reservePrice: existingListing.reservePrice || "",
+        preferredDayOfWeek: existingListing.preferredDayOfWeek || "",
+        preferredStartTime: existingListing.preferredStartTime || "",
+        auctionDuration: existingListing.auctionDuration || "",
+        videoUrl: existingListing.videoUrl || "",
+      });
+      
+      // Load photos if available
+      if (existingListing.photos && Array.isArray(existingListing.photos)) {
+        const photos = existingListing.photos.map((photo: any, index: number) => ({
+          id: `photo-${Date.now()}-${index}`,
+          url: photo.url || photo,
+          sortOrder: photo.sortOrder ?? index
+        }));
+        setUploadedPhotos(photos);
+      }
+      
+      // Load documents if available
+      if (existingListing.documents && Array.isArray(existingListing.documents)) {
+        setUploadedDocuments(existingListing.documents);
+      }
+    }
+  }, [existingListing, form]);
 
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
 

@@ -201,7 +201,7 @@ export default function ListingPreview() {
               </div>
               <Button
                 variant="ghost"
-                onClick={() => navigate("/create")}
+                onClick={() => navigate(`/create?edit=${listing.id}`)}
                 data-testid="button-back-edit"
                 className="hidden md:flex items-center gap-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40"
               >
@@ -500,7 +500,7 @@ export default function ListingPreview() {
 
               <Button
                 variant="outline"
-                onClick={() => navigate("/create")}
+                onClick={() => navigate(`/create?edit=${listing.id}`)}
                 data-testid="button-edit"
                 className="w-full dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
               >
