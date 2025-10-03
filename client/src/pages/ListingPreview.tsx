@@ -1,7 +1,7 @@
 import { useLocation, useRoute } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Layout from "@/components/Layout";
 import { ArrowLeft, CheckCircle } from "lucide-react";
@@ -260,7 +260,98 @@ export default function ListingPreview() {
 
             <section>
               <SectionTitle>仕様</SectionTitle>
-              <SpecTable specs={specs} />
+              <Card className="mt-3 dark:bg-gray-800 dark:border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-xl dark:text-white">車両詳細</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">カテゴリー:</span>
+                      <p className="font-medium dark:text-white">{listing.category === 'car' ? '自動車' : 'バイク'}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">メーカー:</span>
+                      <p className="font-medium dark:text-white">{listing.make}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">モデル:</span>
+                      <p className="font-medium dark:text-white">{listing.model}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">年式:</span>
+                      <p className="font-medium dark:text-white">{listing.year}年</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">走行距離:</span>
+                      <p className="font-medium dark:text-white">
+                        {listing.mileage ? listing.mileage.toLocaleString() : '記載なし'} km
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">実走行フラグ:</span>
+                      <p className="font-medium dark:text-white">{listing.mileageVerified ? '実走行' : '不明'}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">所有期間の走行距離:</span>
+                      <p className="font-medium dark:text-white">
+                        {typeof (listing as any).ownershipMileage === 'number'
+                          ? (listing as any).ownershipMileage.toLocaleString() + ' km'
+                          : '—'}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">フレームNo.:</span>
+                      <p className="font-medium dark:text-white">{(listing as any).vin || '—'}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">事故歴:</span>
+                      <p className="font-medium dark:text-white">
+                        {((listing as any).hasAccidentHistory === 'yes' && 'あり') ||
+                         ((listing as any).hasAccidentHistory === 'no' && 'なし') ||
+                         ((listing as any).hasAccidentHistory === 'unknown' && '不明') ||
+                         '—'}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">車検:</span>
+                      <p className="font-medium dark:text-white">
+                        {listing.hasShaken
+                          ? `${(listing as any).shakenYear || '—'}年${(listing as any).shakenMonth || '—'}月`
+                          : 'なし'}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">一時抹消:</span>
+                      <p className="font-medium dark:text-white">{(listing as any).isTemporaryRegistration ? 'はい' : 'いいえ'}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">購入年:</span>
+                      <p className="font-medium dark:text-white">{(listing as any).purchaseYear ? `${(listing as any).purchaseYear}年` : '—'}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">所在地:</span>
+                      <p className="font-medium dark:text-white">{listing.locationText}</p>
+                    </div>
+                    {(listing as any).city && (
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">市区町村:</span>
+                        <p className="font-medium dark:text-white">{(listing as any).city}</p>
+                      </div>
+                    )}
+                    {(listing as any).videoUrl && (
+                      <div className="col-span-2">
+                        <span className="text-gray-500 dark:text-gray-400">動画:</span>
+                        <p className="font-medium dark:text-white">
+                          <a className="underline text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300" href={(listing as any).videoUrl} target="_blank" rel="noreferrer">
+                            {(listing as any).videoUrl}
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </section>
 
             {listing.specifications && (
@@ -272,31 +363,11 @@ export default function ListingPreview() {
               </section>
             )}
 
-            {((listing as any).hasAccidentHistory || (listing as any).purchaseYear || 
-              (listing as any).modifiedParts || (listing as any).prePurchaseInfo ||
+            {((listing as any).modifiedParts || (listing as any).prePurchaseInfo ||
               (listing as any).ownerMaintenance || (listing as any).knownIssues) && (
               <section>
                 <SectionTitle>詳細情報</SectionTitle>
                 <div className="mt-3 space-y-3">
-                  {(listing as any).hasAccidentHistory && (
-                    <Card className="dark:bg-gray-800 dark:border-gray-700">
-                      <CardContent className="p-4">
-                        <div className="font-semibold mb-1 dark:text-white">事故歴</div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300">
-                          {(listing as any).hasAccidentHistory === 'yes' ? 'あり' : 
-                           (listing as any).hasAccidentHistory === 'no' ? 'なし' : '不明'}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {(listing as any).purchaseYear && (
-                    <Card className="dark:bg-gray-800 dark:border-gray-700">
-                      <CardContent className="p-4">
-                        <div className="font-semibold mb-1 dark:text-white">購入年</div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300">{(listing as any).purchaseYear}年</div>
-                      </CardContent>
-                    </Card>
-                  )}
                   {(listing as any).modifiedParts && (
                     <Card className="dark:bg-gray-800 dark:border-gray-700">
                       <CardContent className="p-4">
@@ -333,23 +404,6 @@ export default function ListingPreview() {
               </section>
             )}
 
-            {(listing as any).videoUrl && (
-              <section>
-                <SectionTitle>動画</SectionTitle>
-                <div className="mt-3">
-                  <a 
-                    href={(listing as any).videoUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-block rounded-xl border dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <span className="text-blue-600 dark:text-blue-400 hover:underline">
-                      📹 動画を視聴する
-                    </span>
-                  </a>
-                </div>
-              </section>
-            )}
           </div>
 
           {/* Right Column */}
