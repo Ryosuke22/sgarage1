@@ -2432,6 +2432,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get seller basic info
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Return basic user info (don't expose sensitive data)
+      const { password, ...userInfo } = user as any;
+      res.json(userInfo);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Failed to fetch user" });
+    }
+  });
+
+  // Get seller's listings
+  app.get("/api/users/:id/listings", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Verify user exists
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Get all listings for this seller
+      const allListings = await storage.getListings({});
+      const sellerListings = allListings.filter(listing => listing.sellerId === id);
+      
+      res.json(sellerListings);
+    } catch (error) {
+      console.error("Error fetching seller listings:", error);
+      res.status(500).json({ error: "Failed to fetch seller listings" });
+    }
+  });
+
   // Sitemap
   app.get("/sitemap.xml", async (req, res) => {
     try {
