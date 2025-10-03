@@ -62,11 +62,18 @@ export default function ListingPreview() {
             <Row k="排気量" v={<>{d.displacementCc ?? "—"} cc</>} />
             <Row k="トランスミッション" v={<Fallback v={d.transmission} />} />
             <Row k="カラー" v={<Fallback v={d.color} />} />
+            <Row k="所在地" v={<Fallback v={d.locationText} />} />
             <Row k="フレームNo." v={<Fallback v={d.vin} />} />
-            <Row k="所在地" v={<><Fallback v={d.locationText} />{d.city ? ` ${d.city}` : ""}</>} />
-            <Row k="車検" v={d.hasShaken ? `${d.shakenYear}/${d.shakenMonth}` : "なし"} />
+            <Row k="車検" v={d.hasShaken ? `${d.shakenYear || "—"}/${d.shakenMonth || "—"}` : "なし"} />
             <Row k="一時抹消" v={d.isTemporaryRegistration ? "はい" : "いいえ"} />
-            <Row k="動画" v={<a className="underline" href={d.videoUrl || "#"}>{d.videoUrl ? "動画リンク" : "—"}</a>} />
+            <Row
+              k="動画"
+              v={
+                d.videoUrl
+                  ? <a className="underline" href={d.videoUrl} target="_blank" rel="noreferrer">動画リンク</a>
+                  : <span className="text-muted-foreground">—</span>
+              }
+            />
           </div>
         </section>
 
