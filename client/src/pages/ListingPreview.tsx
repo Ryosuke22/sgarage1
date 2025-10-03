@@ -1,10 +1,10 @@
-import { useLocation, useRoute } from "wouter";
+import { useLocation, useRoute, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Layout from "@/components/Layout";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, User } from "lucide-react";
 import type { Listing } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -417,6 +417,27 @@ export default function ListingPreview() {
           {/* Right Column */}
           <div className="md:col-span-4">
             <div className="sticky top-6 space-y-4">
+              {/* Seller Info */}
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <CardContent className="p-5">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">出品者</div>
+                  <Link href={`/seller/${listing.sellerId}`}>
+                    <div 
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                      data-testid={`link-seller-${listing.sellerId}`}
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium dark:text-white">{listing.sellerId}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">プロフィールを見る →</p>
+                      </div>
+                    </div>
+                  </Link>
+                </CardContent>
+              </Card>
+
               <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
                 <CardContent className="p-5">
                   <div className="text-sm text-green-700 dark:text-green-300">開始価格</div>

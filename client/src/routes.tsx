@@ -27,6 +27,7 @@ const HowItWorks = lazy(() => import("@/pages/HowItWorks"));
 const Fees = lazy(() => import("@/pages/Fees"));
 const UploadTest = lazy(() => import("@/pages/UploadTest"));
 const PerformanceDashboard = lazy(() => import("@/pages/PerformanceDashboard"));
+const SellerProfile = lazy(() => import("@/pages/SellerProfile"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Create a login prompt component
@@ -112,6 +113,7 @@ export function Routes() {
             <Route path="/landing" component={Landing} />
             <Route path="/listing/:slug" component={ListingDetail} />
             <Route path="/listing/new" component={CreateListing} />
+            <Route path="/seller/:id" component={SellerProfile} />
             <Route path="/create" component={CreateListing} />
             <Route path="/create-listing" component={CreateListing} />
             <Route path="/preview/:id" component={ListingPreview} />
