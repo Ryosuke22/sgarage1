@@ -485,158 +485,157 @@ function VehicleApproval() {
                         <DialogHeader>
                           <DialogTitle>{listing.title} - 詳細情報</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                           {/* Basic Info */}
-                          <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <span className="text-muted-foreground">カテゴリ:</span>
-                              <p className="font-medium">{listing.category === 'car' ? '自動車' : 'バイク'}</p>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">年式:</span>
-                              <p className="font-medium">{listing.year}年</p>
-                            </div>
-                            {listing.vin && (
-                              <div className="col-span-2">
-                                <span className="text-muted-foreground">VIN:</span>
-                                <p className="font-mono text-xs">{listing.vin}</p>
+                              <h3 className="font-medium text-gray-900 mb-2">基本情報</h3>
+                              <div className="space-y-2 text-sm">
+                                <div><span className="font-medium">タイトル:</span> {listing.title}</div>
+                                <div><span className="font-medium">メーカー:</span> {listing.make}</div>
+                                <div><span className="font-medium">モデル:</span> {listing.model}</div>
+                                <div><span className="font-medium">年式:</span> {listing.year}</div>
+                                <div><span className="font-medium">走行距離:</span> {listing.mileage?.toLocaleString()} km</div>
+                                <div><span className="font-medium">カテゴリ:</span> {listing.category === 'car' ? '自動車' : 'バイク'}</div>
+                                <div><span className="font-medium">ステータス:</span> {
+                                  listing.status === 'published' ? '公開中' :
+                                  listing.status === 'submitted' ? '審査待ち' :
+                                  listing.status === 'approved' ? '承認済み' :
+                                  listing.status === 'ended' ? '終了' : '下書き'
+                                }</div>
                               </div>
-                            )}
-                            <div>
-                              <span className="text-muted-foreground">走行距離:</span>
-                              <p className="font-medium">{listing.mileage?.toLocaleString()}km {listing.mileageVerified && '✓認証済み'}</p>
                             </div>
-                            {listing.ownershipMileage && (
-                              <div>
-                                <span className="text-muted-foreground">所有期間走行:</span>
-                                <p className="font-medium">{listing.ownershipMileage?.toLocaleString()}km</p>
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">価格・オークション情報</h3>
+                              <div className="space-y-2 text-sm">
+                                <div><span className="font-medium">開始価格:</span> ¥{parseFloat(listing.startingPrice || '0').toLocaleString()}</div>
+                                <div><span className="font-medium">現在価格:</span> ¥{parseFloat(listing.currentPrice || '0').toLocaleString()}</div>
+                                {listing.reservePrice && (
+                                  <div><span className="font-medium">リザーブ価格:</span> ¥{parseFloat(listing.reservePrice).toLocaleString()}</div>
+                                )}
+                                <div><span className="font-medium">終了予定:</span> {listing.endAt ? new Date(listing.endAt).toLocaleString('ja-JP') : '未設定'}</div>
+                                <div><span className="font-medium">出品者:</span> {listing.seller?.email || listing.seller?.firstName + ' ' + listing.seller?.lastName || '不明'}</div>
                               </div>
-                            )}
-                            <div>
-                              <span className="text-muted-foreground">車検:</span>
-                              <p className="font-medium">
-                                {listing.hasShaken ? 'あり' : 'なし'}
-                                {listing.hasShaken && listing.shakenYear && listing.shakenMonth && 
-                                  ` (${listing.shakenYear}年${listing.shakenMonth}月)`}
-                              </p>
-                            </div>
-                            {listing.isTemporaryRegistration && (
-                              <div>
-                                <span className="text-muted-foreground">一時抹消:</span>
-                                <p className="font-medium">登録済み</p>
-                              </div>
-                            )}
-                            <div>
-                              <span className="text-muted-foreground">所在地:</span>
-                              <p className="font-medium">{listing.locationText}{listing.city ? ` - ${listing.city}` : ''}</p>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">開始価格:</span>
-                              <p className="font-medium">¥{parseFloat(listing.startingPrice || '0').toLocaleString()}</p>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">リザーブ価格:</span>
-                              <p className="font-medium">¥{parseFloat(listing.reservePrice || '0').toLocaleString()}</p>
                             </div>
                           </div>
 
-                          {/* Vehicle Details */}
-                          {(listing.specifications || listing.highlights || listing.hasAccidentHistory || listing.purchaseYear || 
-                            listing.modifiedParts || listing.prePurchaseInfo || listing.ownerMaintenance || listing.knownIssues) && (
+                          {/* 車両詳細 */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">車両詳細</h3>
+                              <div className="space-y-2 text-sm">
+                                <div><span className="font-medium">所在地:</span> {listing.locationText || "未設定"}</div>
+                                {listing.city && (
+                                  <div><span className="font-medium">都市:</span> {listing.city}</div>
+                                )}
+                                <div><span className="font-medium">走行距離認証:</span> {listing.mileageVerified ? "認証済み" : "未認証"}</div>
+                                {listing.ownershipMileage && (
+                                  <div><span className="font-medium">所有期間中走行距離:</span> {listing.ownershipMileage.toLocaleString()} km</div>
+                                )}
+                                <div><span className="font-medium">車検:</span> {listing.hasShaken ? "あり" : "なし"}</div>
+                                {listing.hasShaken && listing.shakenYear && listing.shakenMonth && (
+                                  <div><span className="font-medium">車検満了:</span> {listing.shakenYear}年{listing.shakenMonth}月</div>
+                                )}
+                                <div><span className="font-medium">一時抹消:</span> {listing.isTemporaryRegistration ? "はい" : "いいえ"}</div>
+                                {listing.vin && (
+                                  <div><span className="font-medium">VIN番号:</span> {listing.vin}</div>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">オークション設定</h3>
+                              <div className="space-y-2 text-sm">
+                                {listing.auctionDuration && (
+                                  <div><span className="font-medium">希望期間:</span> {listing.auctionDuration}</div>
+                                )}
+                                {listing.preferredDayOfWeek && (
+                                  <div><span className="font-medium">希望開始曜日:</span> {listing.preferredDayOfWeek}</div>
+                                )}
+                                {listing.preferredStartTime && (
+                                  <div><span className="font-medium">希望開始時刻:</span> {listing.preferredStartTime}</div>
+                                )}
+                                {(listing as any).extensionCount !== undefined && (
+                                  <div><span className="font-medium">延長回数:</span> {(listing as any).extensionCount}回</div>
+                                )}
+                                {(listing as any).endStatus && (
+                                  <div><span className="font-medium">終了ステータス:</span> {(listing as any).endStatus}</div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 車両履歴・メンテナンス */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">車両履歴</h3>
+                              <div className="space-y-2 text-sm">
+                                {listing.hasAccidentHistory && (
+                                  <div><span className="font-medium">事故歴:</span> {listing.hasAccidentHistory === "yes" ? "あり" : (listing.hasAccidentHistory === "no" ? "なし" : "不明")}</div>
+                                )}
+                                {listing.purchaseYear && (
+                                  <div><span className="font-medium">購入年:</span> {listing.purchaseYear}年</div>
+                                )}
+                                {listing.modifiedParts && (
+                                  <div><span className="font-medium">改造部品:</span> <p className="whitespace-pre-wrap">{listing.modifiedParts}</p></div>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">メンテナンス情報</h3>
+                              <div className="space-y-2 text-sm">
+                                {listing.ownerMaintenance && (
+                                  <div><span className="font-medium">メンテナンス履歴:</span> <p className="whitespace-pre-wrap">{listing.ownerMaintenance}</p></div>
+                                )}
+                                {listing.knownIssues && (
+                                  <div><span className="font-medium">既知の問題:</span> <p className="whitespace-pre-wrap">{listing.knownIssues}</p></div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 購入前情報 */}
+                          {listing.prePurchaseInfo && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">購入前情報</h3>
+                              <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
+                                {listing.prePurchaseInfo}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 動画 */}
+                          {listing.videoUrl && (
+                            <div>
+                              <h3 className="font-medium text-gray-900 mb-2">動画</h3>
+                              <div className="bg-gray-50 p-4 rounded-lg">
+                                <a href={listing.videoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">
+                                  動画を確認する
+                                </a>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Description & Specifications */}
+                          {(listing.description || listing.specifications || listing.highlights) && (
                             <div className="space-y-3 pt-4 border-t">
+                              {listing.description && (
+                                <div>
+                                  <h3 className="font-medium text-gray-900 mb-2">説明</h3>
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
+                                </div>
+                              )}
                               {listing.specifications && (
                                 <div>
-                                  <span className="text-sm font-medium">仕様・装備:</span>
+                                  <h3 className="font-medium text-gray-900 mb-2">仕様・装備</h3>
                                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.specifications}</p>
                                 </div>
                               )}
                               {listing.highlights && (
                                 <div>
-                                  <span className="text-sm font-medium">セールスポイント:</span>
+                                  <h3 className="font-medium text-gray-900 mb-2">セールスポイント</h3>
                                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.highlights}</p>
                                 </div>
                               )}
-                              {listing.hasAccidentHistory && (
-                                <div>
-                                  <span className="text-sm font-medium">事故歴:</span>
-                                  <p className="text-sm text-muted-foreground">
-                                    {listing.hasAccidentHistory === 'yes' ? 'あり' : 
-                                     listing.hasAccidentHistory === 'no' ? 'なし' : '不明'}
-                                  </p>
-                                </div>
-                              )}
-                              {listing.purchaseYear && (
-                                <div>
-                                  <span className="text-sm font-medium">購入年:</span>
-                                  <p className="text-sm text-muted-foreground">{listing.purchaseYear}年</p>
-                                </div>
-                              )}
-                              {listing.modifiedParts && (
-                                <div>
-                                  <span className="text-sm font-medium">改造箇所:</span>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.modifiedParts}</p>
-                                </div>
-                              )}
-                              {listing.prePurchaseInfo && (
-                                <div>
-                                  <span className="text-sm font-medium">購入前情報:</span>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.prePurchaseInfo}</p>
-                                </div>
-                              )}
-                              {listing.ownerMaintenance && (
-                                <div>
-                                  <span className="text-sm font-medium">メンテナンス:</span>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.ownerMaintenance}</p>
-                                </div>
-                              )}
-                              {listing.knownIssues && (
-                                <div>
-                                  <span className="text-sm font-medium">問題点:</span>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.knownIssues}</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Auction Preferences */}
-                          {(listing.preferredDayOfWeek || listing.preferredStartTime || listing.auctionDuration) && (
-                            <div className="space-y-2 pt-4 border-t">
-                              <span className="text-sm font-medium">オークション希望設定:</span>
-                              <div className="grid grid-cols-3 gap-2 text-sm">
-                                {listing.preferredDayOfWeek && (
-                                  <div>
-                                    <span className="text-muted-foreground">希望曜日:</span>
-                                    <p>{listing.preferredDayOfWeek}</p>
-                                  </div>
-                                )}
-                                {listing.preferredStartTime && (
-                                  <div>
-                                    <span className="text-muted-foreground">希望時刻:</span>
-                                    <p>{listing.preferredStartTime}</p>
-                                  </div>
-                                )}
-                                {listing.auctionDuration && (
-                                  <div>
-                                    <span className="text-muted-foreground">期間:</span>
-                                    <p>{listing.auctionDuration}</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Video URL */}
-                          {listing.videoUrl && (
-                            <div className="pt-4 border-t">
-                              <span className="text-sm font-medium">動画:</span>
-                              <a 
-                                href={listing.videoUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:underline block"
-                              >
-                                {listing.videoUrl}
-                              </a>
                             </div>
                           )}
                         </div>
@@ -779,128 +778,6 @@ function UserManagement() {
     </div>
   );
 }
-
-// Schedule Dialog Component  
-const ScheduleDialog = ({ listing, open, onOpenChange, onSuccess }: {
-  listing: AdminListingWithSchedule | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
-}) => {
-  const [startAt, setStartAt] = useState("");
-  const [endAt, setEndAt] = useState("");
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (listing && open) {
-      // Set default start time to 1 hour from now
-      const defaultStart = new Date();
-      defaultStart.setHours(defaultStart.getHours() + 1);
-      defaultStart.setMinutes(0, 0, 0);
-      
-      // Set default end time to 7 days from start
-      const defaultEnd = new Date(defaultStart);
-      defaultEnd.setDate(defaultEnd.getDate() + 7);
-      
-      setStartAt(defaultStart.toISOString().slice(0, 16));
-      setEndAt(defaultEnd.toISOString().slice(0, 16));
-    }
-  }, [listing, open]);
-
-  const handleSubmit = async () => {
-    if (!listing || !startAt || !endAt) return;
-
-    if (new Date(startAt) >= new Date(endAt)) {
-      toast({
-        title: "入力エラー",
-        description: "終了時間は開始時間より後にしてください",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const response = await apiRequest(`/api/admin/listings/${listing.id}/schedule`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          startAt: new Date(startAt).toISOString(),
-          endAt: new Date(endAt).toISOString(),
-        }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: "成功",
-          description: "オークションスケジュールを設定しました",
-        });
-        onSuccess();
-        onOpenChange(false);
-      } else {
-        const error = await response.json();
-        toast({
-          title: "エラー",
-          description: error.error || "スケジュール設定に失敗しました",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Schedule setting error:', error);
-      toast({
-        title: "エラー", 
-        description: "通信エラーが発生しました",
-        variant: "destructive",
-      });
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>オークションスケジュール設定</DialogTitle>
-        </DialogHeader>
-        {listing && (
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="font-medium">{listing.title}</p>
-              <p className="text-sm text-muted-foreground">{listing.make} {listing.model} ({listing.year})</p>
-            </div>
-            <div>
-              <Label htmlFor="startAt">開始時刻</Label>
-              <input
-                id="startAt"
-                type="datetime-local"
-                value={startAt}
-                onChange={(e) => setStartAt(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
-                data-testid="input-start-time"
-              />
-            </div>
-            <div>
-              <Label htmlFor="endAt">終了時刻</Label>
-              <input
-                id="endAt"
-                type="datetime-local"
-                value={endAt}
-                onChange={(e) => setEndAt(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
-                data-testid="input-end-time"
-              />
-            </div>
-          </div>
-        )}
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel-schedule">
-            キャンセル
-          </Button>
-          <Button onClick={handleSubmit} data-testid="button-save-schedule">
-            スケジュール設定
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 // Main Admin Dashboard
 export default function AdminDashboard() {
