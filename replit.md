@@ -11,6 +11,7 @@ When referring to pages in instructions, use these short codes:
 - **CR** → 出品作成ページ (/create)
 - **PV** → プレビューページ (/preview/:id)
 - **AD** → 管理画面 (/admin)
+- **ADL** → 管理画面出品詳細 (/admin/listings/:id)
 - **LS** → 出品一覧/ホーム (/)
 - **LD** → 出品詳細 (/listing/:slug)
 - **SP** → 出品者プロフィール (/seller/:id)
