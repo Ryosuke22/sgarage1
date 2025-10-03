@@ -121,7 +121,7 @@ export default function SellerProfile() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {listings.map((listing) => (
-                  <Link key={listing.id} href={`/listings/${listing.id}`}>
+                  <Link key={listing.id} href={`/listing/${listing.id}`}>
                     <Card className="hover:shadow-lg transition-shadow cursor-pointer dark:bg-gray-800 dark:border-gray-700">
                       {listing.photos && listing.photos.length > 0 && (
                         <img

@@ -6,6 +6,20 @@ This is a real-time vehicle auction platform built with React and Express, allow
 
 Preferred communication style: Simple, everyday language.
 
+## Page Reference Codes (2-Letter System)
+When referring to pages in instructions, use these short codes:
+- **CR** → 出品作成ページ (/create)
+- **PV** → プレビューページ (/preview/:id)
+- **AD** → 管理画面 (/admin)
+- **LS** → 出品一覧/ホーム (/)
+- **LD** → 出品詳細 (/listing/:slug)
+- **SP** → 出品者プロフィール (/seller/:id)
+- **PR** → プロフィール (/profile)
+- **ST** → 設定 (/settings)
+- **WL** → ウォッチリスト (/watch)
+
+Example usage: "CRで市を追加して" instead of "出品作成ページで市を追加して"
+
 # System Architecture
 
 ## Frontend Architecture
