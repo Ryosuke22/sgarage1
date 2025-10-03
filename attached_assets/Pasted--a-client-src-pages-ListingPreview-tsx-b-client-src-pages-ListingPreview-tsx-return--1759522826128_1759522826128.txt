@@ -1,0 +1,100 @@
+--- a/client/src/pages/ListingPreview.tsx
++++ b/client/src/pages/ListingPreview.tsx
+@@
+   return (
+     <Layout>
+       <div className="max-w-7xl mx-auto p-6">
+@@
+-          {/* Right Column - Details */}
++          {/* Right Column - Details */}
+           <div className="space-y-6">
+             {/* Title and Basic Info */}
+             <Card>
+               <CardHeader>
+@@
+-                <CardTitle className="text-2xl">{listing.title}</CardTitle>
++                <CardTitle className="text-2xl">{listing.title}</CardTitle>
+               </CardHeader>
+-              <CardContent className="space-y-4">
+-                <div className="grid grid-cols-2 gap-4 text-sm">
++              <CardContent className="space-y-4">
++                <div className="grid grid-cols-2 gap-4 text-sm">
+                   <div>
+                     <span className="text-gray-500">メーカー:</span>
+                     <p className="font-medium">{listing.make}</p>
+                   </div>
+                   <div>
+                     <span className="text-gray-500">モデル:</span>
+                     <p className="font-medium">{listing.model}</p>
+                   </div>
+                   <div>
+                     <span className="text-gray-500">年式:</span>
+                     <p className="font-medium">{listing.year}年</p>
+                   </div>
+                   <div>
+                     <span className="text-gray-500">走行距離:</span>
+                     <p className="font-medium">
+                       {listing.mileage ? listing.mileage.toLocaleString() : '記載なし'} km
+                     </p>
+                   </div>
++                  {/* ▼ ここから追加分：既存デザインのまま行を足す */}
++                  <div>
++                    <span className="text-gray-500">実走行フラグ:</span>
++                    <p className="font-medium">{listing.mileageVerified ? '実走行' : '不明'}</p>
++                  </div>
++                  <div>
++                    <span className="text-gray-500">所有期間の走行距離:</span>
++                    <p className="font-medium">
++                      {typeof (listing as any).ownershipMileage === 'number'
++                        ? (listing as any).ownershipMileage.toLocaleString() + ' km'
++                        : '—'}
++                    </p>
++                  </div>
++                  <div>
++                    <span className="text-gray-500">フレームNo.:</span>
++                    <p className="font-medium">{(listing as any).vin || '—'}</p>
++                  </div>
++                  <div>
++                    <span className="text-gray-500">事故歴:</span>
++                    <p className="font-medium">
++                      {((listing as any).hasAccidentHistory === 'yes' && 'あり') ||
++                       ((listing as any).hasAccidentHistory === 'no' && 'なし') ||
++                       ((listing as any).hasAccidentHistory === 'unknown' && '不明') ||
++                       '—'}
++                    </p>
++                  </div>
++                  <div>
++                    <span className="text-gray-500">車検:</span>
++                    <p className="font-medium">
++                      {listing.hasShaken
++                        ? `${(listing as any).shakenYear || '—'}/${(listing as any).shakenMonth || '—'}`
++                        : 'なし'}
++                    </p>
++                  </div>
++                  <div>
++                    <span className="text-gray-500">一時抹消:</span>
++                    <p className="font-medium">{(listing as any).isTemporaryRegistration ? 'はい' : 'いいえ'}</p>
++                  </div>
++                  <div>
++                    <span className="text-gray-500">購入年:</span>
++                    <p className="font-medium">{(listing as any).purchaseYear || '—'}</p>
++                  </div>
++                  <div className="col-span-2">
++                    <span className="text-gray-500">動画:</span>
++                    <p className="font-medium">
++                      {(listing as any).videoUrl
++                        ? <a className="underline" href={(listing as any).videoUrl} target="_blank" rel="noreferrer">
++                            {(listing as any).videoUrl}
++                          </a>
++                        : '—'}
++                    </p>
++                  </div>
++                  {/* ▲ 追加ここまで */}
+                 </div>
+ 
+                 <div className="flex items-center text-gray-600">
+                   <MapPinIcon className="h-4 w-4 mr-2" />
+                   <span>{listing.locationText}</span>
+                 </div>
+               </CardContent>
+             </Card>
