@@ -1,0 +1,109 @@
++import React from "react";
++import { useListingDraftStore, ListingDraft } from "@/store/listingDraftStore";
++
++function Fallback({ v, dash = "—" }: { v: string | number | null | undefined; dash?: string }) {
++  if (v === null || v === undefined) return <span className="text-muted-foreground">{dash}</span>;
++  if (typeof v === "string" && v.trim() === "") return <span className="text-muted-foreground">{dash}</span>;
++  return <>{String(v)}</>;
++}
++
++function fmtDate(s: string) {
++  if (!s) return "—";
++  try {
++    const d = new Date(s);
++    if (Number.isNaN(d.getTime())) return s;
++    return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
++  } catch {
++    return s;
++  }
++}
++
++export default function ListingPreview() {
++  const { draft } = useListingDraftStore();
++  const d: ListingDraft = draft;
++
++  return (
++    <div className="mx-auto max-w-6xl p-4 space-y-6">
++      {/* タイトルとメタ */}
++      <header className="space-y-1">
++        <h1 className="text-2xl font-semibold">
++          <Fallback v={d.title} dash="（タイトル未入力）" />
++        </h1>
++        <div className="text-sm text-muted-foreground">
++          <Fallback v={d.category || "未選択"} /> / <Fallback v={d.make || "—"} />{" "}
++          <Fallback v={d.model || ""} /> <Fallback v={d.year} />
++        </div>
++      </header>
++
++      {/* 上段：画像＋主要情報 */}
++      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
++        {/* 画像ギャラリー */}
++        <div className="aspect-video rounded-lg border bg-background overflow-hidden grid place-items-center">
++          {d.images?.length ? (
++            <img
++              src={d.images[0]}
++              alt="main"
++              className="h-full w-full object-cover"
++              onError={(e) => ((e.currentTarget.style.opacity = "0.3"), (e.currentTarget.alt = "image load error"))}
++            />
++          ) : (
++            <div className="text-sm text-muted-foreground">画像がありません</div>
++          )}
++        </div>
++
++        {/* 主要情報 */}
++        <div className="rounded-lg border p-4 space-y-3">
++          <Row k="車種" v={<><Fallback v={d.make} /> <Fallback v={d.model} /></>} />
++          <Row k="年式" v={<Fallback v={d.year} />} />
++          <Row k="走行距離" v={<>{d.mileage ?? "—"} km{d.mileageVerified ? "（実走行）" : ""}</>} />
++          <Row k="排気量" v={<>{d.displacementCc ?? "—"} cc</>} />
++          <Row k="トランスミッション" v={<Fallback v={d.transmission} />} />
++          <Row k="カラー" v={<Fallback v={d.color} />} />
++          <Row k="フレームNo." v={<Fallback v={d.vin} />} />
++          <Row k="所在地" v={<Fallback v={d.locationText} />} />
++          <Row k="車検" v={d.hasShaken ? `${d.shakenYear}/${d.shakenMonth}` : "なし"} />
++          <Row k="一時抹消" v={d.isTemporaryRegistration ? "はい" : "いいえ"} />
++          <Row k="動画" v={<a className="underline" href={d.videoUrl || "#"}>{d.videoUrl ? "動画リンク" : "—"}</a>} />
++        </div>
++      </section>
++
++      {/* 記述セクション（空でも必ず見出し＋ダッシュ描画） */}
++      <Section title="ハイライト"><Fallback v={d.highlights} dash="記載なし" /></Section>
++      <Section title="説明"><pre className="whitespace-pre-wrap text-sm"><Fallback v={d.description} dash="記載なし" /></pre></Section>
++      <Section title="仕様"><pre className="whitespace-pre-wrap text-sm"><Fallback v={d.specifications} dash="記載なし" /></pre></Section>
++      <Section title="車両状態"><pre className="whitespace-pre-wrap text-sm"><Fallback v={d.condition} dash="記載なし" /></pre></Section>
++      <Section title="改造点"><pre className="whitespace-pre-wrap text-sm"><Fallback v={d.modifications} dash="記載なし" /></pre></Section>
++      <Section title="整備・履歴"><pre className="whitespace-pre-wrap text-sm"><Fallback v={d.maintenance} dash="記載なし" /></pre></Section>
++      <Section title="既知の不具合"><pre className="whitespace-pre-wrap text-sm"><Fallback v={d.knownIssues} dash="記載なし" /></pre></Section>
++      <Section title="その他情報"><pre className="whitespace-pre-wrap text-sm"><Fallback v={d.additionalInfo} dash="記載なし" /></pre></Section>
++
++      {/* オークション情報 */}
++      <section className="rounded-lg border p-4">
++        <h2 className="text-base font-semibold mb-3">オークション</h2>
++        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
++          <Row k="開始" v={fmtDate(d.auctionStartAt)} />
++          <Row k="終了" v={fmtDate(d.auctionEndAt)} />
++          <Row k="リザーブ価格" v={d.reservePrice ?? "—"} />
++          <Row k="即決価格" v={d.buyNowPrice ?? "—"} />
++        </div>
++      </section>
++    </div>
++  );
++}
++
++function Section({ title, children }: { title: string; children: React.ReactNode }) {
++  return (
++    <section className="rounded-lg border p-4">
++      <h2 className="text-base font-semibold mb-2">{title}</h2>
++      <div className="text-sm">{children}</div>
++    </section>
++  );
++}
++function Row({ k, v }: { k: React.ReactNode; v: React.ReactNode }) {
++  return (
++    <div className="flex items-start justify-between gap-4 border-b py-2">
++      <div className="text-muted-foreground text-xs shrink-0 w-28">{k}</div>
++      <div className="text-sm break-words">{v}</div>
++    </div>
++  );
++}
