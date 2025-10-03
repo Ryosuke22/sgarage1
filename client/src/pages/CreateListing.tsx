@@ -23,6 +23,7 @@ import { insertListingSchema } from "@shared/schema";
 import { useMakes, useYears, useModels } from "@/hooks/useVehicleOptions";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { validateAndNormalizeVideoUrl, isSupportedVideoUrl } from "@/lib/utils";
+import { useListingDraftStore, setAll } from "@/store/listingDraftStore";
 
 
 // Create a simplified form schema that matches what the user inputs
@@ -112,6 +113,22 @@ export default function CreateListing() {
       videoUrl: "",
     },
   });
+
+  const { draft } = useListingDraftStore();
+
+  useEffect(() => {
+    try {
+      const initial = form.getValues();
+      setAll(initial as any);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const sub = form.watch((values) => {
+      setAll(values as any);
+    });
+    return () => sub.unsubscribe();
+  }, [form]);
 
   const watchedCategory = useWatch({ control: form.control, name: "category" });
   const watchedMake = useWatch({ control: form.control, name: "make" });
