@@ -27,10 +27,12 @@ export default function ListingPreview() {
       <div className="mx-auto max-w-6xl p-4 space-y-6">
         {/* タイトルとメタ */}
         <header className="space-y-1">
+          {/* タイトル"そのもの"は非表示。既存のデザインは維持しつつ、見出しは車名ベースへ */}
           <h1 className="text-2xl font-semibold">
-            <Fallback v={d.title} dash="（タイトル未入力）" />
+            { [d.make, d.model, d.year].filter(Boolean).join(" ") || "（車名未設定）" }
           </h1>
           <div className="text-sm text-muted-foreground">
+            {/* もともとのメタ行は維持（必要ならここもそのままでOK） */}
             <Fallback v={d.category || "未選択"} /> / <Fallback v={d.make || "—"} />{" "}
             <Fallback v={d.model || ""} /> <Fallback v={d.year} />
           </div>
