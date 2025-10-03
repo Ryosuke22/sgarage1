@@ -1,0 +1,128 @@
+--- a/client/src/pages/admin.tsx
++++ b/client/src/pages/admin.tsx
+@@
+             {selectedListing && (
+               <div className="space-y-6">
+                 {/* Basic Info */}
+                 <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <h3 className="font-medium text-gray-900 mb-2">基本情報</h3>
+                     <div className="space-y-2 text-sm">
+                       <div><span className="font-medium">タイトル:</span> {selectedListing.title}</div>
+                       <div><span className="font-medium">メーカー:</span> {selectedListing.make}</div>
+                       <div><span className="font-medium">モデル:</span> {selectedListing.model}</div>
+                       <div><span className="font-medium">年式:</span> {selectedListing.year}</div>
+                       <div><span className="font-medium">走行距離:</span> {selectedListing.mileage?.toLocaleString()} km</div>
++                      <div><span className="font-medium">カテゴリ:</span> {(selectedListing as any).category || "—"}</div>
+                       <div><span className="font-medium">ステータス:</span> {getStatusBadge(selectedListing.status)}</div>
+                     </div>
+                   </div>
+                   <div>
+                     <h3 className="font-medium text-gray-900 mb-2">価格・オークション情報</h3>
+                     <div className="space-y-2 text-sm">
+                       <div><span className="font-medium">開始価格:</span> {formatCurrency(parseFloat(selectedListing.startingPrice))}</div>
+                       <div><span className="font-medium">現在価格:</span> {formatCurrency(parseFloat(selectedListing.currentPrice))}</div>
+                       {selectedListing.reservePrice && (
+                         <div><span className="font-medium">リザーブ価格:</span> {formatCurrency(parseFloat(selectedListing.reservePrice))}</div>
+                       )}
+                       <div><span className="font-medium">終了予定:</span> {new Date(selectedListing.endAt).toLocaleString('ja-JP')}</div>
+                       <div><span className="font-medium">出品者:</span> {selectedListing.seller.email}</div>
+                     </div>
+                   </div>
+                 </div>
+
++                {/* 車両詳細 */}
++                <div className="grid grid-cols-2 gap-4">
++                  <div>
++                    <h3 className="font-medium text-gray-900 mb-2">車両詳細</h3>
++                    <div className="space-y-2 text-sm">
++                      <div><span className="font-medium">所在地:</span> {selectedListing.locationText || "未設定"}</div>
++                      {(selectedListing as any).city && (
++                        <div><span className="font-medium">都市:</span> {(selectedListing as any).city}</div>
++                      )}
++                      <div><span className="font-medium">走行距離認証:</span> {selectedListing.mileageVerified ? "認証済み" : "未認証"}</div>
++                      {selectedListing.ownershipMileage && (
++                        <div><span className="font-medium">所有期間中走行距離:</span> {selectedListing.ownershipMileage.toLocaleString()} km</div>
++                      )}
++                      <div><span className="font-medium">車検:</span> {selectedListing.hasShaken ? "あり" : "なし"}</div>
++                      {selectedListing.hasShaken && selectedListing.shakenYear && selectedListing.shakenMonth && (
++                        <div><span className="font-medium">車検満了:</span> {selectedListing.shakenYear}年{selectedListing.shakenMonth}月</div>
++                      )}
++                      <div><span className="font-medium">一時抹消:</span> {selectedListing.isTemporaryRegistration ? "はい" : "いいえ"}</div>
++                      {(selectedListing as any).vin && (
++                        <div><span className="font-medium">VIN番号:</span> {(selectedListing as any).vin}</div>
++                      )}
++                    </div>
++                  </div>
++                  <div>
++                    <h3 className="font-medium text-gray-900 mb-2">オークション設定</h3>
++                    <div className="space-y-2 text-sm">
++                      {(selectedListing as any).auctionDuration && (
++                        <div><span className="font-medium">希望期間:</span> {(selectedListing as any).auctionDuration}</div>
++                      )}
++                      {(selectedListing as any).preferredDayOfWeek && (
++                        <div><span className="font-medium">希望開始曜日:</span> {(selectedListing as any).preferredDayOfWeek}</div>
++                      )}
++                      {(selectedListing as any).preferredStartTime && (
++                        <div><span className="font-medium">希望開始時刻:</span> {(selectedListing as any).preferredStartTime}</div>
++                      )}
++                      {(selectedListing as any).extensionCount !== undefined && (
++                        <div><span className="font-medium">延長回数:</span> {(selectedListing as any).extensionCount}回</div>
++                      )}
++                      {(selectedListing as any).endStatus && (
++                        <div><span className="font-medium">終了ステータス:</span> {(selectedListing as any).endStatus}</div>
++                      )}
++                    </div>
++                  </div>
++                </div>
++
++                {/* 車両履歴・メンテナンス */}
++                <div className="grid grid-cols-2 gap-4">
++                  <div>
++                    <h3 className="font-medium text-gray-900 mb-2">車両履歴</h3>
++                    <div className="space-y-2 text-sm">
++                      {(selectedListing as any).hasAccidentHistory && (
++                        <div><span className="font-medium">事故歴:</span> {(selectedListing as any).hasAccidentHistory === "yes" ? "あり" : ((selectedListing as any).hasAccidentHistory === "no" ? "なし" : "不明")}</div>
++                      )}
++                      {(selectedListing as any).purchaseYear && (
++                        <div><span className="font-medium">購入年:</span> {(selectedListing as any).purchaseYear}年</div>
++                      )}
++                      {(selectedListing as any).modifiedParts && (
++                        <div><span className="font-medium">改造部品:</span> {(selectedListing as any).modifiedParts}</div>
++                      )}
++                    </div>
++                  </div>
++                  <div>
++                    <h3 className="font-medium text-gray-900 mb-2">メンテナンス情報</h3>
++                    <div className="space-y-2 text-sm">
++                      {(selectedListing as any).ownerMaintenance && (
++                        <div><span className="font-medium">メンテナンス履歴:</span> {(selectedListing as any).ownerMaintenance}</div>
++                      )}
++                      {(selectedListing as any).knownIssues && (
++                        <div><span className="font-medium">既知の問題:</span> {(selectedListing as any).knownIssues}</div>
++                      )}
++                    </div>
++                  </div>
++                </div>
++
++                {/* 購入前情報 */}
++                {(selectedListing as any).prePurchaseInfo && (
++                  <div>
++                    <h3 className="font-medium text-gray-900 mb-2">購入前情報</h3>
++                    <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
++                      {(selectedListing as any).prePurchaseInfo}
++                    </div>
++                  </div>
++                )}
++
++                {/* 動画 */}
++                {(selectedListing as any).videoUrl && (
++                  <div>
++                    <h3 className="font-medium text-gray-900 mb-2">動画</h3>
++                    <div className="bg-gray-50 p-4 rounded-lg">
++                      <a href={(selectedListing as any).videoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">
++                        動画を確認する
++                      </a>
++                    </div>
++                  </div>
++                )}
