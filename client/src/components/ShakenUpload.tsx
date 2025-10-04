@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { uploadShakenPdf } from "@/lib/uploadUtils";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload, CheckCircle } from "lucide-react";
+import { convertImageUrl } from "@/lib/imageUtils";
 
 interface ShakenUploadProps {
   onUploadComplete?: (data: { readUrl: string; objectName: string }) => void;
@@ -9,7 +10,7 @@ interface ShakenUploadProps {
 
 export default function ShakenUpload({ onUploadComplete }: ShakenUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<{ readUrl: string; objectName: string } | null>(null);
+  const [uploadResult, setUploadResult] = useState<{ readUrl: string; objectName: string; fileType?: string } | null>(null);
   const [error, setError] = useState<string>("");
 
   return (
@@ -18,11 +19,11 @@ export default function ShakenUpload({ onUploadComplete }: ShakenUploadProps) {
         <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <div className="space-y-2">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            車検証PDFをアップロード
+            車検証をアップロード（PDF・画像）
           </p>
           <input
             type="file"
-            accept="application/pdf"
+            accept="application/pdf,image/*"
             onChange={async (e) => {
               const f = e.target.files?.[0];
               if (!f) return;
@@ -33,10 +34,11 @@ export default function ShakenUpload({ onUploadComplete }: ShakenUploadProps) {
               
               try {
                 const { readUrl, objectName } = await uploadShakenPdf(f);
-                setUploadResult({ readUrl, objectName });
+                const fileType = f.type.startsWith('image/') ? 'image' : 'pdf';
+                setUploadResult({ readUrl, objectName, fileType });
                 onUploadComplete?.({ readUrl, objectName });
               } catch (err: any) {
-                setError("PDFアップロード失敗: " + err.message);
+                setError("アップロード失敗: " + err.message);
               } finally {
                 setIsUploading(false);
               }
@@ -70,6 +72,17 @@ export default function ShakenUpload({ onUploadComplete }: ShakenUploadProps) {
               車検証アップロード完了
             </h4>
           </div>
+          
+          {uploadResult.fileType === 'image' && (
+            <div className="mb-3">
+              <img 
+                src={convertImageUrl(uploadResult.readUrl)} 
+                alt="車検証プレビュー" 
+                className="max-w-full h-auto rounded border border-green-200 dark:border-green-700"
+              />
+            </div>
+          )}
+          
           <div className="space-y-2 text-sm text-green-700 dark:text-green-300">
             <p><strong>保存場所:</strong> {uploadResult.objectName}</p>
             <a 
