@@ -442,11 +442,12 @@ export default function ListingPreview() {
                 <CardContent className="p-5">
                   <div className="text-sm text-green-700 dark:text-green-300">開始価格</div>
                   <p
-                    className="text-3xl font-bold tabular-nums text-green-600 dark:text-green-400"
+                    className="text-3xl font-extrabold tabular-nums tracking-tight"
                     style={{
-                      WebkitTextFillColor: 'currentColor',
-                      WebkitTextStroke: '2px #fff',
-                      textShadow: '1px 0 0 #fff,-1px 0 0 #fff,0 1px 0 #fff,0 -1px 0 #fff,1px 1px 0 #fff,-1px 1px 0 #fff,1px -1px 0 #fff,-1px -1px 0 #fff'
+                      color: 'rgba(255,255,255,0.95)',
+                      WebkitTextFillColor: 'rgba(255,255,255,0.95)',
+                      WebkitTextStroke: '1.2px rgba(0,0,0,0.55)',
+                      textShadow: '0.5px 0 0 #000, -0.5px 0 0 #000, 0 0.5px 0 #000, 0 -0.5px 0 #000'
                     }}
                   >
                     {formatPrice(parseInt(listing.startingPrice))}
@@ -455,11 +456,12 @@ export default function ListingPreview() {
                     <div className="mt-4 pt-4 border-t border-white dark:border-white">
                       <div className="text-sm text-green-700 dark:text-green-300">リザーブ価格</div>
                       <p
-                        className="text-3xl font-bold tabular-nums text-green-600 dark:text-green-400"
+                        className="text-3xl font-extrabold tabular-nums tracking-tight"
                         style={{
-                          WebkitTextFillColor: 'currentColor',
-                          WebkitTextStroke: '2px #fff',
-                          textShadow: '1px 0 0 #fff,-1px 0 0 #fff,0 1px 0 #fff,0 -1px 0 #fff,1px 1px 0 #fff,-1px 1px 0 #fff,1px -1px 0 #fff,-1px -1px 0 #fff'
+                          color: 'rgba(255,255,255,0.95)',
+                          WebkitTextFillColor: 'rgba(255,255,255,0.95)',
+                          WebkitTextStroke: '1.2px rgba(0,0,0,0.55)',
+                          textShadow: '0.5px 0 0 #000, -0.5px 0 0 #000, 0 0.5px 0 #000, 0 -0.5px 0 #000'
                         }}
                       >
                         {formatPrice(parseInt(listing.reservePrice))}
