@@ -438,14 +438,14 @@ export default function ListingPreview() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
+              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-white dark:border-white">
                 <CardContent className="p-5">
                   <div className="text-sm text-green-700 dark:text-green-300">開始価格</div>
                   <div className="text-3xl font-extrabold tracking-tight mt-1 text-green-600 dark:text-green-400">
                     {formatPrice(parseInt(listing.startingPrice))}
                   </div>
                   {listing.reservePrice && (
-                    <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-700">
+                    <div className="mt-4 pt-4 border-t border-white dark:border-white">
                       <div className="text-sm text-green-700 dark:text-green-300">リザーブ価格</div>
                       <div className="text-xl font-semibold text-green-600 dark:text-green-400">
                         {formatPrice(parseInt(listing.reservePrice))}
