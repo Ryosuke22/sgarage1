@@ -441,29 +441,13 @@ export default function ListingPreview() {
               <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-white dark:border-white">
                 <CardContent className="p-5">
                   <div className="text-sm text-green-700 dark:text-green-300">開始価格</div>
-                  <p
-                    className="text-3xl font-extrabold tabular-nums tracking-tight"
-                    style={{
-                      color: 'rgba(255,255,255,0.95)',
-                      WebkitTextFillColor: 'rgba(255,255,255,0.95)',
-                      WebkitTextStroke: '1.2px rgba(0,0,0,0.55)',
-                      textShadow: '0.5px 0 0 #000, -0.5px 0 0 #000, 0 0.5px 0 #000, 0 -0.5px 0 #000'
-                    }}
-                  >
+                  <p className="text-4xl font-bold tabular-nums text-gray-900 dark:text-white">
                     {formatPrice(parseInt(listing.startingPrice))}
                   </p>
                   {listing.reservePrice && (
                     <div className="mt-4 pt-4 border-t border-white dark:border-white">
                       <div className="text-sm text-green-700 dark:text-green-300">リザーブ価格</div>
-                      <p
-                        className="text-3xl font-extrabold tabular-nums tracking-tight"
-                        style={{
-                          color: 'rgba(255,255,255,0.95)',
-                          WebkitTextFillColor: 'rgba(255,255,255,0.95)',
-                          WebkitTextStroke: '1.2px rgba(0,0,0,0.55)',
-                          textShadow: '0.5px 0 0 #000, -0.5px 0 0 #000, 0 0.5px 0 #000, 0 -0.5px 0 #000'
-                        }}
-                      >
+                      <p className="text-4xl font-bold tabular-nums text-gray-900 dark:text-white">
                         {formatPrice(parseInt(listing.reservePrice))}
                       </p>
                     </div>
