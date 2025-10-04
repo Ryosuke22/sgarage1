@@ -223,7 +223,7 @@ export default function ListingPreview() {
                 </h1>
                 {listing.locationText && (
                   <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    📍 {listing.locationText}
+                    📍 {listing.locationText}{(listing as any).city && ` ${(listing as any).city}`}
                   </div>
                 )}
               </div>
