@@ -449,7 +449,8 @@ export default function ListingPreview() {
                       [text-shadow:1px_0_0_#fff,-1px_0_0_#fff,0_1px_0_#fff,0_-1px_0_#fff,1px_1px_0_#fff,-1px_1px_0_#fff,1px_-1px_0_#fff,-1px_-1px_0_#fff]
                       inline-block px-2 py-1 rounded-md
                       ring-1 ring-black/5 shadow-[0_1px_2px_rgba(0,0,0,0.06)]
-                      bg-white/50 backdrop-blur-[2px]
+                      bg-gradient-to-br from-neutral-900/85 to-neutral-700/70 text-white
+                      dark:from-neutral-900/85 dark:to-neutral-800/70
                     "
                   >
                     {formatPrice(parseInt(listing.startingPrice))}
@@ -465,7 +466,8 @@ export default function ListingPreview() {
                           [text-shadow:1px_0_0_#fff,-1px_0_0_#fff,0_1px_0_#fff,0_-1px_0_#fff,1px_1px_0_#fff,-1px_1px_0_#fff,1px_-1px_0_#fff,-1px_-1px_0_#fff]
                           inline-block px-2 py-1 rounded-md
                           ring-1 ring-black/5 shadow-[0_1px_2px_rgba(0,0,0,0.06)]
-                          bg-white/50 backdrop-blur-[2px]
+                          bg-gradient-to-br from-neutral-900/85 to-neutral-700/70 text-white
+                          dark:from-neutral-900/85 dark:to-neutral-800/70
                         "
                       >
                         {formatPrice(parseInt(listing.reservePrice))}
