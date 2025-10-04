@@ -2056,7 +2056,7 @@ export default function CreateListing() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Array.from({ length: 30 }, (_, i) => {
+                            {Array.from({ length: 75 }, (_, i) => {
                               const year = new Date().getFullYear() - i;
                               return (
                                 <SelectItem key={year} value={year.toString()}>
