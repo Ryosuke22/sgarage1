@@ -441,9 +441,19 @@ export default function ListingPreview() {
               <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-white dark:border-white">
                 <CardContent className="p-5">
                   <div className="text-sm text-green-700 dark:text-green-300">開始価格</div>
-                  <div className="text-3xl font-extrabold tracking-tight mt-1 text-green-600 dark:text-green-400">
+                  <p
+                    className="
+                      font-semibold tabular-nums text-2xl leading-none tracking-tight
+                      text-red-600
+                      [-webkit-text-stroke:2px_#fff]
+                      [text-shadow:1px_0_0_#fff,-1px_0_0_#fff,0_1px_0_#fff,0_-1px_0_#fff,1px_1px_0_#fff,-1px_1px_0_#fff,1px_-1px_0_#fff,-1px_-1px_0_#fff]
+                      inline-block px-2 py-1 rounded-md
+                      ring-1 ring-black/5 shadow-[0_1px_2px_rgba(0,0,0,0.06)]
+                      bg-white/50 backdrop-blur-[2px]
+                    "
+                  >
                     {formatPrice(parseInt(listing.startingPrice))}
-                  </div>
+                  </p>
                   {listing.reservePrice && (
                     <div className="mt-4 pt-4 border-t border-white dark:border-white">
                       <div className="text-sm text-green-700 dark:text-green-300">リザーブ価格</div>
