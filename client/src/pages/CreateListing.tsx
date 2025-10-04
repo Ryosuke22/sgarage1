@@ -607,6 +607,13 @@ export default function CreateListing() {
       ];
       
       // その他のフィールドを設定
+      const hasShaken = Math.random() > 0.5;
+      const currentYear = new Date().getFullYear();
+      const shakenYears = [currentYear, currentYear + 1, currentYear + 2];
+      const randomShakenYear = shakenYears[Math.floor(Math.random() * shakenYears.length)];
+      const shakenMonths = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+      const randomShakenMonth = shakenMonths[Math.floor(Math.random() * shakenMonths.length)];
+      
       const otherFields = {
         mileage: randomMileage.toString(),
         specifications: testSpecs[Math.floor(Math.random() * testSpecs.length)],
@@ -623,9 +630,9 @@ export default function CreateListing() {
         reservePrice: randomReservePrice.toString(),
         mileageVerified: Math.random() > 0.5,
         ownershipMileage: (randomMileage + Math.floor(Math.random() * 10000)).toString(),
-        hasShaken: Math.random() > 0.5,
-        shakenYear: Math.random() > 0.5 ? "2025" : "",
-        shakenMonth: Math.random() > 0.5 ? "03" : "",
+        hasShaken: hasShaken,
+        shakenYear: hasShaken ? randomShakenYear.toString() : "",
+        shakenMonth: hasShaken ? randomShakenMonth : "",
         isTemporaryRegistration: Math.random() > 0.9,
         preferredDayOfWeek: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"][Math.floor(Math.random() * 7)],
         preferredStartTime: ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"][Math.floor(Math.random() * 13)],
