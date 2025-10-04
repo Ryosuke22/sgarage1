@@ -2032,6 +2032,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updatedListing = await storage.updateListingSchedule(listingId, startTime, endTime);
 
+      // スケジュール設定時にステータスをapprovedに更新
+      await storage.updateListingStatus(listingId, "approved", userId);
+
       await storage.logAction({
         actorId: userId,
         action: "listing_scheduled",

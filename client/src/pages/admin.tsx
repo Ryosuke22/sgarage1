@@ -68,6 +68,9 @@ interface AdminUser {
 interface AdminListingWithSchedule extends AdminListing {
   endAt: string;
   startAt?: string;
+  auctionDuration?: string;
+  preferredDayOfWeek?: string;
+  preferredStartTime?: string;
 }
 
 // Admin Stats Component
@@ -169,9 +172,25 @@ function ScheduleDialog({
       defaultStart.setHours(defaultStart.getHours() + 1);
       defaultStart.setMinutes(0, 0, 0); // Round to the hour
       
-      // Set default end time to 7 days from start
+      // Set default end time based on seller's preferred auction duration
       const defaultEnd = new Date(defaultStart);
-      defaultEnd.setDate(defaultEnd.getDate() + 7);
+      const duration = listing.auctionDuration || '7days';
+      
+      switch (duration) {
+        case '30minutes':
+          defaultEnd.setMinutes(defaultEnd.getMinutes() + 30);
+          break;
+        case '1day':
+          defaultEnd.setDate(defaultEnd.getDate() + 1);
+          break;
+        case '3days':
+          defaultEnd.setDate(defaultEnd.getDate() + 3);
+          break;
+        case '7days':
+        default:
+          defaultEnd.setDate(defaultEnd.getDate() + 7);
+          break;
+      }
       
       setStartAt(defaultStart.toISOString().slice(0, 16));
       setEndAt(defaultEnd.toISOString().slice(0, 16));
@@ -244,6 +263,27 @@ function ScheduleDialog({
             <div className="bg-gray-50 p-3 rounded-lg">
               <p className="text-sm font-medium text-gray-900">{listing.title}</p>
               <p className="text-xs text-gray-500">{listing.make} {listing.model} ({listing.year})</p>
+              {listing.auctionDuration && (
+                <div className="mt-2 pt-2 border-t border-gray-300">
+                  <p className="text-xs text-gray-600">
+                    <span className="font-medium">出品者の希望期間:</span>{' '}
+                    {listing.auctionDuration === '30minutes' && '30分'}
+                    {listing.auctionDuration === '1day' && '1日'}
+                    {listing.auctionDuration === '3days' && '3日'}
+                    {listing.auctionDuration === '7days' && '7日'}
+                  </p>
+                  {listing.preferredDayOfWeek && (
+                    <p className="text-xs text-gray-600">
+                      <span className="font-medium">希望開始曜日:</span> {listing.preferredDayOfWeek}
+                    </p>
+                  )}
+                  {listing.preferredStartTime && (
+                    <p className="text-xs text-gray-600">
+                      <span className="font-medium">希望開始時刻:</span> {listing.preferredStartTime}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -269,6 +309,9 @@ function ScheduleDialog({
                   required
                   data-testid="input-end-time"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  ※出品者の希望期間を参考に、最終的な終了日時を設定してください
+                </p>
               </div>
             </div>
 
@@ -358,7 +401,7 @@ function DocumentsViewer({ listingId, listingTitle }: { listingId: string, listi
 }
 
 // Vehicle Approval Component
-function VehicleApproval() {
+function VehicleApproval({ onApprove }: { onApprove: (listing: AdminListing) => void }) {
   const { data: pendingListings, isLoading } = useQuery<AdminListing[]>({
     queryKey: ['/api/admin/listings', 'submitted'],
     queryFn: async () => {
@@ -367,23 +410,6 @@ function VehicleApproval() {
       return response.json();
     },
   });
-
-  const handleApprove = async (listingId: string) => {
-    try {
-      const response = await fetch(`/api/admin/listings/${listingId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          status: 'approved',
-          adminNotes: '管理者により承認されました'
-        }),
-      });
-      if (!response.ok) throw new Error('Failed to approve listing');
-      window.location.reload(); // Simple refresh for now
-    } catch (error) {
-      console.error('Error approving listing:', error);
-    }
-  };
 
   const handleReject = async (listingId: string) => {
     try {
@@ -663,12 +689,12 @@ function VehicleApproval() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleApprove(listing.id)}
+                      onClick={() => onApprove(listing)}
                       className="text-green-600 border-green-600 hover:bg-green-50"
                       data-testid={`button-approve-${listing.id}`}
                     >
                       <CheckCircle2 className="w-4 h-4 mr-1" />
-                      承認
+                      承認してスケジュール設定
                     </Button>
                     <Button
                       size="sm"
@@ -803,6 +829,12 @@ export default function AdminDashboard() {
     queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
   };
 
+  const handleApprove = (listing: AdminListing) => {
+    // 承認時にスケジュール設定ダイアログを開く
+    setSelectedListing(listing as AdminListingWithSchedule);
+    setShowScheduleDialog(true);
+  };
+
   return (
     <AdminProtectedRoute>
       <div className="container mx-auto p-6" data-testid="admin-dashboard">
@@ -831,7 +863,7 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="approvals">
-            <VehicleApproval />
+            <VehicleApproval onApprove={handleApprove} />
           </TabsContent>
 
           <TabsContent value="users">

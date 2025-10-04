@@ -12,6 +12,27 @@ export async function fireDueAutoBids() {
   }
 }
 
+// 開始時刻になったらpublishedに変更
+export async function publishScheduledAuctions() {
+  try {
+    const listings = await storage.getListings({});
+    const now = new Date();
+    
+    for (const listing of listings) {
+      // status が approved で、startAt が設定されていて、開始時刻を過ぎている場合
+      if (listing.status === 'approved' && listing.startAt && new Date(listing.startAt) <= now) {
+        console.log(`Publishing scheduled auction: ${listing.title} (${listing.id})`);
+        await storage.updateListingStatus(listing.id, 'published', 'system');
+        
+        // WebSocket経由で通知
+        auctionBus.emit('auctionStarted', { listingId: listing.id });
+      }
+    }
+  } catch (error) {
+    console.error("Error publishing scheduled auctions:", error);
+  }
+}
+
 // 終了確定処理（sold/unsold判定）
 export async function settleExpiredAuctions() {
   try {
@@ -74,6 +95,7 @@ export async function settleExpiredAuctions() {
 
 // まとめて実行
 export async function runCronTick() {
+  await publishScheduledAuctions();
   await fireDueAutoBids();
   await settleExpiredAuctions();
 }
