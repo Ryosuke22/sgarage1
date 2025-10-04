@@ -5,8 +5,8 @@
 export function convertImageUrl(url: string): string {
   if (!url) return '';
   
-  // Already converted URL - return as-is
-  if (url.startsWith('/image/') || url.startsWith('http')) {
+  // Already converted URL or local uploads - return as-is
+  if (url.startsWith('/image/') || url.startsWith('http') || url.startsWith('/uploads/')) {
     return url;
   }
   
@@ -17,8 +17,6 @@ export function convertImageUrl(url: string): string {
     filename = url.replace('/objects/uploads/', '');
   } else if (url.startsWith('/objects/')) {
     filename = url.replace('/objects/', '');
-  } else if (url.startsWith('/uploads/')) {
-    filename = url.replace('/uploads/', '');
   } else {
     // Unknown format - return as-is
     return url;
