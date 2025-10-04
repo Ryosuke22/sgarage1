@@ -18,6 +18,7 @@ const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
 const ObjectManagement = lazy(() => import("@/pages/ObjectManagement"));
 const Profile = lazy(() => import("@/pages/Profile"));
+const MyPage = lazy(() => import("@/pages/MyPage"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const WatchList = lazy(() => import("@/pages/WatchList"));
 const PhotoGuide = lazy(() => import("@/pages/PhotoGuide"));
@@ -122,6 +123,7 @@ export function Routes() {
             <Route path="/admin/objects" component={ObjectManagement} />
             <Route path="/admin/performance" component={PerformanceDashboard} />
             <Route path="/profile" component={Profile} />
+            <Route path="/mypage" component={MyPage} />
             <Route path="/settings" component={Settings} />
             <Route path="/watch" component={WatchList} />
             <Route path="/photo-guide" component={PhotoGuide} />
