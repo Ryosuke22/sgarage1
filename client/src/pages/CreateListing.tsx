@@ -645,12 +645,24 @@ export default function CreateListing() {
       console.log("City value:", otherFields.city);
       console.log("PurchaseYear value:", otherFields.purchaseYear);
       
+      // まずlocationText（都道府県）を設定
+      form.setValue('locationText', otherFields.locationText, { shouldDirty: true, shouldValidate: true });
+      
+      // locationText以外のフィールドを設定（cityは後で設定）
       Object.entries(otherFields).forEach(([key, value]) => {
-        form.setValue(key as keyof CreateListingForm, value as any, { shouldDirty: true });
-        if (key === 'city' || key === 'purchaseYear') {
-          console.log(`Set ${key} to:`, value);
+        if (key !== 'locationText' && key !== 'city') {
+          form.setValue(key as keyof CreateListingForm, value as any, { shouldDirty: true });
+          if (key === 'purchaseYear') {
+            console.log(`Set ${key} to:`, value);
+          }
         }
       });
+      
+      // 最後にcity（市町村）を設定（locationTextが設定された後なので有効化される）
+      setTimeout(() => {
+        form.setValue('city', otherFields.city, { shouldDirty: true, shouldValidate: true });
+        console.log(`Set city to:`, otherFields.city);
+      }, 100);
       
       toast({
         title: "テストデータを入力しました",
