@@ -24,6 +24,7 @@ import { AdminProtectedRoute } from '@/lib/admin-protected-route';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { DialogFooter } from '@/components/ui/dialog';
+import { VideoEmbed } from '@/components/VideoEmbed';
 
 // Type definitions for admin data
 interface AdminStats {
@@ -634,9 +635,7 @@ function VehicleApproval({ onApprove }: { onApprove: (listing: AdminListing) => 
                             <div>
                               <h3 className="font-medium text-gray-900 mb-2">動画</h3>
                               <div className="bg-gray-50 p-4 rounded-lg">
-                                <a href={listing.videoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">
-                                  動画を確認する
-                                </a>
+                                <VideoEmbed videoUrl={listing.videoUrl} title={listing.title} />
                               </div>
                             </div>
                           )}

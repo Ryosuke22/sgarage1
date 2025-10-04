@@ -23,6 +23,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { validateAndNormalizeVideoUrl } from "@/lib/utils";
+import { VideoEmbed } from "@/components/VideoEmbed";
 
 export default function ListingDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -189,19 +190,7 @@ export default function ListingDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="relative w-full overflow-hidden rounded-lg bg-black" style={{ aspectRatio: '16 / 9' }}>
-                  <iframe
-                    src={validateAndNormalizeVideoUrl(listing.videoUrl) || undefined}
-                    title={`${listing.title} - 動画`}
-                    className="absolute top-0 left-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    sandbox="allow-scripts allow-same-origin allow-presentation"
-                    data-testid="iframe-video-embed"
-                  />
-                </div>
+                <VideoEmbed videoUrl={listing.videoUrl} title={listing.title} />
               </CardContent>
             </Card>
           )}

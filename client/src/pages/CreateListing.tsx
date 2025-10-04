@@ -23,6 +23,7 @@ import { insertListingSchema } from "@shared/schema";
 import { useMakes, useYears, useModels } from "@/hooks/useVehicleOptions";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { validateAndNormalizeVideoUrl, isSupportedVideoUrl } from "@/lib/utils";
+import { VideoEmbed } from "@/components/VideoEmbed";
 
 
 // Create a simplified form schema that matches what the user inputs
@@ -2319,10 +2320,16 @@ export default function CreateListing() {
                 />
                 
                 {form.watch("videoUrl") && validateAndNormalizeVideoUrl(form.watch("videoUrl") || "") && (
-                  <div className="mt-4 p-3 bg-green-900/30 border border-green-700/50 rounded-lg">
-                    <p className="text-sm text-green-300 flex items-center gap-2">
-                      ✓ 有効な動画URLです - 出品ページに埋め込みで表示されます
-                    </p>
+                  <div className="mt-4 space-y-3">
+                    <div className="p-3 bg-green-900/30 border border-green-700/50 rounded-lg">
+                      <p className="text-sm text-green-300 flex items-center gap-2">
+                        ✓ 有効な動画URLです - 出品ページに埋め込みで表示されます
+                      </p>
+                    </div>
+                    <div className="bg-gray-700/50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-300 mb-3">プレビュー:</p>
+                      <VideoEmbed videoUrl={form.watch("videoUrl") || ""} title="動画プレビュー" />
+                    </div>
                   </div>
                 )}
               </CardContent>

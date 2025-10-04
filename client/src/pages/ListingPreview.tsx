@@ -8,6 +8,7 @@ import { ArrowLeft, CheckCircle, User } from "lucide-react";
 import type { Listing } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { VideoEmbed } from "@/components/VideoEmbed";
 
 const formatPrice = (price: number) => `¥${price.toLocaleString()}`;
 
@@ -236,6 +237,15 @@ export default function ListingPreview() {
           <div className="md:col-span-8 space-y-8">
             <ImageGallery photos={(listing as any).photos || []} />
 
+            {(listing as any).videoUrl && (
+              <section>
+                <SectionTitle>動画</SectionTitle>
+                <div className="mt-3">
+                  <VideoEmbed videoUrl={(listing as any).videoUrl} title={listing.title} />
+                </div>
+              </section>
+            )}
+
             {highlights.length > 0 && (
               <section>
                 <SectionTitle>ハイライト</SectionTitle>
@@ -337,16 +347,6 @@ export default function ListingPreview() {
                       <div>
                         <span className="text-gray-500 dark:text-gray-400">市区町村:</span>
                         <p className="font-medium dark:text-white">{(listing as any).city}</p>
-                      </div>
-                    )}
-                    {(listing as any).videoUrl && (
-                      <div className="col-span-2">
-                        <span className="text-gray-500 dark:text-gray-400">動画:</span>
-                        <p className="font-medium dark:text-white">
-                          <a className="underline text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300" href={(listing as any).videoUrl} target="_blank" rel="noreferrer">
-                            {(listing as any).videoUrl}
-                          </a>
-                        </p>
                       </div>
                     )}
                   </div>
