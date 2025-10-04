@@ -1,3 +1,16 @@
+/*
+ * ページ参照コード（2文字システム）:
+ * CR → 出品作成ページ (/create)
+ * PV → プレビューページ (/preview/:id)
+ * AD → 管理画面 (/admin)
+ * LS → 出品一覧/ホーム (/)
+ * LD → 出品詳細 (/listing/:slug)
+ * SP → 出品者プロフィール (/seller/:id)
+ * PR → プロフィール (/profile)
+ * ST → 設定 (/settings)
+ * WL → ウォッチリスト (/watch)
+ */
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
