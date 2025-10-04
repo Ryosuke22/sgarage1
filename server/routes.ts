@@ -1137,6 +1137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log("Raw request body:", JSON.stringify(req.body, null, 2));
+      console.log("VIDEO URL CHECK:", req.body.videoUrl);
       
       // Helper function to calculate endAt based on auctionDuration
       const calculateEndDate = (startDate: Date, duration: string): Date => {
@@ -1184,10 +1185,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       console.log("Processed data:", JSON.stringify(processedData, null, 2));
+      console.log("VIDEO URL IN PROCESSED DATA:", processedData.videoUrl);
       
       console.log("About to validate data:", JSON.stringify(processedData, null, 2));
       const validatedData = insertListingSchema.parse(processedData);
       console.log("Validated data successful");
+      console.log("VIDEO URL IN VALIDATED DATA:", validatedData.videoUrl);
       
       const listing = await storage.createListing(validatedData, userId);
       console.log("Listing created successfully:", listing.id);

@@ -15,6 +15,15 @@ export function validateAndNormalizeVideoUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
     
+    // Already in embed format - return as is
+    if (urlObj.pathname.includes('/embed/') && (urlObj.hostname === 'www.youtube.com' || urlObj.hostname === 'youtube.com')) {
+      return url;
+    }
+    
+    if (urlObj.pathname.includes('/video/') && (urlObj.hostname === 'player.vimeo.com')) {
+      return url;
+    }
+    
     // YouTube URL patterns
     if (urlObj.hostname === 'www.youtube.com' || urlObj.hostname === 'youtube.com') {
       const videoId = urlObj.searchParams.get('v');
