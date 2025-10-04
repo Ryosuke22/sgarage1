@@ -2590,6 +2590,7 @@ export default function CreateListing() {
                           <Input 
                             type="number"
                             placeholder="例: 1000000"
+                            className="border-white/20 focus-visible:border-white/40"
                             {...field}
                             data-testid="input-starting-price"
                           />
@@ -2609,6 +2610,7 @@ export default function CreateListing() {
                           <Input 
                             type="number"
                             placeholder="例: 3000000"
+                            className="border-white/20 focus-visible:border-white/40"
                             {...field}
                             value={field.value || ""}
                             data-testid="input-reserve-price"
