@@ -96,6 +96,7 @@ export default function ListingPreview() {
         title: "出品を確定しました",
         description: "審査後に公開されます"
       });
+      window.scrollTo(0, 0);
       navigate("/");
     },
     onError: (error) => {
