@@ -1619,7 +1619,12 @@ class MemStorage implements IStorage {
         return a.endAt.getTime() - b.endAt.getTime();
       });
     } else if (filters?.sortBy === 'newest') {
-      listings.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      listings.sort((a, b) => {
+        if (!a.createdAt && !b.createdAt) return 0;
+        if (!a.createdAt) return 1;
+        if (!b.createdAt) return -1;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
     } else if (filters?.sortBy === 'highestPrice') {
       listings.sort((a, b) => parseFloat(b.currentPrice) - parseFloat(a.currentPrice));
     }
@@ -1636,7 +1641,12 @@ class MemStorage implements IStorage {
       documents: Array.from(this.documents.values()).filter(d => d.listingId === l.id),
       currentBid: Array.from(this.bids.values())
         .filter(b => b.listingId === l.id)
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] || null,
+        .sort((a, b) => {
+          if (!a.createdAt && !b.createdAt) return 0;
+          if (!a.createdAt) return 1;
+          if (!b.createdAt) return -1;
+          return b.createdAt.getTime() - a.createdAt.getTime();
+        })[0] || null,
       bidCount: Array.from(this.bids.values()).filter(b => b.listingId === l.id).length
     }));
   }
@@ -1652,7 +1662,12 @@ class MemStorage implements IStorage {
       documents: Array.from(this.documents.values()).filter(d => d.listingId === id),
       currentBid: Array.from(this.bids.values())
         .filter(b => b.listingId === id)
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] || null,
+        .sort((a, b) => {
+          if (!a.createdAt && !b.createdAt) return 0;
+          if (!a.createdAt) return 1;
+          if (!b.createdAt) return -1;
+          return b.createdAt.getTime() - a.createdAt.getTime();
+        })[0] || null,
       bidCount: Array.from(this.bids.values()).filter(b => b.listingId === id).length
     };
   }
@@ -1786,7 +1801,12 @@ class MemStorage implements IStorage {
         ...b,
         bidder: this.users.get(b.bidderId)!
       }))
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => {
+        if (!a.createdAt && !b.createdAt) return 0;
+        if (!a.createdAt) return 1;
+        if (!b.createdAt) return -1;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
   }
   
   async getHighestBidForListing(listingId: string): Promise<BidWithDetails | undefined> {
@@ -1872,7 +1892,12 @@ class MemStorage implements IStorage {
     }
     
     // Sort by creation date descending (newest first)
-    listings.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    listings.sort((a, b) => {
+      if (!a.createdAt && !b.createdAt) return 0;
+      if (!a.createdAt) return 1;
+      if (!b.createdAt) return -1;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
     
     return listings.map(l => ({
       ...l,
