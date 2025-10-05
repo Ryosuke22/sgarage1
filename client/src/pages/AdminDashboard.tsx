@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Car, Clock, DollarSign, TrendingUp, Eye, Check, X, Square, ArrowLeft, Calendar, Users, Database } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ListingWithDetails } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/formatters";
@@ -174,6 +175,8 @@ export default function AdminDashboard() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editFormData, setEditFormData] = useState<any>({});
 
   // Redirect if not admin
   useEffect(() => {
@@ -285,6 +288,63 @@ export default function AdminDashboard() {
       });
     },
   });
+
+  const updateListingMutation = useMutation({
+    mutationFn: async (data: any) => {
+      if (!selectedListing) throw new Error("No listing selected");
+      return await apiRequest("PUT", `/api/listings/${selectedListing.id}`, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "保存完了",
+        description: "出品情報を更新しました",
+        variant: "default",
+      });
+      setIsEditMode(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/listings"] });
+      setShowDetailDialog(false);
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "認証エラー",
+          description: "ログインし直してください",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      
+      toast({
+        title: "エラー",
+        description: "出品情報の更新に失敗しました",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Initialize edit form when listing is selected
+  useEffect(() => {
+    if (selectedListing && showDetailDialog) {
+      setEditFormData({
+        title: selectedListing.title,
+        description: selectedListing.description,
+        make: selectedListing.make,
+        model: selectedListing.model,
+        year: selectedListing.year,
+        mileage: selectedListing.mileage,
+        specifications: selectedListing.specifications || "",
+        condition: selectedListing.condition || "",
+        highlights: selectedListing.highlights || "",
+        startingPrice: selectedListing.startingPrice,
+        reservePrice: selectedListing.reservePrice || "",
+        locationText: selectedListing.locationText,
+      });
+      setIsEditMode(false);
+    }
+  }, [selectedListing, showDetailDialog]);
 
   if (isLoading || (!user || user.role !== "admin")) {
     return (
@@ -609,19 +669,52 @@ export default function AdminDashboard() {
         <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowDetailDialog(false)}
-                  className="mr-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                出品詳細 - {selectedListing?.title}
-              </DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDetailDialog(false)}
+                    className="mr-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  出品詳細 - {selectedListing?.title}
+                </DialogTitle>
+                <div className="flex gap-2">
+                  {!isEditMode ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditMode(true)}
+                      data-testid="button-edit-listing"
+                    >
+                      編集
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditMode(false)}
+                        data-testid="button-cancel-edit"
+                      >
+                        キャンセル
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => updateListingMutation.mutate(editFormData)}
+                        disabled={updateListingMutation.isPending}
+                        data-testid="button-save-listing"
+                      >
+                        {updateListingMutation.isPending ? "保存中..." : "保存"}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
               <DialogDescription>
-                審査のため出品内容を確認し、承認または却下を決定してください
+                {isEditMode ? "出品情報を編集してください" : "審査のため出品内容を確認し、承認または却下を決定してください"}
               </DialogDescription>
             </DialogHeader>
             
@@ -631,13 +724,70 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h3 className="font-medium text-gray-900 mb-2">基本情報</h3>
-                    <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">タイトル:</span> {selectedListing.title}</div>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <span className="font-medium block mb-1">タイトル:</span>
+                        {isEditMode ? (
+                          <Input
+                            value={editFormData.title}
+                            onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                            data-testid="input-edit-title"
+                          />
+                        ) : (
+                          <span>{selectedListing.title}</span>
+                        )}
+                      </div>
                       <div><span className="font-medium">カテゴリ:</span> {selectedListing.category === "car" ? "車" : "バイク"}</div>
-                      <div><span className="font-medium">メーカー:</span> {selectedListing.make}</div>
-                      <div><span className="font-medium">モデル:</span> {selectedListing.model}</div>
-                      <div><span className="font-medium">年式:</span> {selectedListing.year}</div>
-                      <div><span className="font-medium">走行距離:</span> {selectedListing.mileage?.toLocaleString()} km</div>
+                      <div>
+                        <span className="font-medium block mb-1">メーカー:</span>
+                        {isEditMode ? (
+                          <Input
+                            value={editFormData.make}
+                            onChange={(e) => setEditFormData({...editFormData, make: e.target.value})}
+                            data-testid="input-edit-make"
+                          />
+                        ) : (
+                          <span>{selectedListing.make}</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-medium block mb-1">モデル:</span>
+                        {isEditMode ? (
+                          <Input
+                            value={editFormData.model}
+                            onChange={(e) => setEditFormData({...editFormData, model: e.target.value})}
+                            data-testid="input-edit-model"
+                          />
+                        ) : (
+                          <span>{selectedListing.model}</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-medium block mb-1">年式:</span>
+                        {isEditMode ? (
+                          <Input
+                            type="number"
+                            value={editFormData.year}
+                            onChange={(e) => setEditFormData({...editFormData, year: parseInt(e.target.value)})}
+                            data-testid="input-edit-year"
+                          />
+                        ) : (
+                          <span>{selectedListing.year}</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-medium block mb-1">走行距離 (km):</span>
+                        {isEditMode ? (
+                          <Input
+                            type="number"
+                            value={editFormData.mileage}
+                            onChange={(e) => setEditFormData({...editFormData, mileage: parseInt(e.target.value)})}
+                            data-testid="input-edit-mileage"
+                          />
+                        ) : (
+                          <span>{selectedListing.mileage?.toLocaleString()} km</span>
+                        )}
+                      </div>
                       <div><span className="font-medium">ステータス:</span> {getStatusBadge(selectedListing.status)}</div>
                       <div><span className="font-medium">出品日時:</span> {selectedListing.createdAt ? new Date(selectedListing.createdAt).toLocaleString('ja-JP', {
                         year: 'numeric',
@@ -650,12 +800,47 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900 mb-2">価格・オークション情報</h3>
-                    <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">開始価格:</span> {formatCurrency(parseFloat(selectedListing.startingPrice))}</div>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <span className="font-medium block mb-1">開始価格:</span>
+                        {isEditMode ? (
+                          <Input
+                            type="number"
+                            value={editFormData.startingPrice}
+                            onChange={(e) => setEditFormData({...editFormData, startingPrice: e.target.value})}
+                            data-testid="input-edit-starting-price"
+                          />
+                        ) : (
+                          <span>{formatCurrency(parseFloat(selectedListing.startingPrice))}</span>
+                        )}
+                      </div>
                       <div><span className="font-medium">現在価格:</span> {formatCurrency(parseFloat(selectedListing.currentPrice))}</div>
-                      {selectedListing.reservePrice && (
-                        <div><span className="font-medium">リザーブ価格:</span> {formatCurrency(parseFloat(selectedListing.reservePrice))}</div>
-                      )}
+                      <div>
+                        <span className="font-medium block mb-1">リザーブ価格:</span>
+                        {isEditMode ? (
+                          <Input
+                            type="number"
+                            value={editFormData.reservePrice}
+                            onChange={(e) => setEditFormData({...editFormData, reservePrice: e.target.value})}
+                            placeholder="なし"
+                            data-testid="input-edit-reserve-price"
+                          />
+                        ) : (
+                          <span>{selectedListing.reservePrice ? formatCurrency(parseFloat(selectedListing.reservePrice)) : "なし"}</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-medium block mb-1">所在地:</span>
+                        {isEditMode ? (
+                          <Input
+                            value={editFormData.locationText}
+                            onChange={(e) => setEditFormData({...editFormData, locationText: e.target.value})}
+                            data-testid="input-edit-location"
+                          />
+                        ) : (
+                          <span>{selectedListing.locationText}</span>
+                        )}
+                      </div>
                       <div><span className="font-medium">開始予定:</span> {selectedListing.startAt ? new Date(selectedListing.startAt).toLocaleString('ja-JP', {
                         year: 'numeric',
                         month: '2-digit',
@@ -760,40 +945,73 @@ export default function AdminDashboard() {
                 {/* Description */}
                 <div>
                   <h3 className="font-medium text-gray-900 mb-2">説明文</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
-                    {selectedListing.description || "説明文がありません"}
-                  </div>
+                  {isEditMode ? (
+                    <Textarea
+                      value={editFormData.description}
+                      onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                      rows={6}
+                      data-testid="textarea-edit-description"
+                    />
+                  ) : (
+                    <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
+                      {selectedListing.description || "説明文がありません"}
+                    </div>
+                  )}
                 </div>
 
                 {/* Specifications */}
-                {selectedListing.specifications && (
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">仕様</h3>
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">仕様</h3>
+                  {isEditMode ? (
+                    <Textarea
+                      value={editFormData.specifications}
+                      onChange={(e) => setEditFormData({...editFormData, specifications: e.target.value})}
+                      rows={4}
+                      placeholder="仕様を入力してください"
+                      data-testid="textarea-edit-specifications"
+                    />
+                  ) : (
                     <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
-                      {selectedListing.specifications}
+                      {selectedListing.specifications || "仕様がありません"}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Condition */}
-                {selectedListing.condition && (
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">車両状態</h3>
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">車両状態</h3>
+                  {isEditMode ? (
+                    <Textarea
+                      value={editFormData.condition}
+                      onChange={(e) => setEditFormData({...editFormData, condition: e.target.value})}
+                      rows={4}
+                      placeholder="車両状態を入力してください"
+                      data-testid="textarea-edit-condition"
+                    />
+                  ) : (
                     <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
-                      {selectedListing.condition}
+                      {selectedListing.condition || "車両状態がありません"}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Highlights */}
-                {selectedListing.highlights && (
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">ハイライト・特徴</h3>
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">ハイライト・特徴</h3>
+                  {isEditMode ? (
+                    <Textarea
+                      value={editFormData.highlights}
+                      onChange={(e) => setEditFormData({...editFormData, highlights: e.target.value})}
+                      rows={4}
+                      placeholder="ハイライト・特徴を入力してください"
+                      data-testid="textarea-edit-highlights"
+                    />
+                  ) : (
                     <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
-                      {selectedListing.highlights}
+                      {selectedListing.highlights || "ハイライトがありません"}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Documents */}
                 <div>
