@@ -315,6 +315,49 @@ export default function AdminDashboard() {
     },
   });
 
+  const generateContentMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedListing) throw new Error("No listing selected");
+      return await apiRequest("POST", `/api/admin/listings/${selectedListing.id}/generate-content`, {});
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "AI生成完了",
+        description: "出品情報を生成しました。内容を確認して編集してください。",
+        variant: "default",
+      });
+      
+      setEditFormData({
+        ...editFormData,
+        title: data.title,
+        description: data.description,
+        specifications: data.specifications,
+        highlights: data.highlights,
+      });
+      
+      setIsEditMode(true);
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "認証エラー",
+          description: "ログインし直してください",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      
+      toast({
+        title: "エラー",
+        description: error instanceof Error ? error.message : "AI生成に失敗しました",
+        variant: "destructive",
+      });
+    },
+  });
+
   const updateListingMutation = useMutation({
     mutationFn: async (data: typeof editFormData) => {
       if (!selectedListing) throw new Error("No listing selected");
@@ -744,14 +787,25 @@ export default function AdminDashboard() {
                 </DialogTitle>
                 <div className="flex gap-2">
                   {!isEditMode ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditMode(true)}
-                      data-testid="button-edit-listing"
-                    >
-                      編集
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditMode(true)}
+                        data-testid="button-edit-listing"
+                      >
+                        編集
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => generateContentMutation.mutate()}
+                        disabled={generateContentMutation.isPending}
+                        data-testid="button-generate-ai"
+                      >
+                        {generateContentMutation.isPending ? "AI生成中..." : "AI生成"}
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Button
