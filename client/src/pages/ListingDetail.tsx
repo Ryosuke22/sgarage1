@@ -59,7 +59,7 @@ export default function ListingDetail() {
   });
 
   // Initialize state when listing loads
-  if (listing && !currentEndsAt) {
+  if (listing && !currentEndsAt && listing.endAt) {
     setCurrentEndsAt(typeof listing.endAt === 'string' ? listing.endAt : listing.endAt.toISOString());
     setCurrentBids(listing.bids || []);
   }
@@ -221,10 +221,14 @@ export default function ListingDetail() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 uppercase tracking-wide">残り時間</p>
-                    <CountdownTimer 
-                      endTime={new Date(currentEndsAt || (typeof listing.endAt === 'string' ? listing.endAt : listing.endAt.toISOString()))} 
-                      data-testid="timer-countdown"
-                    />
+                    {listing.endAt ? (
+                      <CountdownTimer 
+                        endTime={new Date(currentEndsAt || (typeof listing.endAt === 'string' ? listing.endAt : listing.endAt.toISOString()))} 
+                        data-testid="timer-countdown"
+                      />
+                    ) : (
+                      <p className="text-2xl font-bold text-gray-400" data-testid="text-schedule-pending">未定</p>
+                    )}
                     {hasReserve && (
                       <Badge 
                         variant={reserveMet ? "default" : "secondary"}
@@ -240,7 +244,7 @@ export default function ListingDetail() {
             </Card>
 
             {/* Bidding Form */}
-            {user && listing.status === "published" && new Date() < new Date(listing.endAt) && (
+            {user && listing.status === "published" && listing.endAt && new Date() < new Date(listing.endAt) && (
               <div className="space-y-4">
                 <BiddingForm 
                   listing={listing} 
@@ -253,7 +257,7 @@ export default function ListingDetail() {
                   <AutoBidModal
                     listingId={listing.id}
                     currentPrice={parseFloat(listing.currentPrice)}
-                    endTime={currentEndsAt || listing.endAt}
+                    endTime={currentEndsAt || (listing.endAt ? (typeof listing.endAt === 'string' ? listing.endAt : listing.endAt.toISOString()) : '')}
                   />
                   <AutoBidButton listingId={listing.id} />
                 </div>
@@ -604,7 +608,7 @@ export default function ListingDetail() {
       </div>
       
       {/* Test BidBar with mock data for demonstration */}
-      {user && listing.status === "published" && new Date() < new Date(listing.endAt) && (
+      {user && listing.status === "published" && listing.endAt && new Date() < new Date(listing.endAt) && (
         <BidBar
           listingId={listing.id}
           currentPrice={parseFloat(listing.currentPrice)}

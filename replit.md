@@ -2,6 +2,15 @@
 
 This is a real-time vehicle auction platform built with React and Express, allowing users to browse and bid on cars and motorcycles. The application features live bidding functionality with WebSocket connections, advanced filtering options, and a modern Japanese-language interface. Users can view detailed vehicle information, participate in timed auctions, and receive real-time updates on bid activities.
 
+# Recent Changes
+
+## Listing Schedule Management (2025-10-05)
+- **Changed**: Listing start/end dates are now set by administrators instead of sellers
+- **Behavior**: When sellers create listings, `startAt` and `endAt` are set to `null`
+- **Admin Control**: Administrators use the schedule dialog in AD to set auction start and end times
+- **Display**: LD and other pages show "未定" (TBD) when `endAt` is null
+- **Benefits**: Ensures consistent auction scheduling across the platform
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

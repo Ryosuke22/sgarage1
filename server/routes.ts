@@ -1158,13 +1158,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      // Calculate start and end times
-      const startAt = req.body.startAt ? new Date(req.body.startAt) : new Date();
-      const endAt = req.body.endAt 
-        ? new Date(req.body.endAt) 
-        : req.body.auctionDuration 
-          ? calculateEndDate(startAt, req.body.auctionDuration)
-          : new Date(startAt.getTime() + 7 * 24 * 60 * 60 * 1000); // Default to 7 days
+      // Start and end times will be set by admin during approval
+      // User's preferences are stored in preferredDayOfWeek, preferredStartTime, auctionDuration
+      const startAt = null;
+      const endAt = null;
 
       // Convert string fields to proper types and add photos from uploaded photos
       const processedData = {
@@ -1537,7 +1534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "このオークションは現在入札を受け付けていません" });
       }
 
-      if (new Date() > new Date(listing.endAt)) {
+      if (listing.endAt && new Date() > new Date(listing.endAt)) {
         return res.status(400).json({ error: "このオークションは終了しています" });
       }
 
@@ -1591,13 +1588,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Check if we need to extend auction (soft close)
-      const now = new Date();
-      const endAt = new Date(listing.endAt);
-      const softCloseWindow = parseInt(process.env.SOFT_CLOSE_WINDOW_SEC || "120") * 1000;
-      const maxExtensions = parseInt(process.env.SOFT_CLOSE_MAX_EXTENSIONS || "10");
+      if (listing.endAt) {
+        const now = new Date();
+        const endAt = new Date(listing.endAt);
+        const softCloseWindow = parseInt(process.env.SOFT_CLOSE_WINDOW_SEC || "120") * 1000;
+        const maxExtensions = parseInt(process.env.SOFT_CLOSE_MAX_EXTENSIONS || "10");
 
-      if (endAt.getTime() - now.getTime() < softCloseWindow && listing.extensionCount < maxExtensions) {
-        await storage.extendAuction(listingId, Math.floor(softCloseWindow / 60000));
+        if (endAt.getTime() - now.getTime() < softCloseWindow && listing.extensionCount < maxExtensions) {
+          await storage.extendAuction(listingId, Math.floor(softCloseWindow / 60000));
+        }
       }
 
       await storage.logAction({
@@ -1701,7 +1700,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const maxExt = Number(process.env.SOFT_CLOSE_MAX_EXTENSIONS) || 12;
 
       let newEndsAt = listing.endAt;
-      if (new Date(listing.endAt).getTime() - now <= windowMs && (listing.extensionCount ?? 0) < maxExt) {
+      if (listing.endAt && new Date(listing.endAt).getTime() - now <= windowMs && (listing.extensionCount ?? 0) < maxExt) {
         await storage.extendAuction(listingId, extendByMin);
         const nextEnds = new Date(now + (extendByMin * 60 * 1000)).toISOString();
         newEndsAt = nextEnds as any;
