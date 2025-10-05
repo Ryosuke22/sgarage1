@@ -1463,7 +1463,7 @@ class MemStorage implements IStorage {
         preferredDayOfWeek: "sunday",
         preferredStartTime: "19:00",
         auctionDuration: "7days",
-        videoUrl: null,
+        videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -1501,7 +1501,7 @@ class MemStorage implements IStorage {
         preferredDayOfWeek: "saturday",
         preferredStartTime: "20:00",
         auctionDuration: "5days",
-        videoUrl: null,
+        videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         createdAt: new Date(),
         updatedAt: new Date()
       }
