@@ -2154,48 +2154,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "管理者権限が必要です" });
       }
 
-      const listingId = req.params.id;
-      const listing = await storage.getListingById(listingId);
-      
-      if (!listing) {
-        return res.status(404).json({ error: "出品が見つかりません" });
+      const { id } = req.params as { id: string };
+      const { style = "bat-ja" } = req.body || {};
+
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(400).json({ message: "OPENAI_API_KEY is not set" });
       }
 
-      const style = req.body.style || "bat-ja";
+      const listing = await storage.getListingById(id);
+      if (!listing) return res.status(404).json({ message: "Listing not found" });
 
-      const batDescription = await generateBaTDescription({
-        category: listing.category,
-        make: listing.make,
-        model: listing.model,
-        year: listing.year,
-        mileage: listing.mileage,
-        specifications: listing.specifications || undefined,
-        highlights: listing.highlights || undefined,
-        hasAccidentHistory: listing.hasAccidentHistory || undefined,
-        modifiedParts: listing.modifiedParts || undefined,
-        knownIssues: listing.knownIssues || undefined,
-        locationText: listing.locationText,
-        startingPrice: listing.startingPrice,
+      const {
+        title, category, make, model, year, mileage, locationText,
+        vin, hasShaken, shakenYear, shakenMonth, isTemporaryRegistration,
+        modifiedParts, maintenanceHistory, knownIssues, specifications, highlights
+      } = listing as any;
+
+      const prompt = `
+あなたは「Bring a Trailer（BaT）」のライティングに精通した日本語コピーライターです。
+以下の車両情報から、BaT風の出品説明文を**日本語**で作成してください。
+- 語調: 事実ベースで信頼感、軽い抑揚。誇張はしない。
+- 構成: 「概要」「ハイライト」「装備/改造」「整備履歴」「既知の不具合」「書類/付属品」「マーケットメモ」
+- 出力は Markdown 見出し（##）と箇条書きを活用
+- 実走行や一時抹消・車検の有無などは事実のみ
+- 年式/走行距離/所在地/フレームNo.などは可能な範囲で言及
+
+【車両データ】
+タイトル: ${title || ""}
+カテゴリー: ${category || ""}
+メーカー/モデル/年式: ${make || ""} ${model || ""} ${year || ""}
+走行距離: ${mileage ?? "不明"} km
+所在地: ${locationText || "不明"}
+VIN/フレームNo.: ${vin || "不明"}
+車検: ${hasShaken ? `${shakenYear || "—"}年${shakenMonth || "—"}月まで` : "なし"}
+一時抹消: ${isTemporaryRegistration ? "はい" : "いいえ"}
+ハイライト: ${highlights || ""}
+仕様/スペック: ${specifications || ""}
+改造: ${modifiedParts || ""}
+整備履歴: ${maintenanceHistory || ""}
+既知の不具合: ${knownIssues || ""}
+`;
+
+      const r = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.3
+        })
       });
 
-      // Update listing with the new description
-      await storage.updateListing(listingId, {
-        description: batDescription.description,
-      });
+      if (!r.ok) {
+        const err = await r.text();
+        return res.status(500).json({ message: "OpenAI API error", detail: err });
+      }
+
+      const data = await r.json() as any;
+      const text = data?.choices?.[0]?.message?.content?.trim();
+      if (!text) return res.status(500).json({ message: "No text generated" });
+
+      const updated = await storage.updateListing(id, { description: text });
 
       await storage.logAction({
         actorId: userId,
         action: "bat_description_generated",
         entity: "listing",
-        entityId: listingId,
+        entityId: id,
       });
 
-      res.json(batDescription);
-    } catch (error) {
-      console.error("Error generating BaT description:", error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : "BaT風説明文の生成に失敗しました" 
-      });
+      return res.json({ description: updated.description || text });
+    } catch (e: any) {
+      console.error(e);
+      return res.status(500).json({ message: "AI generation failed" });
     }
   });
 
