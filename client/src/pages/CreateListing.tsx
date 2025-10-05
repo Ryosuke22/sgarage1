@@ -2433,29 +2433,39 @@ export default function CreateListing() {
                       <FormField
                         control={form.control}
                         name="shakenMonth"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-white">車検有効期限（月）</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="bg-gray-700 border-white/20 text-white" data-testid="select-shaken-month">
-                                  <SelectValue placeholder="月を選択" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {Array.from({ length: 12 }, (_, i) => {
-                                  const month = (i + 1).toString().padStart(2, '0');
-                                  return (
-                                    <SelectItem key={month} value={month}>
-                                      {i + 1}月
-                                    </SelectItem>
-                                  );
-                                })}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          const selectedYear = form.watch("shakenYear");
+                          const currentYear = new Date().getFullYear();
+                          const currentMonth = new Date().getMonth() + 1;
+                          
+                          const isCurrentYear = selectedYear && parseInt(selectedYear) === currentYear;
+                          const startMonth = isCurrentYear ? currentMonth : 1;
+                          
+                          return (
+                            <FormItem>
+                              <FormLabel className="text-white">車検有効期限（月）</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="bg-gray-700 border-white/20 text-white" data-testid="select-shaken-month">
+                                    <SelectValue placeholder="月を選択" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {Array.from({ length: 12 - startMonth + 1 }, (_, i) => {
+                                    const monthNumber = startMonth + i;
+                                    const month = monthNumber.toString().padStart(2, '0');
+                                    return (
+                                      <SelectItem key={month} value={month}>
+                                        {monthNumber}月
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
                   )}

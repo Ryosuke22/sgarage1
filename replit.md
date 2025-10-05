@@ -4,6 +4,15 @@ This is a real-time vehicle auction platform built with React and Express, allow
 
 # Recent Changes
 
+## Auto-Filter Shaken Expiration Dates (2025-10-05)
+- **Added**: Automatic filtering of 車検 (vehicle inspection) expiration months
+- **Behavior**: 
+  - When selecting current year (2025), only months from current month onwards are shown
+  - When selecting future years, all 12 months are available
+  - Updates automatically each month (e.g., in November, only Nov-Dec shown for 2025)
+- **File Modified**: `client/src/pages/CreateListing.tsx` lines 2436-2472
+- **Impact**: Users can only select valid future 車検 expiration dates
+
 ## Listing Status Fix (2025-10-05)
 - **Fixed**: New listings now appear in admin dashboard's "pending" tab
 - **Issue**: Listings were created with status "draft" but admin dashboard only showed "submitted" listings
