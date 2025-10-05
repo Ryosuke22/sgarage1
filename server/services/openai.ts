@@ -64,8 +64,9 @@ ${listingInfo.knownIssues ? `既知の問題: ${listingInfo.knownIssues}` : ""}
 - オークション形式に適した魅力的な文章にする`;
 
   try {
+    console.log("Calling OpenAI API with model: gpt-5");
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",
       messages: [
         {
           role: "system",
@@ -80,8 +81,16 @@ ${listingInfo.knownIssues ? `既知の問題: ${listingInfo.knownIssues}` : ""}
       max_completion_tokens: 2048,
     });
 
+    console.log("OpenAI API response received:", {
+      id: response.id,
+      model: response.model,
+      choices: response.choices?.length,
+      hasContent: !!response.choices[0]?.message?.content
+    });
+
     const content = response.choices[0].message.content;
     if (!content) {
+      console.error("OpenAI returned empty content. Full response:", JSON.stringify(response, null, 2));
       throw new Error("OpenAI returned empty content");
     }
 
@@ -95,6 +104,13 @@ ${listingInfo.knownIssues ? `既知の問題: ${listingInfo.knownIssues}` : ""}
     };
   } catch (error) {
     console.error("Error generating listing content:", error);
+    if (error instanceof Error) {
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+    }
     throw new Error(`AI生成に失敗しました: ${error instanceof Error ? error.message : "不明なエラー"}`);
   }
 }
