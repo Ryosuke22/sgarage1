@@ -633,6 +633,7 @@ export default function AdminDashboard() {
                     <h3 className="font-medium text-gray-900 mb-2">基本情報</h3>
                     <div className="space-y-2 text-sm">
                       <div><span className="font-medium">タイトル:</span> {selectedListing.title}</div>
+                      <div><span className="font-medium">カテゴリ:</span> {selectedListing.category === "car" ? "車" : "バイク"}</div>
                       <div><span className="font-medium">メーカー:</span> {selectedListing.make}</div>
                       <div><span className="font-medium">モデル:</span> {selectedListing.model}</div>
                       <div><span className="font-medium">年式:</span> {selectedListing.year}</div>
@@ -655,7 +656,20 @@ export default function AdminDashboard() {
                       {selectedListing.reservePrice && (
                         <div><span className="font-medium">リザーブ価格:</span> {formatCurrency(parseFloat(selectedListing.reservePrice))}</div>
                       )}
-                      <div><span className="font-medium">終了予定:</span> {selectedListing.endAt ? new Date(selectedListing.endAt).toLocaleString('ja-JP') : '未定'}</div>
+                      <div><span className="font-medium">開始予定:</span> {selectedListing.startAt ? new Date(selectedListing.startAt).toLocaleString('ja-JP', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : '未定'}</div>
+                      <div><span className="font-medium">終了予定:</span> {selectedListing.endAt ? new Date(selectedListing.endAt).toLocaleString('ja-JP', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : '未定'}</div>
                       <div><span className="font-medium">出品者:</span> {selectedListing.seller.email}</div>
                     </div>
                   </div>
