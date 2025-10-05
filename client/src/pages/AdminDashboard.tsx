@@ -326,6 +326,7 @@ export default function AdminDashboard() {
           <TableHead>車両</TableHead>
           <TableHead>ステータス</TableHead>
           <TableHead>現在価格</TableHead>
+          <TableHead>出品日時</TableHead>
           <TableHead>終了予定</TableHead>
           {showActions && <TableHead>操作</TableHead>}
         </TableRow>
@@ -368,6 +369,15 @@ export default function AdminDashboard() {
             </TableCell>
             <TableCell data-testid={`price-${listing.id}`}>
               {formatCurrency(parseFloat(listing.currentPrice))}
+            </TableCell>
+            <TableCell data-testid={`created-time-${listing.id}`}>
+              {listing.createdAt ? new Date(listing.createdAt).toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+              }) : '-'}
             </TableCell>
             <TableCell data-testid={`end-time-${listing.id}`}>
               {listing.endAt ? new Date(listing.endAt).toLocaleString('ja-JP') : '未定'}
@@ -628,6 +638,13 @@ export default function AdminDashboard() {
                       <div><span className="font-medium">年式:</span> {selectedListing.year}</div>
                       <div><span className="font-medium">走行距離:</span> {selectedListing.mileage?.toLocaleString()} km</div>
                       <div><span className="font-medium">ステータス:</span> {getStatusBadge(selectedListing.status)}</div>
+                      <div><span className="font-medium">出品日時:</span> {selectedListing.createdAt ? new Date(selectedListing.createdAt).toLocaleString('ja-JP', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : '-'}</div>
                     </div>
                   </div>
                   <div>
