@@ -21,6 +21,7 @@ import type { Request, Response } from "express";
 import { auctionBus } from "./realtime";
 import * as db from "./db";
 import { uploadService } from "./upload-service";
+import { generateListingContent } from "./services/openai";
 
 // Type definition for authenticated user (extends the basic User with auth properties)
 interface AuthenticatedUser {
@@ -2088,6 +2089,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Admin schedule setting error:", error);
       res.status(500).json({ error: "スケジュール設定に失敗しました" });
+    }
+  });
+
+  app.post("/api/admin/listings/:id/generate-content", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = getUserId(req);
+      if (!userId) {
+        return res.status(401).json({ error: "認証が必要です" });
+      }
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ error: "管理者権限が必要です" });
+      }
+
+      const listingId = req.params.id;
+      const listing = await storage.getListingById(listingId);
+      
+      if (!listing) {
+        return res.status(404).json({ error: "出品が見つかりません" });
+      }
+
+      const generatedContent = await generateListingContent({
+        category: listing.category,
+        make: listing.make,
+        model: listing.model,
+        year: listing.year,
+        mileage: listing.mileage,
+        specifications: listing.specifications || undefined,
+        highlights: listing.highlights || undefined,
+        hasAccidentHistory: listing.hasAccidentHistory || undefined,
+        modifiedParts: listing.modifiedParts || undefined,
+        knownIssues: listing.knownIssues || undefined,
+        locationText: listing.locationText,
+        startingPrice: listing.startingPrice,
+      });
+
+      await storage.logAction({
+        actorId: userId,
+        action: "listing_content_generated",
+        entity: "listing",
+        entityId: listingId,
+      });
+
+      res.json(generatedContent);
+    } catch (error) {
+      console.error("Error generating listing content:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "コンテンツ生成に失敗しました" 
+      });
     }
   });
 
