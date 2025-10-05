@@ -1,0 +1,86 @@
+// server/routes.ts の imports 付近
+import fetch from "node-fetch";
+import { storage } from "./storage"; // 既存
+// …他のimport…
+
+// registerRoutes(app) 内のどこか適切な位置に追加
+app.post("/api/admin/listings/:id/generate-description", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params as { id: string };
+    const { style = "bat-ja" } = req.body || {};
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(400).json({ message: "OPENAI_API_KEY is not set" });
+    }
+
+    const listing = await storage.getListingById(id);
+    if (!listing) return res.status(404).json({ message: "Listing not found" });
+
+    // 必要情報を抽出（あれば写真/仕様/整備/改造なども）
+    const {
+      title, category, make, model, year, mileage, locationText,
+      vin, hasShaken, shakenYear, shakenMonth, isTemporaryRegistration,
+      modifications, maintenance, knownIssues, specifications, highlights
+    } = (listing as any);
+
+    const prompt = `
+あなたは「Bring a Trailer（BaT）」のライティングに精通した日本語コピーライターです。
+以下の車両情報から、BaT風の出品説明文を**日本語**で作成してください。
+- 語調: 事実ベースで信頼感、軽い抑揚。誇張はしない。
+- 構成: 「概要」「ハイライト」「装備/改造」「整備履歴」「既知の不具合」「書類/付属品」「マーケットメモ」
+- 出力は Markdown 見出し（##）と箇条書きを活用
+- 実走行や一時抹消・車検の有無などは事実のみ
+- 年式/走行距離/所在地/フレームNo.などは可能な範囲で言及
+
+【車両データ】
+タイトル: ${title || ""}
+カテゴリー: ${category || ""}
+メーカー/モデル/年式: ${make || ""} ${model || ""} ${year || ""}
+走行距離: ${mileage ?? "不明"} km
+所在地: ${locationText || "不明"}
+VIN/フレームNo.: ${vin || "不明"}
+車検: ${hasShaken ? `${shakenYear || "—"}年${shakenMonth || "—"}月まで` : "なし"}
+一時抹消: ${isTemporaryRegistration ? "はい" : "いいえ"}
+ハイライト: ${highlights || ""}
+仕様/スペック: ${specifications || ""}
+改造: ${modifications || ""}
+整備履歴: ${maintenance || ""}
+既知の不具合: ${knownIssues || ""}
+`;
+
+    // Chat Completions（Node fetch）
+    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini", // 軽量で十分。必要なら上位に
+        messages: [
+          { role: "system", content: "You are a helpful assistant." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.3
+      })
+    });
+
+    if (!r.ok) {
+      const err = await r.text();
+      return res.status(500).json({ message: "OpenAI API error", detail: err });
+    }
+
+    const data = await r.json();
+    const text = data?.choices?.[0]?.message?.content?.trim();
+    if (!text) return res.status(500).json({ message: "No text generated" });
+
+    // 説明文をDBに反映
+    const updated = await storage.updateListing(id, { description: text }); // updateListing は既存実装あり
+    // 既存の updateListing 実装：id で更新可。:contentReference[oaicite:7]{index=7}
+
+    return res.json({ description: updated.description || text });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ message: "AI generation failed" });
+  }
+});

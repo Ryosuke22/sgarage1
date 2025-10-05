@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Car, Clock, DollarSign, TrendingUp, Eye, Check, X, Square, ArrowLeft, Calendar, Users, Database } from "lucide-react";
+import { Car, Clock, DollarSign, TrendingUp, Eye, Check, X, Square, ArrowLeft, Calendar, Users, Database, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -424,7 +424,44 @@ export default function AdminDashboard() {
       
       toast({
         title: "エラー",
-        description: "出品情報の更新に失敗しました",
+        description: "出品情報の更新しました",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const aiDescMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedListing) throw new Error("No listing selected");
+      return await apiRequest("POST", `/api/admin/listings/${selectedListing.id}/generate-bat-description`, {});
+    },
+    onSuccess: (data: any) => {
+      if (selectedListing) {
+        selectedListing.description = data.description;
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/listings"] });
+      toast({
+        title: "BaT風説明文生成完了",
+        description: "Bring a Trailer風の説明文を生成しました",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "認証エラー",
+          description: "ログインし直してください",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      
+      toast({
+        title: "エラー",
+        description: error instanceof Error ? error.message : "BaT風説明文の生成に失敗しました",
         variant: "destructive",
       });
     },
@@ -1058,9 +1095,23 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                {/* Description */}
+                {/* Description + AI生成 */}
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">説明文</h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-gray-900">説明文</h3>
+                    {!isEditMode && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => aiDescMutation.mutate()}
+                        disabled={!selectedListing || aiDescMutation.isPending}
+                        data-testid="btn-generate-description"
+                      >
+                        <Sparkles className="h-4 w-4 mr-1" />
+                        AI作成（BaT風）
+                      </Button>
+                    )}
+                  </div>
                   {isEditMode ? (
                     <Textarea
                       value={editFormData.description}
@@ -1069,8 +1120,10 @@ export default function AdminDashboard() {
                       data-testid="textarea-edit-description"
                     />
                   ) : (
-                    <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap">
-                      {selectedListing.description || "説明文がありません"}
+                    <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap min-h-24">
+                      {aiDescMutation.isPending
+                        ? "AIで生成中..."
+                        : (selectedListing.description || "説明文がありません")}
                     </div>
                   )}
                 </div>
