@@ -1612,11 +1612,16 @@ class MemStorage implements IStorage {
     
     // Apply sorting
     if (filters?.sortBy === 'endingSoon') {
-      listings.sort((a, b) => a.endAt.getTime() - b.endAt.getTime());
+      listings.sort((a, b) => {
+        if (!a.endAt && !b.endAt) return 0;
+        if (!a.endAt) return 1;
+        if (!b.endAt) return -1;
+        return a.endAt.getTime() - b.endAt.getTime();
+      });
     } else if (filters?.sortBy === 'newest') {
       listings.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     } else if (filters?.sortBy === 'highestPrice') {
-      listings.sort((a, b) => b.currentPrice - a.currentPrice);
+      listings.sort((a, b) => parseFloat(b.currentPrice) - parseFloat(a.currentPrice));
     }
     
     // Apply pagination
