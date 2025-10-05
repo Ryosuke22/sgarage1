@@ -432,39 +432,22 @@ export default function AdminDashboard() {
 
   const aiDescMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedListing) throw new Error("No listing selected");
-      return await apiRequest("POST", `/api/admin/listings/${selectedListing.id}/generate-bat-description`, {});
+      if (!selectedListing?.id) throw new Error("listing id missing");
+      const res = await apiRequest(
+        "POST",
+        `/api/admin/listings/${selectedListing.id}/generate-description`,
+        { style: "bat-ja" }
+      );
+      return res.json();
     },
-    onSuccess: (data: any) => {
-      if (selectedListing) {
-        selectedListing.description = data.description;
-      }
+    onSuccess: (data: { description: string }) => {
+      setSelectedListing((prev) => prev ? { ...prev, description: data.description } : prev);
+      toast({ title: "AIで説明文を作成しました" });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/listings"] });
-      toast({
-        title: "BaT風説明文生成完了",
-        description: "Bring a Trailer風の説明文を生成しました",
-        variant: "default",
-      });
     },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "認証エラー",
-          description: "ログインし直してください",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      
-      toast({
-        title: "エラー",
-        description: error instanceof Error ? error.message : "BaT風説明文の生成に失敗しました",
-        variant: "destructive",
-      });
-    },
+    onError: (err: any) => {
+      toast({ title: "AI生成エラー", description: String(err?.message || err), variant: "destructive" });
+    }
   });
 
   // Initialize edit form when listing is selected

@@ -2142,7 +2142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/listings/:id/generate-bat-description", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.post("/api/admin/listings/:id/generate-description", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = getUserId(req);
       if (!userId) {
@@ -2160,6 +2160,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!listing) {
         return res.status(404).json({ error: "出品が見つかりません" });
       }
+
+      const style = req.body.style || "bat-ja";
 
       const batDescription = await generateBaTDescription({
         category: listing.category,
