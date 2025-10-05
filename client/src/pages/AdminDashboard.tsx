@@ -18,6 +18,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/formatters";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { DialogFooter } from "@/components/ui/dialog";
+import { VideoEmbed } from "@/components/VideoEmbed";
 
 // Schedule Dialog Component
 const ScheduleDialog = ({ listing, open, onOpenChange, onSuccess }: {
@@ -1170,14 +1171,10 @@ export default function AdminDashboard() {
                   <div>
                     <h3 className="font-medium text-gray-900 mb-2">動画</h3>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <a 
-                        href={selectedListing.videoUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-700 underline"
-                      >
-                        動画を確認する
-                      </a>
+                      <VideoEmbed 
+                        videoUrl={selectedListing.videoUrl} 
+                        title={`${selectedListing.title} - 動画`}
+                      />
                     </div>
                   </div>
                 )}
