@@ -22,6 +22,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: "オークション一覧", href: "/", icon: Car },
     { name: "出品する", href: "/create", icon: Plus },
     { name: "ウォッチリスト", href: "/watch", icon: Heart },
+    { name: "マイページ", href: "/mypage", icon: User },
   ];
 
   const adminNavigation = [
