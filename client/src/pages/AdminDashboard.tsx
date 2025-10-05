@@ -176,7 +176,33 @@ export default function AdminDashboard() {
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editFormData, setEditFormData] = useState<any>({});
+  const [editFormData, setEditFormData] = useState<{
+    title: string;
+    description: string;
+    make: string;
+    model: string;
+    year: number;
+    mileage: number;
+    specifications: string;
+    condition: string;
+    highlights: string;
+    startingPrice: string;
+    reservePrice: string;
+    locationText: string;
+  }>({
+    title: "",
+    description: "",
+    make: "",
+    model: "",
+    year: 0,
+    mileage: 0,
+    specifications: "",
+    condition: "",
+    highlights: "",
+    startingPrice: "",
+    reservePrice: "",
+    locationText: "",
+  });
 
   // Redirect if not admin
   useEffect(() => {
@@ -290,9 +316,44 @@ export default function AdminDashboard() {
   });
 
   const updateListingMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: typeof editFormData) => {
       if (!selectedListing) throw new Error("No listing selected");
-      return await apiRequest("PUT", `/api/listings/${selectedListing.id}`, data);
+      
+      // Validate and convert numeric fields
+      const year = parseInt(data.year.toString(), 10);
+      const mileage = parseInt(data.mileage.toString(), 10);
+      
+      if (!Number.isFinite(year) || year <= 0) {
+        throw new Error("有効な年式を入力してください");
+      }
+      if (!Number.isFinite(mileage) || mileage < 0) {
+        throw new Error("有効な走行距離を入力してください");
+      }
+      if (!data.startingPrice || parseFloat(data.startingPrice) <= 0) {
+        throw new Error("有効な開始価格を入力してください");
+      }
+      
+      // Prepare payload with correct types
+      const payload: any = {
+        title: data.title,
+        description: data.description,
+        make: data.make,
+        model: data.model,
+        year,
+        mileage,
+        startingPrice: data.startingPrice, // Decimal as string
+        specifications: data.specifications,
+        condition: data.condition,
+        highlights: data.highlights,
+        locationText: data.locationText,
+      };
+      
+      // Only include reservePrice if it has a value
+      if (data.reservePrice && parseFloat(data.reservePrice) > 0) {
+        payload.reservePrice = data.reservePrice; // Decimal as string
+      }
+      
+      return await apiRequest("PUT", `/api/admin/listings/${selectedListing.id}`, payload);
     },
     onSuccess: () => {
       toast({

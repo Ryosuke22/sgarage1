@@ -2006,6 +2006,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin schedule setting
+  // Admin-only listing update endpoint
+  app.put("/api/admin/listings/:id", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = getUserId(req);
+      if (!userId) {
+        return res.status(401).json({ error: "認証が必要です" });
+      }
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ error: "管理者権限が必要です" });
+      }
+
+      const listingId = req.params.id;
+      const listing = await storage.getListingById(listingId);
+      
+      if (!listing) {
+        return res.status(404).json({ error: "出品が見つかりません" });
+      }
+
+      const validatedData = insertListingSchema.partial().parse(req.body);
+      const updated = await storage.updateListing(listingId, validatedData);
+      
+      await storage.logAction({
+        actorId: userId,
+        action: "listing_updated_by_admin",
+        entity: "listing",
+        entityId: listingId,
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating listing (admin):", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update listing" });
+    }
+  });
+
   app.put("/api/admin/listings/:id/schedule", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = getUserId(req);
