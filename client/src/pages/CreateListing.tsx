@@ -282,8 +282,9 @@ export default function CreateListing() {
         videoUrl: data.videoUrl || "",
         photos: uploadedPhotos.map(photo => ({ url: photo.url, sortOrder: photo.sortOrder })),
         sellerId: (user as any)?.id || "",
-        startAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        endAt: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+        status: 'draft',
+        startAt: null,
+        endAt: null,
       };
       
       console.log("Sending listing data:", listingData);

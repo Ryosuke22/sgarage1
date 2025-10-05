@@ -370,7 +370,7 @@ export default function AdminDashboard() {
               {formatCurrency(parseFloat(listing.currentPrice))}
             </TableCell>
             <TableCell data-testid={`end-time-${listing.id}`}>
-              {new Date(listing.endAt).toLocaleString('ja-JP')}
+              {listing.endAt ? new Date(listing.endAt).toLocaleString('ja-JP') : '未定'}
             </TableCell>
             {showActions && (
               <TableCell>
@@ -638,7 +638,7 @@ export default function AdminDashboard() {
                       {selectedListing.reservePrice && (
                         <div><span className="font-medium">リザーブ価格:</span> {formatCurrency(parseFloat(selectedListing.reservePrice))}</div>
                       )}
-                      <div><span className="font-medium">終了予定:</span> {new Date(selectedListing.endAt).toLocaleString('ja-JP')}</div>
+                      <div><span className="font-medium">終了予定:</span> {selectedListing.endAt ? new Date(selectedListing.endAt).toLocaleString('ja-JP') : '未定'}</div>
                       <div><span className="font-medium">出品者:</span> {selectedListing.seller.email}</div>
                     </div>
                   </div>
@@ -827,7 +827,7 @@ export default function AdminDashboard() {
                         <img
                           src={(() => {
                             if (typeof photo.url === 'string') return photo.url;
-                            if (typeof photo.url === 'object' && photo.url?.url) return photo.url.url;
+                            if (typeof photo.url === 'object' && (photo.url as any)?.url) return (photo.url as any).url;
                             return '';
                           })()}
                           alt={`${selectedListing.title} - 写真 ${index + 1}`}
