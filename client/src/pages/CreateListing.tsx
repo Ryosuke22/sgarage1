@@ -282,7 +282,7 @@ export default function CreateListing() {
         videoUrl: data.videoUrl || "",
         photos: uploadedPhotos.map(photo => ({ url: photo.url, sortOrder: photo.sortOrder })),
         sellerId: (user as any)?.id || "",
-        status: 'draft',
+        status: 'submitted',
         startAt: null,
         endAt: null,
       };

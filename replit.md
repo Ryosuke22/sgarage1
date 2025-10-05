@@ -4,6 +4,13 @@ This is a real-time vehicle auction platform built with React and Express, allow
 
 # Recent Changes
 
+## Listing Status Fix (2025-10-05)
+- **Fixed**: New listings now appear in admin dashboard's "pending" tab
+- **Issue**: Listings were created with status "draft" but admin dashboard only showed "submitted" listings
+- **Solution**: Changed listing creation to use status "submitted" instead of "draft"
+- **File Modified**: `client/src/pages/CreateListing.tsx` line 288
+- **Impact**: All new listings now immediately visible to administrators for approval
+
 ## Listing Schedule Management (2025-10-05)
 - **Changed**: Listing start/end dates are now set by administrators instead of sellers
 - **Behavior**: When sellers create listings, `startAt` and `endAt` are set to `null`
